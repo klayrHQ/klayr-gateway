@@ -1,4 +1,4 @@
-interface BlockHeader {
+export interface BlockHeader {
   version: number;
   timestamp: number;
   height: number;
@@ -21,6 +21,15 @@ interface BlockHeader {
   id: string;
 }
 
-interface NewBlock {
+export interface BlockByHeight {
+  header: BlockHeader;
+}
+export interface NewBlockEvent {
   blockHeader: BlockHeader;
+}
+
+export interface NodeInfo {
+  height: number;
+  genesisHeight: number;
+  [key: string]: unknown;
 }
