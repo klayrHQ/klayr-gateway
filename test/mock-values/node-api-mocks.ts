@@ -1,4 +1,4 @@
-import { BlockByHeight, NewBlockEvent } from 'src/node-api/types';
+import { NewBlockEvent } from 'src/node-api/types';
 
 export const newBlockEventMock: NewBlockEvent = {
   blockHeader: {
@@ -27,7 +27,7 @@ export const newBlockEventMock: NewBlockEvent = {
   },
 };
 
-export const newBlockArrayMock: BlockByHeight[] = [
+export const newBlockArrayMock: NewBlockEvent[] = [
   {
     header: {
       version: 0,
