@@ -32,12 +32,11 @@ export class IndexerService {
 
   private async syncWithNode(): Promise<void> {
     while (this.state === IndexerState.SYNCING) {
-      const blockHeightTo = this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE;
       const [nodeInfo, blocks] = await Promise.all([
         this.nodeApiService.getNodeInfo(),
         this.nodeApiService.getBlocksFromNode({
           from: this.nextBlockToSync,
-          to: blockHeightTo,
+          to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
         }),
       ]);
 
