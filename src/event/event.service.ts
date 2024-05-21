@@ -1,28 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
-import { NewBlockEvent } from 'src/node-api/types';
+import { Block } from 'src/node-api/types';
 
-enum Events {
-  NEW_BLOCK = 'new.block',
+export enum Events {
+  NEW_BLOCK_EVENT = 'new.block.event',
 }
 
 @Injectable()
 export class EventService {
-  eventQ: queueAsPromised<NewBlockEvent>;
+  private readonly logger = new Logger(EventService.name);
+  private blockEventQ: queueAsPromised<Block>;
 
   constructor(private eventEmitter: EventEmitter2) {
-    this.eventWorker = this.eventWorker.bind(this);
-    this.eventQ = fastq.promise(this.eventWorker, 1);
+    this.blockEventWorker = this.blockEventWorker.bind(this);
+    this.blockEventQ = fastq.promise(this.blockEventWorker, 1);
   }
 
-  async pushToEventQ(newBlockEvent: NewBlockEvent) {
-    this.eventQ.push(newBlockEvent).catch((err) => console.error(err));
+  async pushToBlockEventQ(block: Block) {
+    this.blockEventQ.push(block).catch((err) => this.logger.error(err));
   }
 
-  async eventWorker(newBlockEvent: NewBlockEvent): Promise<void> {
-    console.log(newBlockEvent.header.height);
-    this.eventEmitter.emit(Events.NEW_BLOCK, newBlockEvent);
+  // No need for a try-catch block, fastq handles errors automatically
+  private async blockEventWorker(block: Block): Promise<void> {
+    this.logger.debug(`Worker: New block event for ${block.header.height}`);
+    this.eventEmitter.emit(Events.NEW_BLOCK_EVENT, block);
   }
 }

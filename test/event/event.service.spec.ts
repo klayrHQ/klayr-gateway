@@ -3,10 +3,10 @@ import { EventService } from '../../src/event/event.service';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { newBlockArrayMock } from 'test/mock-values/node-api-mocks';
 
-describe.only('EventService', () => {
+describe('EventService', () => {
   let service: EventService;
   let eventEmitter: EventEmitter2;
-  let eventSpy: any;
+  let eventEmitterSpy: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,7 +16,7 @@ describe.only('EventService', () => {
 
     service = module.get<EventService>(EventService);
     eventEmitter = (service as any).eventEmitter;
-    eventSpy = jest.spyOn(eventEmitter, 'emit');
+    eventEmitterSpy = jest.spyOn(eventEmitter, 'emit');
   });
 
   it('should be defined', () => {
@@ -26,8 +26,8 @@ describe.only('EventService', () => {
   it('should emit event', async () => {
     const blockEvents = newBlockArrayMock;
     for (const block of blockEvents) {
-      await service.pushToEventQ(block);
-      expect(eventSpy).toHaveBeenCalledWith('new.block', block);
+      await service.pushToBlockEventQ(block);
+      expect(eventEmitterSpy).toHaveBeenCalledWith('new.block.event', block);
     }
   });
 });

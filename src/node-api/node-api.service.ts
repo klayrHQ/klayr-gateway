@@ -3,12 +3,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NODE_URL, NodeApi, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import { Block, NewBlockEvent, NodeInfo } from './types';
-import { Observable, catchError, from, of, retry, throwError, timeout } from 'rxjs';
 
 // Functions to interact with the Node API
 @Injectable()
 export class NodeApiService {
-  public readonly logger = new Logger(NodeApiService.name);
+  private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
 
   async onModuleInit() {
