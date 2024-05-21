@@ -1,8 +1,9 @@
 import { apiClient } from '@klayr/client';
 import { Injectable, Logger } from '@nestjs/common';
 import { NODE_URL, NodeApi, RETRY_TIMEOUT } from 'src/utils/constants';
-import { timeout } from 'src/utils/helpers';
-import { BlockByHeight, NewBlockEvent, NodeInfo } from './types';
+import { waitTimeout } from 'src/utils/helpers';
+import { Block, NewBlockEvent, NodeInfo } from './types';
+import { Observable, catchError, from, of, retry, throwError, timeout } from 'rxjs';
 
 // Functions to interact with the Node API
 @Injectable()
@@ -18,7 +19,7 @@ export class NodeApiService {
     while (!this.client) {
       this.client = await apiClient.createWSClient(NODE_URL).catch(async (err) => {
         this.logger.error('Failed connecting to node, retrying...', err);
-        await timeout(RETRY_TIMEOUT);
+        await waitTimeout(RETRY_TIMEOUT);
         return null;
       });
     }
@@ -26,9 +27,22 @@ export class NodeApiService {
 
   // What to do when this fails?
   /////////
-  public async getBlocksFromNode(args: { from: number; to: number }): Promise<BlockByHeight[]> {
+  public async getBlockById(id: string): Promise<Block> {
+    return await this.client
+      .invoke<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
+        id,
+      })
+      .catch((err) => {
+        this.logger.error('Failed getting block by id');
+        throw new Error(err);
+      });
+  }
+
+  // What to do when this fails?
+  /////////
+  public async getBlocksFromNode(args: { from: number; to: number }): Promise<Block[]> {
     const blocks = await this.client
-      .invoke<BlockByHeight[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
+      .invoke<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
         from: args.from,
         to: args.to,
       })

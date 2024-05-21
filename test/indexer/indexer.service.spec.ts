@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IndexerService, IndexerState } from '../../src/indexer/indexer.service';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { newBlockArrayMock, newBlockEventMock } from 'test/mock-values/node-api-mocks';
-import { timeout } from 'src/utils/helpers';
+import { waitTimeout } from 'src/utils/helpers';
 
 class MockNodeApiService {
   getNodeInfo = jest.fn().mockResolvedValue({ height: 5, genesisHeight: 0 });
@@ -38,7 +38,7 @@ describe('IndexerService', () => {
   it('should sync and set states on module init', async () => {
     expect(indexerService.state).toBe(IndexerState.SYNCING);
     await indexerService.onModuleInit();
-    await timeout(1000);
+    await waitTimeout(1000);
     expect(indexerService.nextBlockToSync).toBe(6);
     expect(debugSpy).toHaveBeenCalledTimes(6);
     expect(indexerService.state).toBe(IndexerState.INDEXING);

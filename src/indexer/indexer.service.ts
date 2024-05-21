@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
 import { NodeApiService } from 'src/node-api/node-api.service';
-import { BlockByHeight, NewBlockEvent } from 'src/node-api/types';
+import { Block, NewBlockEvent } from 'src/node-api/types';
+import { lastValueFrom } from 'rxjs';
 
 export enum IndexerState {
   SYNCING,
@@ -40,14 +41,14 @@ export class IndexerService {
         }),
       ]);
 
-      this.newBlockByHeight(blocks);
+      this.newBlock(blocks);
       this.nextBlockToSync = blocks.at(-1).header.height + 1;
       if (this.nextBlockToSync > nodeInfo.height) this.state = IndexerState.INDEXING;
     }
   }
 
   private async subscribeToNewBlock(): Promise<void> {
-    this.nodeApiService.subscribeToNewBlock((newBlockData: NewBlockEvent) => {
+    this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
       const newBlockHeight = newBlockData.blockHeader.height;
       if (this.state === IndexerState.SYNCING)
         return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
@@ -59,20 +60,18 @@ export class IndexerService {
         setImmediate(() => this.syncWithNode());
         return;
       }
-      this.newBlockEvent(newBlockData);
+
+      const block = await this.nodeApiService.getBlockById(newBlockData.blockHeader.id);
+      this.newBlock([block]);
       this.nextBlockToSync = newBlockHeight + 1;
     });
   }
 
   // These functions will probably be combined and move to the queue class
-  private newBlockByHeight(blocks: BlockByHeight[]): void {
+  private newBlock(blocks: Block[]): void {
     // this will go the the Event queue
     for (const block of blocks) {
       this.logger.debug(`New block event for ${block.header.height}`);
     }
-  }
-  private newBlockEvent(block: NewBlockEvent): void {
-    // this will go the the Event queue
-    this.logger.debug(`New block event for ${block.blockHeader.height}`);
   }
 }
