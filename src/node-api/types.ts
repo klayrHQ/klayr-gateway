@@ -21,7 +21,7 @@ export interface BlockHeader {
   id: string;
 }
 
-export interface BlockByHeight {
+export interface Block {
   header: BlockHeader;
 }
 export interface NewBlockEvent {

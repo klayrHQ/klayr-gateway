@@ -1,4 +1,4 @@
-import { NewBlockEvent } from 'src/node-api/types';
+import { Block, NewBlockEvent } from 'src/node-api/types';
 
 export const newBlockEventMock: NewBlockEvent = {
   blockHeader: {
@@ -27,7 +27,7 @@ export const newBlockEventMock: NewBlockEvent = {
   },
 };
 
-export const newBlockArrayMock: NewBlockEvent[] = [
+export const newBlockArrayMock: Block[] = [
   {
     header: {
       version: 0,
