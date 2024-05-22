@@ -8,6 +8,8 @@ export enum Events {
   NEW_BLOCK_EVENT = 'new.block.event',
 }
 
+// Will push all events to the an event queue
+// Worker will emit the events in order through the eventEmitter
 @Injectable()
 export class EventService {
   private readonly logger = new Logger(EventService.name);

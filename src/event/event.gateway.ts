@@ -5,6 +5,7 @@ import { Block } from 'src/node-api/types';
 import { Events } from './event.service';
 import { Logger } from '@nestjs/common';
 
+// Websocket gateway to emit events to the client
 @WebSocketGateway({
   cors: {
     origin: '*', // TODO: Change this to the actual origin, later
