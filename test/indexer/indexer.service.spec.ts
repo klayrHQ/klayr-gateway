@@ -3,6 +3,7 @@ import { IndexerService, IndexerState } from '../../src/indexer/indexer.service'
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { newBlockArrayMock, newBlockEventMock } from 'test/mock-values/node-api-mocks';
 import { waitTimeout } from 'src/utils/helpers';
+import { EventService } from 'src/event/event.service';
 
 class MockNodeApiService {
   getNodeInfo = jest.fn().mockResolvedValue({ height: 5, genesisHeight: 0 });
@@ -10,19 +11,27 @@ class MockNodeApiService {
   subscribeToNewBlock = jest.fn().mockResolvedValue(newBlockEventMock);
 }
 
+class MockEventService {
+  pushToBlockEventQ = jest.fn();
+}
+
 describe('IndexerService', () => {
   let indexerService: IndexerService;
   let nodeApiService: NodeApiService;
-  let debugSpy: jest.SpyInstance;
+  let eventService: EventService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [IndexerService, { provide: NodeApiService, useClass: MockNodeApiService }],
+      providers: [
+        IndexerService,
+        { provide: NodeApiService, useClass: MockNodeApiService },
+        { provide: EventService, useClass: MockEventService },
+      ],
     }).compile();
 
     indexerService = module.get<IndexerService>(IndexerService);
     nodeApiService = module.get<NodeApiService>(NodeApiService);
-    debugSpy = jest.spyOn(indexerService.logger, 'debug').mockImplementation();
+    eventService = module.get<EventService>(EventService);
   });
 
   it('should be defined', () => {
@@ -40,7 +49,7 @@ describe('IndexerService', () => {
     await indexerService.onModuleInit();
     await waitTimeout(1000);
     expect(indexerService.nextBlockToSync).toBe(6);
-    expect(debugSpy).toHaveBeenCalledTimes(6);
+    expect(eventService.pushToBlockEventQ).toHaveBeenCalledTimes(6);
     expect(indexerService.state).toBe(IndexerState.INDEXING);
   });
 

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
-import { lastValueFrom } from 'rxjs';
+import { EventService } from 'src/event/event.service';
 
 export enum IndexerState {
   SYNCING,
@@ -15,11 +15,14 @@ export enum IndexerState {
 // When received block height > `nextBlockToSync` will go back to `SYNCING`
 @Injectable()
 export class IndexerService {
-  public readonly logger = new Logger(IndexerService.name);
+  private readonly logger = new Logger(IndexerService.name);
   public nextBlockToSync: number; // Probably will go to DB?
   public state: IndexerState;
 
-  constructor(private readonly nodeApiService: NodeApiService) {
+  constructor(
+    private readonly nodeApiService: NodeApiService,
+    private readonly eventService: EventService,
+  ) {
     this.state = IndexerState.SYNCING;
   }
 
@@ -67,11 +70,9 @@ export class IndexerService {
     });
   }
 
-  // These functions will probably be combined and move to the queue class
   private newBlock(blocks: Block[]): void {
-    // this will go the the Event queue
     for (const block of blocks) {
-      this.logger.debug(`New block event for ${block.header.height}`);
+      this.eventService.pushToBlockEventQ(block);
     }
   }
 }

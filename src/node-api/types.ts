@@ -25,7 +25,7 @@ export interface Block {
   header: BlockHeader;
 }
 export interface NewBlockEvent {
-  blockHeader: BlockHeader;
+  [key: string]: BlockHeader;
 }
 
 export interface NodeInfo {
