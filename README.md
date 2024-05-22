@@ -28,6 +28,7 @@ first npm install and npm run build in the test/test-node folder.
 ```bash
 $ npm run start:test-node
 ```
+
 ## Test
 
 ```bash
@@ -41,3 +42,12 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Prisma
+
+### For dev.db
+
+npx prisma migrate dev --preview-feature --schema prisma/schema.prisma
+
+### For test.db
+
+npx prisma migrate dev --preview-feature --schema prisma/test-schema.prisma
