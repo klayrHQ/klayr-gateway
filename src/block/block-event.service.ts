@@ -21,5 +21,9 @@ export class BlockEventService {
         create: payload.header.aggregateCommit,
       },
     });
+
+    // emit tx events
+    // emit asset event
+    // emit event events (chain event)
   }
 }

@@ -25,10 +25,10 @@ model Block {
 }
 
 model AggregateCommit {
-  id                   Int      @default(autoincrement()) @id
+  id                   Int     @default(autoincrement()) @id
   height               Int      
-  aggregationBits      String
-  certificateSignature String
+  aggregationBits      String?
+  certificateSignature String?
   block                Block?
 }
 

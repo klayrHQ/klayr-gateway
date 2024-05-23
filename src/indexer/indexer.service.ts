@@ -27,6 +27,8 @@ export class IndexerService {
   }
 
   async onModuleInit() {
+    // TODO: Check if geneis is different
+    // no sig and generator different
     this.nextBlockToSync = (await this.nodeApiService.getNodeInfo()).genesisHeight;
 
     // Errors will be unhandled
