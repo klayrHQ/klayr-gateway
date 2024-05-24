@@ -1,0 +1,8 @@
+{
+  "rpc": {
+    "modes": ["ipc", "http", "ws"],
+    "port": 7887,
+    "host": "127.0.0.1",
+    "allowedMethods": ["*"]
+  }
+}
