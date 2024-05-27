@@ -53,10 +53,8 @@ describe('BlockEventService', () => {
   it('should create a block and retrieve it from test DB', async () => {
     const block: Block = testBlock;
 
-    await eventService.createBlock(block);
+    await eventService.createBlock([block]);
     const createdBlock = await repoService.getBlock({ id: block.header.id });
-
-    console.log({ createdBlock });
 
     expect(createdBlock).toBeDefined();
     expect(createdBlock.id).toBe(block.header.id);

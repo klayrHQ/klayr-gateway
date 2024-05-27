@@ -23,5 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run prisma
+        run: npx prisma migrate dev --preview-feature --schema prisma/test-schema.prisma
+
       - name: Run tests
         run: npm run test

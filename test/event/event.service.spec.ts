@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventService } from '../../src/event/event.service';
+import { EventService, Events } from '../../src/event/event.service';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { newBlockArrayMock } from 'test/mock-values/node-api-mocks';
 
@@ -26,8 +26,8 @@ describe('EventService', () => {
   it('should emit event', async () => {
     const blockEvents = newBlockArrayMock;
     for (const block of blockEvents) {
-      await service.pushToBlockEventQ(block);
-      expect(eventEmitterSpy).toHaveBeenCalledWith('new.block.event', block);
+      await service.pushToBlockEventQ({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
+      expect(eventEmitterSpy).toHaveBeenCalledWith('new.blocks.event', [block]);
     }
   });
 });

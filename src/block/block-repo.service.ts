@@ -9,7 +9,6 @@ export class BlockRepoService {
   public async getBlock(
     blockWhereUniqueInput: Prisma.BlockWhereUniqueInput,
   ): Promise<Block | null> {
-    console.log(blockWhereUniqueInput);
     return this.prisma.block.findUnique({
       where: blockWhereUniqueInput,
       include: { aggregateCommit: true },
@@ -33,17 +32,11 @@ export class BlockRepoService {
     });
   }
 
-  // TODO: Combine functions?
-  public async createBlocks(createBlockPromises: any[]): Promise<Block[]> {
+  public async createBlocksTx(createBlockPromises: any[]): Promise<Block[]> {
     return this.prisma.$transaction(createBlockPromises);
   }
 
-  // TODO: Combine functions?
-  public createBlockPromises(createBlockInput: Prisma.BlockCreateInput): PrismaPromise<Block> {
-    return this.prisma.block.create({ data: createBlockInput });
-  }
-
-  public async createBlock(createBlockInput: Prisma.BlockCreateInput): Promise<Block> {
+  public createBlocks(createBlockInput: Prisma.BlockCreateInput): PrismaPromise<Block> {
     return this.prisma.block.create({ data: createBlockInput });
   }
 
@@ -63,4 +56,21 @@ export class BlockRepoService {
       where,
     });
   }
+
+  // NOT USING FOR NOW BUT CAN BE HANDY LATER
+  // public async createAggregateCommitBulk(
+  //   aggregateCommits: Prisma.AggregateCommitCreateManyInput[],
+  // ): Promise<Prisma.BatchPayload> {
+  //   return this.prisma.aggregateCommit.createMany({
+  //     data: aggregateCommits,
+  //   });
+  // }
+
+  // public async createBlocksBulk(
+  //   blocks: Prisma.BlockCreateManyInput[],
+  // ): Promise<Prisma.BatchPayload> {
+  //   return this.prisma.block.createMany({
+  //     data: blocks,
+  //   });
+  // }
 }

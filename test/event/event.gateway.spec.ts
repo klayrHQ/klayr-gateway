@@ -25,6 +25,6 @@ describe('EventGateway', () => {
   it('should emit new block event', () => {
     const mockNewEventBlock = newBlockArrayMock[0];
     gateway.emitNewBlockEvent(mockNewEventBlock);
-    expect(server.emit).toHaveBeenCalledWith(Events.NEW_BLOCK_EVENT, mockNewEventBlock);
+    expect(server.emit).toHaveBeenCalledWith(Events.NEW_BLOCKS_EVENT, mockNewEventBlock);
   });
 });

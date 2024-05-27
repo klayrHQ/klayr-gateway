@@ -17,9 +17,9 @@ export class EventGateway {
   @WebSocketServer()
   server: Server;
 
-  @OnEvent(Events.NEW_BLOCK_EVENT)
+  @OnEvent(Events.NEW_BLOCKS_EVENT)
   emitNewBlockEvent(payload: Block) {
     if (!this.server) return this.logger.error('Server is not initialized');
-    this.server.emit(Events.NEW_BLOCK_EVENT, payload);
+    this.server.emit(Events.NEW_BLOCKS_EVENT, payload);
   }
 }

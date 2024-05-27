@@ -49,7 +49,7 @@ describe('IndexerService', () => {
     await indexerService.onModuleInit();
     await waitTimeout(1000);
     expect(indexerService.nextBlockToSync).toBe(6);
-    expect(eventService.pushToBlockEventQ).toHaveBeenCalledTimes(6);
+    expect(eventService.pushToBlockEventQ).toHaveBeenCalledTimes(1);
     expect(indexerService.state).toBe(IndexerState.INDEXING);
   });
 

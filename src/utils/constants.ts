@@ -16,4 +16,5 @@ export enum NodeApi {
 ///       Indexer        ///
 ////////////////////////////
 
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 1000; // to config
+export const KEY_NEXT_BLOCK_TO_SYNC = 1;
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 250; // to config

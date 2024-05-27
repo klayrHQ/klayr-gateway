@@ -5,13 +5,12 @@ import type { queueAsPromised } from 'fastq';
 import { Block } from 'src/node-api/types';
 
 export enum Events {
-  NEW_BLOCK_EVENT = 'new.block.event',
-  NEW_BATCH_BLOCK_EVENT = 'new.batch.block.event',
+  NEW_BLOCKS_EVENT = 'new.blocks.event',
 }
 
 export interface BlockEvent {
   event: Events;
-  block: Block | Block[];
+  blocks: Block[];
 }
 
 interface GeneralEvent {
@@ -47,8 +46,8 @@ export class EventService {
 
   // No need for a try-catch block, fastq handles errors automatically
   private async blockEventWorker(blockEvent: BlockEvent): Promise<void> {
-    const { event, block } = blockEvent;
-    this.eventEmitter.emit(event, block);
+    const { event, blocks } = blockEvent;
+    this.eventEmitter.emit(event, blocks);
   }
   private async generalEventWorker({ event, message }): Promise<void> {
     this.eventEmitter.emit(event, message);
