@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Block, NextBlockToSync, Prisma } from '@prisma/client';
+import { NextBlockToSync } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { KEY_NEXT_BLOCK_TO_SYNC } from 'src/utils/constants';
 
@@ -14,8 +14,8 @@ export class IndexerRepoService {
         where: { id: KEY_NEXT_BLOCK_TO_SYNC },
       })
       .catch((error) => {
-        this.logger.error('Failed to get next block to sync:', error);
-        throw error; // re-throw the error after logging
+        this.logger.error('Failed to get next block to sync:');
+        throw new Error(error); // re-throw the error after logging
       });
   }
 
@@ -28,8 +28,8 @@ export class IndexerRepoService {
         },
       })
       .catch((error) => {
-        this.logger.error('Failed to set next block to sync:', error);
-        throw error; // re-throw the error after logging
+        this.logger.error('Failed to set next block to sync:');
+        throw new Error(error); // re-throw the error after logging
       });
   }
 
@@ -42,8 +42,8 @@ export class IndexerRepoService {
         where: { id: KEY_NEXT_BLOCK_TO_SYNC },
       })
       .catch((error) => {
-        this.logger.error('Failed to update next block to sync:', error);
-        throw error; // re-throw the error after logging
+        this.logger.error('Failed to update next block to sync:');
+        throw new Error(error); // re-throw the error after logging
       });
   }
 }

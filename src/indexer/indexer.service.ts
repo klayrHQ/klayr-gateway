@@ -4,6 +4,7 @@ import { NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
 import { BlockEvent, EventService, Events } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
+import { waitTimeout } from 'src/utils/helpers';
 
 export enum IndexerState {
   SYNCING,
@@ -21,18 +22,17 @@ export class IndexerService {
   public state: IndexerState;
 
   constructor(
+    private readonly indexerRepoService: IndexerRepoService,
     private readonly nodeApiService: NodeApiService,
     private readonly eventService: EventService,
-    private readonly indexerRepoService: IndexerRepoService,
   ) {
     this.state = IndexerState.SYNCING;
   }
 
-  async onModuleInit() {
-    // TODO: Check if genesis is different
+  async onApplicationBootstrap() {
+    // TODO: Check if genesis is different, it is
     // no sig and generator different
     const nextBlockToSync = (await this.nodeApiService.getNodeInfo()).genesisHeight;
-
     await this.indexerRepoService.setNextBlockToSync({ height: nextBlockToSync });
 
     // Errors will be unhandled
@@ -62,12 +62,11 @@ export class IndexerService {
   }
 
   private async subscribeToNewBlock(): Promise<void> {
-    const nextBlockToSync = (await this.indexerRepoService.getNextBlockToSync()).height;
-
     this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
+      const nextBlockToSync = (await this.indexerRepoService.getNextBlockToSync()).height;
       const newBlockHeight = newBlockData.blockHeader.height;
       if (this.state === IndexerState.SYNCING)
-        return this.logger.log(`Syncing: Current height ${nextBlockToSync}`);
+        return this.logger.log(`Syncing: Current height ${nextBlockToSync - 1}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`
       if (newBlockHeight > nextBlockToSync) {

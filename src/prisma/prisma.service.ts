@@ -1,12 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { KEY_NEXT_BLOCK_TO_SYNC } from 'src/utils/constants';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name);
   private static hasBeenInitialized = false;
 
+  // for DEV, should be fixed later
   async onModuleInit() {
     if (PrismaService.hasBeenInitialized) {
       return;
@@ -22,8 +22,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async DEVonlyClearDB() {
-    await this.nextBlockToSync.deleteMany({});
+    await this.asset.deleteMany({});
     await this.block.deleteMany({});
     await this.aggregateCommit.deleteMany({});
+    await this.nextBlockToSync.deleteMany({});
   }
 }

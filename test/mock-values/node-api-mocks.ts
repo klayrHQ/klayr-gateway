@@ -1,4 +1,28 @@
 import { Block, NewBlockEvent } from 'src/node-api/types';
+export const mockTransactions = [
+  {
+    module: 'token',
+    command: 'transfer',
+    nonce: '2',
+    fee: '10000000',
+    senderPublicKey: '0fe9a3f1a21b5530f27f87a414b549e79a940bf24fdf2b2f05e7f22aeeecc86a',
+    params: '0fe9a3f1a21b5530f27f87a414b549e79',
+    signatures: [
+      '3cc8c8c81097fe59d9df356b3c3f1dd10f619bfabb54f5d187866092c67e0102c64dbe24f357df493cc7ebacdd2e55995db8912245b718d88ebf7f4f4ac01f04',
+    ],
+  },
+  {
+    module: 'token',
+    command: 'transfer',
+    nonce: '3',
+    fee: '20000000',
+    senderPublicKey: '1fe9a3f1a21b5530f27f87a414b549e79a940bf24fdf2b2f05e7f22aeeecc86b',
+    params: '1fe9a3f1a21b5530f27f87a414b549e79',
+    signatures: [
+      '4cc8c8c81097fe59d9df356b3c3f1dd10f619bfabb54f5d187866092c67e0102c64dbe24f357df493cc7ebacdd2e55995db8912245b718d88ebf7f4f4ac01f05',
+    ],
+  },
+];
 
 export const newBlockEventMock: NewBlockEvent = {
   blockHeader: {
@@ -47,7 +71,7 @@ export const testBlock: Block = {
       'f0bb850e7b5be5e86e5d194ba4e94d2da2967c50afe07b361d2f68a184685f0229832dcb1860780913c1cd3bd03da67960d73bdaf4e566ee79f67fb9c6ef7800',
     id: '58ff0ed82917cfb22417daed4876473a37d11719371bd1200dd54f2dc80f422e',
   },
-  transactions: [],
+  transactions: mockTransactions,
   assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
 };
 
@@ -76,6 +100,8 @@ export const newBlockArrayMock: Block[] = [
       signature: '',
       id: 'eafcbecc4978e827f6d12a982c90574636edc20f567010abf4902452ee7a2702',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
   {
     header: {
@@ -102,6 +128,8 @@ export const newBlockArrayMock: Block[] = [
         'a790eac3b0d238319f720bb626aa43e100e3bbfce5252260ae0c95ba122bc140bd73ccbad5d073a96d347f006f6192623ba6e15d7829d16dd22e7785c8bb3c01',
       id: '51a95ba951de6ea97912cac45cf511353edd12df78469b511c208a0d4554a32a',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
   {
     header: {
@@ -128,6 +156,8 @@ export const newBlockArrayMock: Block[] = [
         'aaf049771521bab9a4ed716531c31743c77f7cc70b5c1ce465c1dd25b2e861f21396035f10d87609cc0bc9893e86bb8788b0b6609ee930b02f8ef88be960bd0f',
       id: 'cde5657a9d5c1204a72d3b3ad68df8037aa68165131085a92608d58c1892b74d',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
   {
     header: {
@@ -154,6 +184,8 @@ export const newBlockArrayMock: Block[] = [
         'fd343ee6e621b5d499edab755cb6c11f88c4da02657d392ec13194d0df4b7556aeace51414608166f20e6fae921588d4822bb941a67f38fb5a808a8a9483140a',
       id: 'f1e127290f3868937655401f65d3d7de3618340e6f2df7654b6e8e7b7e5618a8',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
   {
     header: {
@@ -180,6 +212,8 @@ export const newBlockArrayMock: Block[] = [
         '971a312414e33154d0f10f9427cecdcf45178fda1f0a9aad68b2f3fa1d57d821ab74cead6a42efa03314922118c0e5c98b882664438c2f29d59cf00dc702a60c',
       id: '8c978cb33043050b4a116e111dd3e6bade923b889d194110d4424d8cb6d3dee6',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
   {
     header: {
@@ -206,5 +240,7 @@ export const newBlockArrayMock: Block[] = [
         'b93b20f02b46137fcf7cfccfd584b29a38e369947acde912ba5c24f1bcba3af19d0ec1565d964afd79047810c349d65ac20799daf866e4a1dacfccfd96c94f00',
       id: 'e8f28274af5be70684fede7b5a85985556cb5afa857fa2e3f8f5e8212be7654b',
     },
+    transactions: mockTransactions,
+    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
   },
 ];

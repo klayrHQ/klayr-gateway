@@ -25,17 +25,28 @@ model Block {
   maxHeightGenerated Int
   impliesMaxPrevotes Boolean
   signature         String
-  aggregateCommit     AggregateCommit  @relation(fields: [aggregateCommitId], references: [id])
-  aggregateCommitId   Int @unique
+  aggregateCommit     AggregateCommit @relation(fields: [aggregateCommitId], references: [id])
+  aggregateCommitId   Int
+  assets               Asset[] 
 }
+
 
 model AggregateCommit {
   id                   Int     @default(autoincrement()) @id
-  height               Int      
-  aggregationBits      String?
-  certificateSignature String?
-  block                Block?
+  height               Int     
+  aggregationBits      String
+  certificateSignature String
+  blocks               Block[]
 }
+
+model Asset {
+  id        Int     @default(autoincrement()) @id
+  height    Int     
+  module    String
+  data      String
+  block     Block @relation(fields: [height], references: [height])
+}
+
 
 generator client {
   provider = "prisma-client-js"
@@ -45,3 +56,5 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+

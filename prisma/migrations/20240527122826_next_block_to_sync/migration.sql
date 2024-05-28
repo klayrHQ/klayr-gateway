@@ -1,5 +1,0 @@
--- CreateTable
-CREATE TABLE "NextBlockToSync" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT DEFAULT 1,
-    "height" INTEGER NOT NULL
-);

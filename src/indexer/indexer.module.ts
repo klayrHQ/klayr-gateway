@@ -8,6 +8,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Module({
   imports: [NodeApiModule, EventModule],
   controllers: [],
-  providers: [PrismaService, IndexerService, IndexerRepoService],
+  providers: [PrismaService, IndexerRepoService, IndexerService],
 })
 export class IndexerModule {}

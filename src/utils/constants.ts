@@ -17,4 +17,4 @@ export enum NodeApi {
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 250; // to config
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 500; // Can go to 5k or 10k

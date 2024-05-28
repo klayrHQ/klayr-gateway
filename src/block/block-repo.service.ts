@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Block, Prisma, PrismaPromise } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+// TODO: Error handling in here or at calls
 @Injectable()
 export class BlockRepoService {
   constructor(private prisma: PrismaService) {}
@@ -32,8 +33,8 @@ export class BlockRepoService {
     });
   }
 
-  public async createBlocksTx(createBlockPromises: any[]): Promise<Block[]> {
-    return this.prisma.$transaction(createBlockPromises);
+  public async createBlocksTx(createBlockFunctions: PrismaPromise<Block>[]): Promise<Block[]> {
+    return this.prisma.$transaction(createBlockFunctions);
   }
 
   public createBlocks(createBlockInput: Prisma.BlockCreateInput): PrismaPromise<Block> {
@@ -57,20 +58,19 @@ export class BlockRepoService {
     });
   }
 
-  // NOT USING FOR NOW BUT CAN BE HANDY LATER
-  // public async createAggregateCommitBulk(
-  //   aggregateCommits: Prisma.AggregateCommitCreateManyInput[],
-  // ): Promise<Prisma.BatchPayload> {
-  //   return this.prisma.aggregateCommit.createMany({
-  //     data: aggregateCommits,
-  //   });
-  // }
+  public async createAggregateCommitBulk(
+    aggregateCommits: Prisma.AggregateCommitCreateManyInput[],
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.aggregateCommit.createMany({
+      data: aggregateCommits,
+    });
+  }
 
-  // public async createBlocksBulk(
-  //   blocks: Prisma.BlockCreateManyInput[],
-  // ): Promise<Prisma.BatchPayload> {
-  //   return this.prisma.block.createMany({
-  //     data: blocks,
-  //   });
-  // }
+  public async createBlocksBulk(
+    blocks: Prisma.BlockCreateManyInput[],
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.block.createMany({
+      data: blocks,
+    });
+  }
 }

@@ -1,3 +1,9 @@
+export interface Block {
+  header: BlockHeader;
+  transactions: Transaction[]; // TODO
+  assets: Asset[];
+}
+
 export interface BlockHeader {
   version: number;
   timestamp: number;
@@ -21,11 +27,21 @@ export interface BlockHeader {
   id: string;
 }
 
-export interface Block {
-  header: BlockHeader;
-  transactions?: any[]; // TODO
-  assets?: any[]; // TODO
+export interface Transaction {
+  module: string;
+  command: string;
+  params: string;
+  nonce: string;
+  fee: string;
+  senderPublicKey: string;
+  signatures: string[];
 }
+
+export interface Asset {
+  module: string;
+  data: string;
+}
+
 export interface NewBlockEvent {
   [key: string]: BlockHeader;
 }

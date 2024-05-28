@@ -30,7 +30,7 @@ export class EventService {
 
   constructor(private eventEmitter: EventEmitter2) {
     this.blockEventWorker = this.blockEventWorker.bind(this);
-    this.blockEventQ = fastq.promise(this.blockEventWorker, 5);
+    this.blockEventQ = fastq.promise(this.blockEventWorker, 1);
   }
 
   async pushToBlockEventQ(blockEvent: BlockEvent) {

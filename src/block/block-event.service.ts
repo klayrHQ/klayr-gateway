@@ -13,18 +13,33 @@ export class BlockEventService {
   @OnEvent(Events.NEW_BLOCKS_EVENT)
   async createBlock(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
+    // this.logger.debug(payload.at(0));
     // console.log(payload);
+    // payload.map(({ header }) => console.log(header));
 
-    const createBlockPromises = payload.map((blockInput) =>
+    const createBlockPromises = payload.map((block) =>
       this.blockRepo.createBlocks({
-        ...blockInput.header,
+        ...block.header,
         aggregateCommit: {
-          create: blockInput.header.aggregateCommit,
+          create: block.header.aggregateCommit,
         },
       }),
     );
 
     await this.blockRepo.createBlocksTx(createBlockPromises);
+
+    // const allTransactions = payload.map((block: Block) => ({
+    //   height: block.header.height,
+    //   transactions: block.transactions,
+    // }));
+
+    // const allAssets = payload.map((block: Block) => ({
+    //   height: block.header.height,
+    //   assets: block.assets,
+    // }));
+
+    // console.log(allTransactions);
+    // console.log(allAssets);
 
     // emit tx events
     // emit asset event
