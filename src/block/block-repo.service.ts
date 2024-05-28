@@ -58,6 +58,7 @@ export class BlockRepoService {
     });
   }
 
+  // NOT USED for now, tested same speed as createBlocksTx
   public async createAggregateCommitBulk(
     aggregateCommits: Prisma.AggregateCommitCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {
@@ -66,6 +67,7 @@ export class BlockRepoService {
     });
   }
 
+  // NOT USED for now, tested same speed as createBlocksTx
   public async createBlocksBulk(
     blocks: Prisma.BlockCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {

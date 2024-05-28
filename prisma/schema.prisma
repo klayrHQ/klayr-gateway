@@ -10,33 +10,33 @@ model NextBlockToSync {
 }
 
 model Block {
-  height          Int     @id @unique
-  id              String   @unique
-  version         Int
-  timestamp       Int
-  previousBlockID String
-  stateRoot       String
-  assetRoot       String
-  eventRoot       String
-  transactionRoot String
-  validatorsHash   String
-  generatorAddress String
-  maxHeightPrevoted Int
-  maxHeightGenerated Int
-  impliesMaxPrevotes Boolean
-  signature         String
-  aggregateCommit     AggregateCommit @relation(fields: [aggregateCommitId], references: [id])
-  aggregateCommitId   Int
-  assets               Asset[] 
+  height                Int      @id @unique
+  id                    String   @unique
+  version               Int
+  timestamp             Int
+  previousBlockID       String
+  stateRoot             String
+  assetRoot             String
+  eventRoot             String
+  transactionRoot       String
+  validatorsHash        String
+  generatorAddress      String
+  maxHeightPrevoted     Int
+  maxHeightGenerated    Int
+  impliesMaxPrevotes    Boolean
+  signature             String
+  aggregateCommit       AggregateCommit?
+  assets                Asset[] 
 }
 
 
 model AggregateCommit {
-  id                   Int     @default(autoincrement()) @id
+  id                   Int      @default(autoincrement()) @id
   height               Int     
   aggregationBits      String
   certificateSignature String
-  blocks               Block[]
+  block                Block    @relation(fields: [blockHeight], references: [height])
+  blockHeight          Int      @unique
 }
 
 model Asset {
@@ -44,7 +44,7 @@ model Asset {
   height    Int     
   module    String
   data      String
-  block     Block @relation(fields: [height], references: [height])
+  block     Block   @relation(fields: [height], references: [height])
 }
 
 
