@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Events } from 'src/event/event.service';
+import { EventService, Events } from 'src/event/event.service';
 import { Block } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 
@@ -8,7 +8,10 @@ import { BlockRepoService } from './block-repo.service';
 export class BlockEventService {
   private readonly logger = new Logger(BlockEventService.name);
 
-  constructor(private blockRepo: BlockRepoService) {}
+  constructor(
+    private blockRepo: BlockRepoService,
+    private eventService: EventService,
+  ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
   async createBlock(payload: Block[]) {
@@ -33,16 +36,17 @@ export class BlockEventService {
     //   transactions: block.transactions,
     // }));
 
-    // const allAssets = payload.map((block: Block) => ({
-    //   height: block.header.height,
-    //   assets: block.assets,
-    // }));
+    const allAssets = payload.map((block: Block) => ({
+      height: block.header.height,
+      assets: block.assets,
+    }));
 
-    // console.log(allTransactions);
-    // console.log(allAssets);
-
-    // emit tx events
+    this.eventService.pushToAssetsEventQ({
+      event: Events.NEW_ASSETS_EVENT,
+      assets: allAssets,
+    });
     // emit asset event
+    // emit tx events
     // emit event events (chain event)
   }
 }

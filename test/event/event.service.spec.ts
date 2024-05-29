@@ -23,11 +23,17 @@ describe('EventService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should emit event', async () => {
+  it('should emit block event', async () => {
     const blockEvents = newBlockArrayMock;
     for (const block of blockEvents) {
       await service.pushToBlockEventQ({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
       expect(eventEmitterSpy).toHaveBeenCalledWith('new.blocks.event', [block]);
     }
+  });
+
+  it('should emit asset event', async () => {
+    const assets = [{ height: 1, assets: [] }];
+    await service.pushToAssetsEventQ({ event: Events.NEW_ASSETS_EVENT, assets });
+    expect(eventEmitterSpy).toHaveBeenCalledWith('new.assets.event', assets);
   });
 });

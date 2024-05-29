@@ -22,9 +22,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async DEVonlyClearDB() {
+    await this.asset.deleteMany({});
     await this.aggregateCommit.deleteMany({});
     await this.block.deleteMany({});
-    await this.asset.deleteMany({});
     await this.nextBlockToSync.deleteMany({});
   }
 }

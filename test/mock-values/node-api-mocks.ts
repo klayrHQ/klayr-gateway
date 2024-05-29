@@ -78,9 +78,9 @@ export const testBlock: Block = {
 export const newBlockArrayMock: Block[] = [
   {
     header: {
-      version: 0,
+      version: 2,
       timestamp: 1715848131,
-      height: 0,
+      height: 5,
       previousBlockID: '0000000000000000000000000000000000000000000000000000000000000000',
       stateRoot: '7f90bc94ce3ca10cc1700c095119aa4b4070b7e186644eb68419feef4d339a5d',
       assetRoot: 'c5213526c655da499031ea27a9aca7da32cf8a30ef0946113f90a66b136d88be',
@@ -107,7 +107,7 @@ export const newBlockArrayMock: Block[] = [
     header: {
       version: 2,
       timestamp: 1715848423,
-      height: 1,
+      height: 4,
       previousBlockID: 'eafcbecc4978e827f6d12a982c90574636edc20f567010abf4902452ee7a2702',
       stateRoot: 'a48a787d8c4811e135652cb1b8a6e9c70120fe98e6be83104ca4491a20053d87',
       assetRoot: 'cbae13ff2c54ed0186fc1105793609b95737f2332636ea3a2e7a2a4572bc8e72',
@@ -135,7 +135,7 @@ export const newBlockArrayMock: Block[] = [
     header: {
       version: 2,
       timestamp: 1715848463,
-      height: 2,
+      height: 3,
       previousBlockID: '51a95ba951de6ea97912cac45cf511353edd12df78469b511c208a0d4554a32a',
       stateRoot: 'debc543e344b94b1e77cc075d76a0cdaff22fc2377d6150240aa4c4cf7b2157f',
       assetRoot: '034d35b499684cc69b0b6c46646c117fdd6162b6a20a5d2d22d7b62360b18853',
@@ -163,7 +163,7 @@ export const newBlockArrayMock: Block[] = [
     header: {
       version: 2,
       timestamp: 1715850573,
-      height: 3,
+      height: 2,
       previousBlockID: 'cde5657a9d5c1204a72d3b3ad68df8037aa68165131085a92608d58c1892b74d',
       stateRoot: '629554d8e59f65b10d118cacc1edcf5904461199d1d62b0ccdf2709cb0bed112',
       assetRoot: '1782b06b1f7e93916a0ad4486063f96889f6e8aca392ebaa7d4904b3f4df9d21',
@@ -191,7 +191,7 @@ export const newBlockArrayMock: Block[] = [
     header: {
       version: 2,
       timestamp: 1715850580,
-      height: 4,
+      height: 1,
       previousBlockID: 'f1e127290f3868937655401f65d3d7de3618340e6f2df7654b6e8e7b7e5618a8',
       stateRoot: 'a6731ea8215d5292cd7c957032b062a8237467431757bfb048504c8db34364d9',
       assetRoot: '6735d64f5f9b41b0f315ca37a482153f02b4ebfcae005c059987bf770fe0dd87',
@@ -219,7 +219,7 @@ export const newBlockArrayMock: Block[] = [
     header: {
       version: 2,
       timestamp: 1715850590,
-      height: 5,
+      height: 0,
       previousBlockID: '8c978cb33043050b4a116e111dd3e6bade923b889d194110d4424d8cb6d3dee6',
       stateRoot: 'ab6a8a765b955be6ab0d64a0d39a999af527c0eda79d8cfc45bcc3e3713d5a17',
       assetRoot: 'bd8f808549e7204c7da6d7b3aafab1f7eb3146bd1378fd1b71bf25b8fd3fce6f',

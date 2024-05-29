@@ -1,26 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BlockEventService } from '../../src/block/block-event.service';
 import { Block } from '../../src/node-api/types';
-import { PrismaClient } from '@prisma/client';
-import { newBlockArrayMock, testBlock } from 'test/mock-values/node-api-mocks';
+import { testBlock } from 'test/mock-values/node-api-mocks';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BlockRepoService } from 'src/block/block-repo.service';
+import { PrismaServiceMock, clearDB } from 'test/helpers';
+import { EventService } from 'src/event/event.service';
 
-class PrismaServiceMock extends PrismaClient {
-  constructor() {
-    super({
-      datasources: {
-        db: {
-          url: 'file:db/test.db',
-        },
-      },
-    });
-  }
+class MockEventService {
+  pushToAssetsEventQ = jest.fn();
 }
 
 describe('BlockEventService', () => {
   let repoService: BlockRepoService;
-  let eventService: BlockEventService;
+  let blockEventService: BlockEventService;
+  let eventService: EventService;
   let prisma: PrismaService;
 
   beforeEach(async () => {
@@ -32,29 +26,29 @@ describe('BlockEventService', () => {
           provide: PrismaService,
           useValue: new PrismaServiceMock(),
         },
+        { provide: EventService, useClass: MockEventService },
       ],
     }).compile();
 
     repoService = module.get<BlockRepoService>(BlockRepoService);
-    eventService = module.get<BlockEventService>(BlockEventService);
+    blockEventService = module.get<BlockEventService>(BlockEventService);
+    eventService = module.get<EventService>(EventService);
     prisma = module.get<PrismaService>(PrismaService);
-  });
 
-  // clean db
-  afterAll(async () => {
-    await prisma.$executeRaw`DELETE FROM Block`;
-    await prisma.$executeRaw`DELETE FROM AggregateCommit`;
+    await clearDB(prisma);
   });
 
   it('should be defined', () => {
-    expect(eventService).toBeDefined();
+    expect(blockEventService).toBeDefined();
   });
 
   it('should create a block and retrieve it from test DB', async () => {
     const block: Block = testBlock;
 
-    await eventService.createBlock([block]);
+    await blockEventService.createBlock([block]);
     const createdBlock = await repoService.getBlock({ id: block.header.id });
+
+    expect(eventService.pushToAssetsEventQ).toHaveBeenCalledTimes(1);
 
     expect(createdBlock).toBeDefined();
     expect(createdBlock.id).toBe(block.header.id);

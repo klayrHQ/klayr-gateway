@@ -12,7 +12,7 @@ export class BlockRepoService {
   ): Promise<Block | null> {
     return this.prisma.block.findUnique({
       where: blockWhereUniqueInput,
-      include: { aggregateCommit: true },
+      include: { aggregateCommit: true, assets: true },
     });
   }
 

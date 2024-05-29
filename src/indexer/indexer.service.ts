@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
 import { NodeApiService } from 'src/node-api/node-api.service';
-import { Block, NewBlockEvent } from 'src/node-api/types';
+import { NewBlockEvent } from 'src/node-api/types';
 import { BlockEvent, EventService, Events } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
-import { waitTimeout } from 'src/utils/helpers';
 
 export enum IndexerState {
   SYNCING,
@@ -20,6 +19,7 @@ export class IndexerService {
   private readonly logger = new Logger(IndexerService.name);
   // public nextBlockToSync: number; // Probably will go to DB?
   public state: IndexerState;
+  public nextBlockToSync: number;
 
   constructor(
     private readonly indexerRepoService: IndexerRepoService,
@@ -30,10 +30,11 @@ export class IndexerService {
   }
 
   async onApplicationBootstrap() {
+    // TODO: Continue from saved block in DB
     // TODO: Check if genesis is different, it is
     // no sig and generator different
-    const nextBlockToSync = (await this.nodeApiService.getNodeInfo()).genesisHeight;
-    await this.indexerRepoService.setNextBlockToSync({ height: nextBlockToSync });
+    this.nextBlockToSync = (await this.nodeApiService.getNodeInfo()).genesisHeight;
+    await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
 
     // Errors will be unhandled
     setImmediate(() => this.syncWithNode());
@@ -42,34 +43,35 @@ export class IndexerService {
 
   private async syncWithNode(): Promise<void> {
     while (this.state === IndexerState.SYNCING) {
-      const nextBlockToSync = (await this.indexerRepoService.getNextBlockToSync()).height;
       const [nodeInfo, blocks] = await Promise.all([
         this.nodeApiService.getNodeInfo(),
         this.nodeApiService.getBlocksFromNode({
-          from: nextBlockToSync,
-          to: nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+          from: this.nextBlockToSync,
+          to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
         }),
       ]);
 
+      // modifying the block array here
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 
-      const { height } = await this.indexerRepoService.updateNextBlockToSync({
-        height: blocks.at(-1).header.height + 1,
-      });
+      this.nextBlockToSync = (
+        await this.indexerRepoService.updateNextBlockToSync({
+          height: blocks.at(-1).header.height + 1,
+        })
+      ).height;
 
-      if (height > nodeInfo.height) this.state = IndexerState.INDEXING;
+      if (this.nextBlockToSync > nodeInfo.height) this.state = IndexerState.INDEXING;
     }
   }
 
   private async subscribeToNewBlock(): Promise<void> {
     this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
-      const nextBlockToSync = (await this.indexerRepoService.getNextBlockToSync()).height;
       const newBlockHeight = newBlockData.blockHeader.height;
       if (this.state === IndexerState.SYNCING)
-        return this.logger.log(`Syncing: Current height ${nextBlockToSync - 1}`);
+        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync - 1}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`
-      if (newBlockHeight > nextBlockToSync) {
+      if (newBlockHeight > this.nextBlockToSync) {
         this.state = IndexerState.SYNCING;
         // Errors will be unhandled
         setImmediate(() => this.syncWithNode());
@@ -78,8 +80,10 @@ export class IndexerService {
 
       const block = await this.nodeApiService.getBlockById(newBlockData.blockHeader.id);
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
-      // this.nextBlockToSync = newBlockHeight + 1;
-      await this.indexerRepoService.updateNextBlockToSync({ height: newBlockHeight + 1 });
+
+      this.nextBlockToSync = (
+        await this.indexerRepoService.updateNextBlockToSync({ height: newBlockHeight + 1 })
+      ).height;
     });
   }
 
