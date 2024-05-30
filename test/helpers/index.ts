@@ -18,4 +18,10 @@ export const clearDB = async (prisma: PrismaService) => {
   await prisma.aggregateCommit.deleteMany({});
   await prisma.block.deleteMany({});
   await prisma.nextBlockToSync.deleteMany({});
+
+  // reset autoincrement
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Asset'`;
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='AggregateCommit'`;
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Block'`;
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='NextBlockToSync'`;
 };

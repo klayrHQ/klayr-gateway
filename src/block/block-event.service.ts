@@ -31,23 +31,27 @@ export class BlockEventService {
 
     await this.blockRepo.createBlocksTx(createBlockPromises);
 
-    // const allTransactions = payload.map((block: Block) => ({
-    //   height: block.header.height,
-    //   transactions: block.transactions,
-    // }));
+    const allTransactions = payload.map((block: Block) => ({
+      height: block.header.height,
+      transactions: block.transactions,
+    }));
 
     const allAssets = payload.map((block: Block) => ({
       height: block.header.height,
       assets: block.assets,
     }));
 
-    this.eventService.pushToAssetsEventQ({
+    await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_ASSETS_EVENT,
-      assets: allAssets,
+      payload: allAssets,
     });
-    // emit asset event
-    // emit tx events
-    // emit event events (chain event)
+
+    await this.eventService.pushToTxAndAssetsEventQ({
+      event: Events.NEW_TX_EVENT,
+      payload: allTransactions,
+    });
+
+    // TODO: emit event events (chain event)
   }
 }
 

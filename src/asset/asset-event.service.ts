@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { AssetsWithHeight, Events } from 'src/event/event.service';
+import { Events } from 'src/event/event.service';
 import { AssetRepoService } from './asset-repo.service';
+import { Asset } from 'src/node-api/types';
 
 @Injectable()
 export class AssetEventService {
@@ -11,7 +12,12 @@ export class AssetEventService {
 
   // TODO: Is this map the most efficient way to handle this?
   @OnEvent(Events.NEW_ASSETS_EVENT)
-  async createAsset(payload: AssetsWithHeight[]) {
+  async createAsset(
+    payload: {
+      height: number;
+      assets: Asset[];
+    }[],
+  ) {
     this.logger.debug('Asset module: New asset event');
 
     const assetsInput = payload.flatMap(({ height, assets }) =>

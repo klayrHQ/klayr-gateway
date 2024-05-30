@@ -8,7 +8,7 @@ import { PrismaServiceMock, clearDB } from 'test/helpers';
 import { EventService } from 'src/event/event.service';
 
 class MockEventService {
-  pushToAssetsEventQ = jest.fn();
+  pushToTxAndAssetsEventQ = jest.fn();
 }
 
 describe('BlockEventService', () => {
@@ -48,7 +48,7 @@ describe('BlockEventService', () => {
     await blockEventService.createBlock([block]);
     const createdBlock = await repoService.getBlock({ id: block.header.id });
 
-    expect(eventService.pushToAssetsEventQ).toHaveBeenCalledTimes(1);
+    expect(eventService.pushToTxAndAssetsEventQ).toHaveBeenCalledTimes(2);
 
     expect(createdBlock).toBeDefined();
     expect(createdBlock.id).toBe(block.header.id);

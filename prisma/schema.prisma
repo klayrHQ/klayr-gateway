@@ -39,7 +39,7 @@ model AggregateCommit {
   blockHeight          Int      @unique
 }
 
-// TODO: Most efficient?
+// TODO: TBD and Most efficient?
 model Asset {
   id        Int     @default(autoincrement()) @id
   height    Int     

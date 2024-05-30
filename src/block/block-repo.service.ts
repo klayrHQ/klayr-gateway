@@ -22,14 +22,16 @@ export class BlockRepoService {
     cursor?: Prisma.BlockWhereUniqueInput;
     where?: Prisma.BlockWhereInput;
     orderBy?: Prisma.BlockOrderByWithRelationInput;
+    includeAssets?: boolean;
   }): Promise<Block[]> {
-    const { skip, take, cursor, where, orderBy } = params;
+    const { skip, take, cursor, where, orderBy, includeAssets } = params;
     return this.prisma.block.findMany({
       skip,
       take,
       cursor,
       where,
       orderBy,
+      include: { aggregateCommit: true, assets: includeAssets },
     });
   }
 

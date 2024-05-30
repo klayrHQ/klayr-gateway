@@ -1,8 +1,15 @@
 import { apiClient } from '@klayr/client';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { NODE_URL, NodeApi, RETRY_TIMEOUT } from 'src/utils/constants';
+import { NODE_URL, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import { Block, NewBlockEvent, NodeInfo } from './types';
+
+export enum NodeApi {
+  SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
+  CHAIN_NEW_BLOCK = 'chain_newBlock',
+  CHAIN_GET_BLOCK_BY_ID = 'chain_getBlockByID',
+  CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
+}
 
 // Functions to interact with the Node API
 @Injectable()
@@ -24,36 +31,10 @@ export class NodeApiService {
     }
   }
 
-  // TODO: Decide on error handling
-  public async getBlockById(id: string): Promise<Block> {
-    return this.client
-      .invoke<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
-        id,
-      })
-      .catch((err) => {
-        this.logger.error(err);
-        throw new Error('Failed getting block by id');
-      });
-  }
-
-  // TODO: Decide on error handling
-  public async getBlocksFromNode(args: { from: number; to: number }): Promise<Block[]> {
-    return this.client
-      .invoke<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
-        from: args.from,
-        to: args.to,
-      })
-      .catch((err) => {
-        this.logger.error(err);
-        throw new InternalServerErrorException('Failed to get blocks');
-      });
-  }
-
-  // TODO: Decide on error handling
-  public async getNodeInfo(): Promise<NodeInfo> {
-    return this.client.invoke<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO).catch((err) => {
+  public async invokeApi<T>(endpoint: string, params: any): Promise<T> {
+    return this.client.invoke<T>(endpoint, params).catch((err) => {
       this.logger.error(err);
-      throw new InternalServerErrorException('Failed to get node info');
+      throw new Error(`Failed invoking ${endpoint}`);
     });
   }
 

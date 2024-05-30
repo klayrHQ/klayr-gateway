@@ -33,7 +33,7 @@ describe('EventService', () => {
 
   it('should emit asset event', async () => {
     const assets = [{ height: 1, assets: [] }];
-    await service.pushToAssetsEventQ({ event: Events.NEW_ASSETS_EVENT, assets });
+    await service.pushToTxAndAssetsEventQ({ event: Events.NEW_ASSETS_EVENT, payload: assets });
     expect(eventEmitterSpy).toHaveBeenCalledWith('new.assets.event', assets);
   });
 });

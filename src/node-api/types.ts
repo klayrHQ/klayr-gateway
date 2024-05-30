@@ -38,6 +38,7 @@ export interface Transaction {
 }
 
 export interface Asset {
+  height?: number;
   module: string;
   data: string;
 }

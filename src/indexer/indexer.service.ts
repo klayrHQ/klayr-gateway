@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
-import { NodeApiService } from 'src/node-api/node-api.service';
-import { NewBlockEvent } from 'src/node-api/types';
+import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
+import { Block, NewBlockEvent, NodeInfo } from 'src/node-api/types';
 import { BlockEvent, EventService, Events } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
 
@@ -17,7 +17,6 @@ export enum IndexerState {
 @Injectable()
 export class IndexerService {
   private readonly logger = new Logger(IndexerService.name);
-  // public nextBlockToSync: number; // Probably will go to DB?
   public state: IndexerState;
   public nextBlockToSync: number;
 
@@ -30,35 +29,36 @@ export class IndexerService {
   }
 
   async onApplicationBootstrap() {
-    // TODO: Continue from saved block in DB
     // TODO: Check if genesis is different, it is
     // no sig and generator different
-    this.nextBlockToSync = (await this.nodeApiService.getNodeInfo()).genesisHeight;
-    await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
+    await this.setNextBlockToSync();
 
     // Errors will be unhandled
     setImmediate(() => this.syncWithNode());
     this.subscribeToNewBlock();
   }
 
+  private async setNextBlockToSync() {
+    const nextBlockToSyncFromDB = await this.indexerRepoService.getNextBlockToSync();
+
+    if (nextBlockToSyncFromDB) {
+      return (this.nextBlockToSync = nextBlockToSyncFromDB.height);
+    }
+
+    this.nextBlockToSync = (
+      await this.nodeApiService.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {})
+    ).genesisHeight;
+    await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
+  }
+
   private async syncWithNode(): Promise<void> {
     while (this.state === IndexerState.SYNCING) {
-      const [nodeInfo, blocks] = await Promise.all([
-        this.nodeApiService.getNodeInfo(),
-        this.nodeApiService.getBlocksFromNode({
-          from: this.nextBlockToSync,
-          to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
-        }),
-      ]);
+      const [nodeInfo, blocks] = await this.getNodeInfoAndBlocks();
 
-      // modifying the block array here
+      // modifying the blocks array here
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 
-      this.nextBlockToSync = (
-        await this.indexerRepoService.updateNextBlockToSync({
-          height: blocks.at(-1).header.height + 1,
-        })
-      ).height;
+      await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
       if (this.nextBlockToSync > nodeInfo.height) this.state = IndexerState.INDEXING;
     }
@@ -78,16 +78,30 @@ export class IndexerService {
         return;
       }
 
-      const block = await this.nodeApiService.getBlockById(newBlockData.blockHeader.id);
+      const block = await this.nodeApiService.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
+        id: newBlockData.blockHeader.id,
+      });
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
 
-      this.nextBlockToSync = (
-        await this.indexerRepoService.updateNextBlockToSync({ height: newBlockHeight + 1 })
-      ).height;
+      await this.updateNextBlockToSync(newBlockHeight + 1);
     });
+  }
+
+  private async updateNextBlockToSync(height: number): Promise<void> {
+    this.nextBlockToSync = (await this.indexerRepoService.updateNextBlockToSync({ height })).height;
   }
 
   private newBlock(blockEvent: BlockEvent): void {
     this.eventService.pushToBlockEventQ(blockEvent);
+  }
+
+  public async getNodeInfoAndBlocks(): Promise<[NodeInfo, Block[]]> {
+    return Promise.all([
+      this.nodeApiService.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {}),
+      this.nodeApiService.invokeApi<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
+        from: this.nextBlockToSync,
+        to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+      }),
+    ]);
   }
 }
