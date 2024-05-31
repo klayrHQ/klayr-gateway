@@ -10,12 +10,32 @@ import {
 import { BlockRepoService } from './block-repo.service';
 import { Block } from '@prisma/client';
 import { DEFAULT_BLOCKS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  blockIDQuery,
+  heightQuery,
+  includeAssetsQuery,
+  limitQuery,
+  offsetQuery,
+  sortQuery,
+  timestampQuery,
+} from './api/request-types';
+import { getBlocksResponse } from './api/return-types';
 
+@ApiTags('blocks')
 @Controller('blocks')
 export class BlockController {
   constructor(private readonly blockRepoService: BlockRepoService) {}
 
   @Get()
+  @ApiQuery(heightQuery)
+  @ApiQuery(timestampQuery)
+  @ApiQuery(blockIDQuery)
+  @ApiQuery(sortQuery)
+  @ApiQuery(limitQuery)
+  @ApiQuery(offsetQuery)
+  @ApiQuery(includeAssetsQuery)
+  @ApiResponse(getBlocksResponse)
   async getBlocks(
     // TODO: Module name query???
     @Query('height') height: string,

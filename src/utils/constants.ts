@@ -1,4 +1,16 @@
 ////////////////////////////
+///       Swagger API    ///
+////////////////////////////
+
+import { title } from 'process';
+
+export const SWAGGERCONFIG = {
+  title: 'Klayr Gateway API',
+  description: 'The Klayr gateway API description',
+  version: '0.1',
+};
+
+////////////////////////////
 ///       Node API       ///
 ////////////////////////////
 

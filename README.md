@@ -51,3 +51,7 @@ npx prisma migrate dev --preview-feature --schema prisma/schema.prisma
 ### For test.db
 
 npx prisma migrate dev --preview-feature --schema prisma/test-schema.prisma
+
+## Swagger api
+
+http://localhost:9901/api

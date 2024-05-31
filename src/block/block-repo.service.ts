@@ -31,7 +31,25 @@ export class BlockRepoService {
       cursor,
       where,
       orderBy,
-      include: { aggregateCommit: true, assets: includeAssets },
+      include: {
+        aggregateCommit: {
+          select: {
+            height: true,
+            aggregationBits: true,
+            certificateSignature: true,
+            blockHeight: true,
+          },
+        },
+        assets: includeAssets
+          ? {
+              select: {
+                height: true,
+                module: true,
+                data: true,
+              },
+            }
+          : false,
+      },
     });
   }
 
