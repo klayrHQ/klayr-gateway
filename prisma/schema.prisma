@@ -27,11 +27,12 @@ model Block {
   signature             String
   aggregateCommit       AggregateCommit?
   assets                Asset[] 
+  transactions          Transaction[]
 }
 
 
 model AggregateCommit {
-  id                   Int      @default(autoincrement()) @id
+  id                   Int      @id @default(autoincrement())
   height               Int     
   aggregationBits      String
   certificateSignature String
@@ -39,13 +40,26 @@ model AggregateCommit {
   blockHeight          Int      @unique
 }
 
-// TODO: TBD and Most efficient?
+// TODO: Most efficient?
 model Asset {
-  id        Int     @default(autoincrement()) @id
+  id        Int     @id @default(autoincrement())
   height    Int     
   module    String
   data      String
   block     Block   @relation(fields: [height], references: [height])
+}
+
+model Transaction {
+  id               Int      @id @default(autoincrement())
+  module           String
+  command          String
+  nonce            String
+  fee              String
+  senderPublicKey  String
+  params           String
+  // signatures       String   // SHOULD BE ARRAY but not supported for sqlite
+  block            Block    @relation(fields: [blockHeight], references: [height])
+  blockHeight      Int      @unique
 }
 
 
@@ -55,7 +69,5 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./db/test.db"
 }
-
-
