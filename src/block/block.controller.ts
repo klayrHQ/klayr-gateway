@@ -21,6 +21,7 @@ import {
   timestampQuery,
 } from './api/request-types';
 import { getBlocksResponse } from './api/return-types';
+import { GatewayResponse } from 'src/utils/helpers';
 
 @ApiTags('blocks')
 @Controller('blocks')
@@ -46,7 +47,7 @@ export class BlockController {
     @Query('offset', new DefaultValuePipe(0), new ParseIntPipe()) offset: number,
     @Query('includeAssets', new DefaultValuePipe(false), new ParseBoolPipe())
     includeAssets: boolean,
-  ): Promise<Block[]> {
+  ): Promise<GatewayResponse<Block[]>> {
     const { field, direction } = this.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
     const where = {};
@@ -65,15 +66,20 @@ export class BlockController {
       where['id'] = blockID;
     }
 
-    return this.blockRepoService.getBlocks({
-      where,
-      take,
-      orderBy: {
-        [field]: direction,
-      },
-      skip: offset,
-      includeAssets,
-    });
+    const [blocks, total] = await Promise.all([
+      this.blockRepoService.getBlocks({
+        where,
+        take,
+        orderBy: {
+          [field]: direction,
+        },
+        skip: offset,
+        includeAssets,
+      }),
+      this.blockRepoService.countBlocks({}),
+    ]);
+
+    return new GatewayResponse(blocks, { count: blocks.length, offset, total });
   }
 
   private buildCondition(start: string, end: string, take: number) {

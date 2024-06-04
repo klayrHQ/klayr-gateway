@@ -2,8 +2,6 @@
 ///       Swagger API    ///
 ////////////////////////////
 
-import { title } from 'process';
-
 export const SWAGGERCONFIG = {
   title: 'Klayr Gateway API',
   description: 'The Klayr gateway API description',
@@ -14,7 +12,7 @@ export const SWAGGERCONFIG = {
 ///       Node API       ///
 ////////////////////////////
 
-// export const NODE_URL = 'wss://token-factory.rossenberg.xyz/rpc-ws';
+// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
 export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
 export const RETRY_TIMEOUT = 5000; // 5 sec
 
@@ -23,7 +21,7 @@ export const RETRY_TIMEOUT = 5000; // 5 sec
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 500; // Can go to 5k or 10k
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 250; // Can go to 5k or 10k maybe more?
 
 ////////////////////////////
 ///       Block          ///

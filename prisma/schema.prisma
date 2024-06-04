@@ -25,22 +25,20 @@ model Block {
   maxHeightGenerated    Int
   impliesMaxPrevotes    Boolean
   signature             String
-  aggregateCommit       AggregateCommit?
+  aggregateCommitHeight Int
+  aggregateCommit       AggregateCommit @relation(fields: [aggregateCommitHeight], references: [height])
   assets                Asset[] 
   transactions          Transaction[]
 }
 
 
 model AggregateCommit {
-  id                   Int      @id @default(autoincrement())
-  height               Int     
+  height               Int      @id @unique
   aggregationBits      String
   certificateSignature String
-  block                Block    @relation(fields: [blockHeight], references: [height])
-  blockHeight          Int      @unique
+  blocks               Block[]    
 }
 
-// TODO: Most efficient?
 model Asset {
   id        Int     @id @default(autoincrement())
   height    Int     
@@ -57,7 +55,7 @@ model Transaction {
   fee              String
   senderPublicKey  String
   params           String
-  // signatures       String   // SHOULD BE ARRAY but not supported for sqlite
+  signatures       String   // stringifiy
   block            Block    @relation(fields: [blockHeight], references: [height])
   blockHeight      Int      @unique
 }
@@ -69,5 +67,5 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./db/test.db"
+  url      = "file:./db/dev.db"
 }

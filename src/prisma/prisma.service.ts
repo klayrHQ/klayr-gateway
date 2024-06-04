@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { waitTimeout } from 'src/utils/helpers';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -23,14 +24,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async DEVonlyClearDB() {
     await this.asset.deleteMany({});
-    await this.aggregateCommit.deleteMany({});
     await this.block.deleteMany({});
+    await this.aggregateCommit.deleteMany({});
     await this.nextBlockToSync.deleteMany({});
 
     // reset autoincrement
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Asset'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='AggregateCommit'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Block'`;
+    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='AggregateCommit'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='NextBlockToSync'`;
+
+    await waitTimeout(2000);
   }
 }

@@ -15,7 +15,7 @@ export class IndexerRepoService {
       })
       .catch((error) => {
         this.logger.error('Failed to get next block to sync:');
-        throw new Error(error); // re-throw the error after logging
+        throw new Error(error);
       });
   }
 
@@ -29,7 +29,7 @@ export class IndexerRepoService {
       })
       .catch((error) => {
         this.logger.error('Failed to set next block to sync:');
-        throw new Error(error); // re-throw the error after logging
+        throw new Error(error);
       });
   }
 
@@ -43,7 +43,7 @@ export class IndexerRepoService {
       })
       .catch((error) => {
         this.logger.error('Failed to update next block to sync:');
-        throw new Error(error); // re-throw the error after logging
+        throw new Error(error);
       });
   }
 }

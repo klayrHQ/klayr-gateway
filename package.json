@@ -8,9 +8,9 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "npx prisma migrate dev --preview-feature --schema prisma/schema.prisma && nest start",
     "start:test-node": "test/test-node/./bin/run start --config test/test-node/config/custom_config.json --overwrite-config",
-    "start:dev": "nest start --watch",
+    "start:dev": "npx prisma migrate dev --preview-feature --schema prisma/schema.prisma && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

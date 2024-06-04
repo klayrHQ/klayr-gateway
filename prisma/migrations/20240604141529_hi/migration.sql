@@ -20,17 +20,16 @@ CREATE TABLE "Block" (
     "maxHeightPrevoted" INTEGER NOT NULL,
     "maxHeightGenerated" INTEGER NOT NULL,
     "impliesMaxPrevotes" BOOLEAN NOT NULL,
-    "signature" TEXT NOT NULL
+    "signature" TEXT NOT NULL,
+    "aggregateCommitHeight" INTEGER NOT NULL,
+    CONSTRAINT "Block_aggregateCommitHeight_fkey" FOREIGN KEY ("aggregateCommitHeight") REFERENCES "AggregateCommit" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "AggregateCommit" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "height" INTEGER NOT NULL,
+    "height" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "aggregationBits" TEXT NOT NULL,
-    "certificateSignature" TEXT NOT NULL,
-    "blockHeight" INTEGER NOT NULL,
-    CONSTRAINT "AggregateCommit_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
+    "certificateSignature" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -40,6 +39,20 @@ CREATE TABLE "Asset" (
     "module" TEXT NOT NULL,
     "data" TEXT NOT NULL,
     CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Transaction" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "module" TEXT NOT NULL,
+    "command" TEXT NOT NULL,
+    "nonce" TEXT NOT NULL,
+    "fee" TEXT NOT NULL,
+    "senderPublicKey" TEXT NOT NULL,
+    "params" TEXT NOT NULL,
+    "signatures" TEXT NOT NULL,
+    "blockHeight" INTEGER NOT NULL,
+    CONSTRAINT "Transaction_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -52,4 +65,7 @@ CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");
 CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AggregateCommit_blockHeight_key" ON "AggregateCommit"("blockHeight");
+CREATE UNIQUE INDEX "AggregateCommit_height_key" ON "AggregateCommit"("height");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Transaction_blockHeight_key" ON "Transaction"("blockHeight");

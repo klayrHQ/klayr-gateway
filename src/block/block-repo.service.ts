@@ -16,6 +16,10 @@ export class BlockRepoService {
     });
   }
 
+  public async countBlocks(where: Prisma.BlockWhereInput): Promise<number> {
+    return this.prisma.block.count({ where });
+  }
+
   public async getBlocks(params: {
     skip?: number;
     take?: number;
@@ -37,7 +41,7 @@ export class BlockRepoService {
             height: true,
             aggregationBits: true,
             certificateSignature: true,
-            blockHeight: true,
+            // blockHeight: true,
           },
         },
         assets: includeAssets

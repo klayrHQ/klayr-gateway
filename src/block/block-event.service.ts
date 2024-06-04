@@ -24,8 +24,15 @@ export class BlockEventService {
       this.blockRepo.createBlocks({
         ...block.header,
         aggregateCommit: {
-          create: block.header.aggregateCommit,
+          connectOrCreate: {
+            where: { height: block.header.aggregateCommit.height },
+            create: block.header.aggregateCommit,
+          },
         },
+
+        // aggregateCommit: {
+        //   create: block.header.aggregateCommit,
+        // },
       }),
     );
 
