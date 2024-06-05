@@ -45,7 +45,7 @@ describe('BlockEventService', () => {
   it('should create a block and retrieve it from test DB', async () => {
     const block: Block = testBlock;
 
-    await blockEventService.createBlock([block]);
+    await blockEventService.handleNewBlockEvent([block]);
     const createdBlock = await repoService.getBlock({ id: block.header.id });
 
     expect(eventService.pushToTxAndAssetsEventQ).toHaveBeenCalledTimes(2);

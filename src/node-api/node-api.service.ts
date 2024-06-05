@@ -2,13 +2,15 @@ import { apiClient } from '@klayr/client';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { NODE_URL, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
-import { Block, NewBlockEvent, NodeInfo } from './types';
+import { NewBlockEvent, NodeInfo } from './types';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
+  SYSTEM_GET_SCHEMA = 'system_getSchema',
   CHAIN_NEW_BLOCK = 'chain_newBlock',
   CHAIN_GET_BLOCK_BY_ID = 'chain_getBlockByID',
   CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
+  REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
 }
 
 // Functions to interact with the Node API
@@ -16,6 +18,7 @@ export enum NodeApi {
 export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
+  public nodeInfo: NodeInfo;
 
   async onModuleInit() {
     await this.connectToNode();
@@ -50,5 +53,12 @@ export class NodeApiService {
       this.logger.error(err);
       throw new InternalServerErrorException('Failed to subscribe');
     }
+  }
+
+  // Is being called every new block event in the block event service
+  public async getAndSetNodeInfo(): Promise<NodeInfo> {
+    this.nodeInfo = await this.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {});
+    // this.client.
+    return this.nodeInfo;
   }
 }

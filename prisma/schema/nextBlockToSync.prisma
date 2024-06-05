@@ -1,0 +1,4 @@
+model NextBlockToSync {
+  id     Int @id @unique
+  height Int
+}

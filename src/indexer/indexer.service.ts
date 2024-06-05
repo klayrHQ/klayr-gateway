@@ -4,6 +4,7 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent, NodeInfo } from 'src/node-api/types';
 import { BlockEvent, EventService, Events } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
+import { codec } from '@klayr/codec';
 
 export enum IndexerState {
   SYNCING,
@@ -53,8 +54,27 @@ export class IndexerService {
 
   private async syncWithNode(): Promise<void> {
     while (this.state === IndexerState.SYNCING) {
-      const [nodeInfo, blocks] = await this.getNodeInfoAndBlocks();
+      const [blocks, nodeInfo] = await Promise.all([
+        this.getBlocks(),
+        this.nodeApiService.getAndSetNodeInfo(),
+      ]);
 
+      // testing
+      if (blocks.at(-1).header.height === 0) {
+        console.log('Genesis block');
+        console.log(blocks.at(-1));
+        const schema = await this.nodeApiService.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
+        console.log(schema);
+        const buffer = Buffer.from(blocks.at(-1).assets[1].data, 'hex');
+        const parsed = codec.decode(schema.asset, buffer);
+
+        console.log({ parsed });
+      }
+
+      blocks.forEach((block) => {
+        const nodeHeight = nodeInfo.height;
+        if (block.header.height <= nodeHeight) block.header.isFinal = true;
+      });
       // modifying the blocks array here
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 
@@ -95,13 +115,10 @@ export class IndexerService {
     this.eventService.pushToBlockEventQ(blockEvent);
   }
 
-  public async getNodeInfoAndBlocks(): Promise<[NodeInfo, Block[]]> {
-    return Promise.all([
-      this.nodeApiService.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {}),
-      this.nodeApiService.invokeApi<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
-        from: this.nextBlockToSync,
-        to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
-      }),
-    ]);
+  private async getBlocks(): Promise<Block[]> {
+    return this.nodeApiService.invokeApi<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
+      from: this.nextBlockToSync,
+      to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+    });
   }
 }

@@ -1,0 +1,7 @@
+model Asset {
+  id        Int     @id @default(autoincrement())
+  height    Int     
+  module    String
+  data      String
+  block     Block   @relation(fields: [height], references: [height])
+}

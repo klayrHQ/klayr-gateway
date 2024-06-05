@@ -21,7 +21,7 @@ export const RETRY_TIMEOUT = 5000; // 5 sec
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 250; // Can go to 5k or 10k maybe more?
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 500; // Can go to 5k or 10k maybe more?
 
 ////////////////////////////
 ///       Block          ///

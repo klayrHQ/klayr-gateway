@@ -79,6 +79,10 @@ export class BlockController {
       this.blockRepoService.countBlocks({}),
     ]);
 
+    blocks.forEach((block) => {
+      block.aggregateCommit = JSON.parse(block.aggregateCommit);
+    });
+
     return new GatewayResponse(blocks, { count: blocks.length, offset, total });
   }
 

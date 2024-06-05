@@ -1,0 +1,12 @@
+model Transaction {
+  id               Int      @id @default(autoincrement())
+  module           String
+  command          String
+  nonce            String
+  fee              String
+  senderPublicKey  String
+  params           String
+  signatures       String   // stringifiy
+  block            Block    @relation(fields: [blockHeight], references: [height])
+  blockHeight      Int      @unique
+}

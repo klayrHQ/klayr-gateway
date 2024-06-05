@@ -9,9 +9,6 @@ export class AggregateCommit {
 
   @ApiProperty()
   certificateSignature: string;
-
-  @ApiProperty()
-  blockHeight: number;
 }
 
 export class Asset {
@@ -73,6 +70,18 @@ export class GetBlockResponse {
 
   @ApiProperty({ type: () => AggregateCommit })
   aggregateCommit: AggregateCommit;
+
+  @ApiProperty()
+  numberOfTransactions: number;
+
+  @ApiProperty()
+  numberOfAssets: number;
+
+  @ApiProperty()
+  reward: string;
+
+  @ApiProperty()
+  isFinal: boolean;
 
   @ApiProperty({ type: () => [Asset], required: false })
   assets?: Asset[];

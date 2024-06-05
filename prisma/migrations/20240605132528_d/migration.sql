@@ -21,15 +21,12 @@ CREATE TABLE "Block" (
     "maxHeightGenerated" INTEGER NOT NULL,
     "impliesMaxPrevotes" BOOLEAN NOT NULL,
     "signature" TEXT NOT NULL,
-    "aggregateCommitHeight" INTEGER NOT NULL,
-    CONSTRAINT "Block_aggregateCommitHeight_fkey" FOREIGN KEY ("aggregateCommitHeight") REFERENCES "AggregateCommit" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "AggregateCommit" (
-    "height" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "aggregationBits" TEXT NOT NULL,
-    "certificateSignature" TEXT NOT NULL
+    "aggregateCommit" TEXT NOT NULL,
+    "numberOfTransactions" INTEGER NOT NULL,
+    "numberOfAssets" INTEGER NOT NULL,
+    "numberOfEvents" INTEGER NOT NULL,
+    "isFinal" BOOLEAN NOT NULL DEFAULT false,
+    "reward" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -63,9 +60,6 @@ CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "AggregateCommit_height_key" ON "AggregateCommit"("height");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Transaction_blockHeight_key" ON "Transaction"("blockHeight");

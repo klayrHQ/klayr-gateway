@@ -15,20 +15,17 @@ export interface BlockEvent {
   blocks: Block[];
 }
 
-export interface AssetsEvent {
-  event: Events;
-  payload: {
-    height: number;
-    assets: Asset[];
-  }[];
+export interface Payload<T> {
+  height: number;
+  data: T[];
 }
-export interface TxEvent {
+
+export type TxOrAssetPayload = Payload<Asset | Transaction>;
+
+export type TxOrAssetEvent = {
   event: Events;
-  payload: {
-    height: number;
-    transactions: Transaction[];
-  }[];
-}
+  payload: TxOrAssetPayload[];
+};
 
 interface GeneralEvent {
   event: string;
@@ -43,7 +40,7 @@ export class EventService {
   private readonly logger = new Logger(EventService.name);
   private generalEventMap = new Map();
   private blockEventQ: queueAsPromised<BlockEvent>;
-  private txAndAssetEventQ: queueAsPromised<AssetsEvent | TxEvent>;
+  private txAndAssetEventQ: queueAsPromised<TxOrAssetEvent>;
   private generalQ: queueAsPromised<GeneralEvent>;
 
   constructor(private eventEmitter: EventEmitter2) {
@@ -57,7 +54,7 @@ export class EventService {
     this.blockEventQ.push(blockEvent).catch((err) => this.logger.error(err));
   }
 
-  async pushToTxAndAssetsEventQ(event: AssetsEvent | TxEvent) {
+  async pushToTxAndAssetsEventQ(event: TxOrAssetEvent) {
     this.txAndAssetEventQ.push(event).catch((err) => this.logger.error(err));
   }
 
@@ -67,7 +64,7 @@ export class EventService {
     this.eventEmitter.emit(event, blocks);
   }
 
-  private async txAndAssetEventWorker(args: AssetsEvent | TxEvent): Promise<void> {
+  private async txAndAssetEventWorker(args: TxOrAssetEvent): Promise<void> {
     const { event, payload } = args;
     this.eventEmitter.emit(event, payload);
   }

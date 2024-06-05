@@ -12,7 +12,7 @@ export class BlockRepoService {
   ): Promise<Block | null> {
     return this.prisma.block.findUnique({
       where: blockWhereUniqueInput,
-      include: { aggregateCommit: true, assets: true },
+      include: { assets: true },
     });
   }
 
@@ -29,21 +29,13 @@ export class BlockRepoService {
     includeAssets?: boolean;
   }): Promise<Block[]> {
     const { skip, take, cursor, where, orderBy, includeAssets } = params;
-    return this.prisma.block.findMany({
+    return await this.prisma.block.findMany({
       skip,
       take,
       cursor,
       where,
       orderBy,
       include: {
-        aggregateCommit: {
-          select: {
-            height: true,
-            aggregationBits: true,
-            certificateSignature: true,
-            // blockHeight: true,
-          },
-        },
         assets: includeAssets
           ? {
               select: {
@@ -57,11 +49,7 @@ export class BlockRepoService {
     });
   }
 
-  public async createBlocksTx(createBlockFunctions: PrismaPromise<Block>[]): Promise<Block[]> {
-    return this.prisma.$transaction(createBlockFunctions);
-  }
-
-  public createBlocks(createBlockInput: Prisma.BlockCreateInput): PrismaPromise<Block> {
+  public createBlock(createBlockInput: Prisma.BlockCreateInput): PrismaPromise<Block> {
     return this.prisma.block.create({ data: createBlockInput });
   }
 
@@ -76,22 +64,23 @@ export class BlockRepoService {
     });
   }
 
+  public async updateManyBlocks(params: {
+    where: Prisma.BlockWhereInput;
+    data: Prisma.BlockUpdateManyMutationInput;
+  }): Promise<Prisma.BatchPayload> {
+    const { data, where } = params;
+    return this.prisma.block.updateMany({
+      data,
+      where,
+    });
+  }
+
   public async deleteBlock(where: Prisma.BlockWhereUniqueInput): Promise<Block> {
     return this.prisma.block.delete({
       where,
     });
   }
 
-  // NOT USED for now, tested same speed as createBlocksTx
-  public async createAggregateCommitBulk(
-    aggregateCommits: Prisma.AggregateCommitCreateManyInput[],
-  ): Promise<Prisma.BatchPayload> {
-    return this.prisma.aggregateCommit.createMany({
-      data: aggregateCommits,
-    });
-  }
-
-  // NOT USED for now, tested same speed as createBlocksTx
   public async createBlocksBulk(
     blocks: Prisma.BlockCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {

@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EventService, Events } from 'src/event/event.service';
-import { Block } from 'src/node-api/types';
+import { EventService, Events, Payload } from 'src/event/event.service';
+import { Asset, Block, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
+import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 
 @Injectable()
 export class BlockEventService {
@@ -11,56 +12,77 @@ export class BlockEventService {
   constructor(
     private blockRepo: BlockRepoService,
     private eventService: EventService,
+    private nodeApiService: NodeApiService,
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
-  async createBlock(payload: Block[]) {
+  async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
-    // this.logger.debug(payload.at(0));
-    // console.log(payload);
-    // payload.map(({ header }) => console.log(header));
 
-    const createBlockPromises = payload.map((block) =>
-      this.blockRepo.createBlocks({
-        ...block.header,
-        aggregateCommit: {
-          connectOrCreate: {
-            where: { height: block.header.aggregateCommit.height },
-            create: block.header.aggregateCommit,
-          },
-        },
-
-        // aggregateCommit: {
-        //   create: block.header.aggregateCommit,
-        // },
-      }),
-    );
-
-    await this.blockRepo.createBlocksTx(createBlockPromises);
-
-    const allTransactions = payload.map((block: Block) => ({
-      height: block.header.height,
-      transactions: block.transactions,
-    }));
-
-    const allAssets = payload.map((block: Block) => ({
-      height: block.header.height,
-      assets: block.assets,
-    }));
-
+    await this.blockRepo.createBlocksBulk(await this.processBlocks(payload));
     await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_ASSETS_EVENT,
-      payload: allAssets,
+      payload: this.processAssets(payload),
     });
 
     await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_TX_EVENT,
-      payload: allTransactions,
+      payload: this.processTransactions(payload),
     });
+
+    await this.checkForBlockFinality();
 
     // TODO: emit event events (chain event)
   }
+
+  private async processBlocks(blocks: Block[]): Promise<any[]> {
+    const promises = blocks.map(async (block) => {
+      const reward = await this.nodeApiService.invokeApi<any>(
+        NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
+        { height: block.header.height },
+      );
+
+      return {
+        ...block.header,
+        reward: reward.reward,
+        numberOfTransactions: block.transactions.length,
+        numberOfAssets: block.assets.length,
+        aggregateCommit: JSON.stringify(block.header.aggregateCommit),
+      };
+    });
+
+    return Promise.all(promises);
+  }
+
+  private processTransactions(blocks: Block[]): Payload<Transaction>[] {
+    return blocks.map((block: Block) => ({
+      height: block.header.height,
+      data: block.transactions,
+    }));
+  }
+
+  private processAssets(blocks: Block[]): Payload<Asset>[] {
+    return blocks.map((block: Block) => ({
+      height: block.header.height,
+      data: block.assets,
+    }));
+  }
+
+  private async checkForBlockFinality() {
+    await this.nodeApiService.getAndSetNodeInfo();
+    await this.blockRepo.updateManyBlocks({
+      where: {
+        isFinal: false,
+        height: {
+          lte: this.nodeApiService.nodeInfo.finalizedHeight,
+        },
+      },
+      data: {
+        isFinal: true,
+      },
+    });
+  }
 }
 
-// 100k => 35s
-// 3 jaar => 8m block  => 45min
+// 100k => 35s old code
+// 3 jaar => 8m block  => 45min old code

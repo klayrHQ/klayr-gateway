@@ -25,6 +25,7 @@ export interface BlockHeader {
   impliesMaxPrevotes: boolean;
   signature: string;
   id: string;
+  isFinal?: boolean;
 }
 
 export interface Transaction {
@@ -50,5 +51,6 @@ export interface NewBlockEvent {
 export interface NodeInfo {
   height: number;
   genesisHeight: number;
+  finalizedHeight: number;
   [key: string]: unknown;
 }
