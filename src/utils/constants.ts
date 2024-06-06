@@ -5,7 +5,7 @@
 export const SWAGGERCONFIG = {
   title: 'Klayr Gateway API',
   description: 'The Klayr gateway API description',
-  version: '0.1',
+  version: '0.0.1',
 };
 
 ////////////////////////////

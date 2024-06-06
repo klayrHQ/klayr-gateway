@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Block, NewBlockEvent, NodeInfo } from 'src/node-api/types';
+import { Block, NewBlockEvent } from 'src/node-api/types';
 import { BlockEvent, EventService, Events } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
-import { codec } from '@klayr/codec';
 
 export enum IndexerState {
   SYNCING,
@@ -46,9 +45,9 @@ export class IndexerService {
       return (this.nextBlockToSync = nextBlockToSyncFromDB.height);
     }
 
-    this.nextBlockToSync = (
-      await this.nodeApiService.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {})
-    ).genesisHeight;
+    // Nodeinfo already set during genesis block processing
+    this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight + 1;
+
     await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
   }
 
@@ -58,18 +57,6 @@ export class IndexerService {
         this.getBlocks(),
         this.nodeApiService.getAndSetNodeInfo(),
       ]);
-
-      // testing
-      if (blocks.at(-1).header.height === 0) {
-        console.log('Genesis block');
-        console.log(blocks.at(-1));
-        const schema = await this.nodeApiService.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
-        console.log(schema);
-        const buffer = Buffer.from(blocks.at(-1).assets[1].data, 'hex');
-        const parsed = codec.decode(schema.asset, buffer);
-
-        console.log({ parsed });
-      }
 
       blocks.forEach((block) => {
         const nodeHeight = nodeInfo.height;

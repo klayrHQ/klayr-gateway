@@ -1,7 +1,10 @@
 -- CreateTable
-CREATE TABLE "NextBlockToSync" (
+CREATE TABLE "Asset" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "height" INTEGER NOT NULL
+    "height" INTEGER NOT NULL,
+    "module" TEXT NOT NULL,
+    "data" TEXT NOT NULL,
+    CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -24,18 +27,14 @@ CREATE TABLE "Block" (
     "aggregateCommit" TEXT NOT NULL,
     "numberOfTransactions" INTEGER NOT NULL,
     "numberOfAssets" INTEGER NOT NULL,
-    "numberOfEvents" INTEGER NOT NULL,
     "isFinal" BOOLEAN NOT NULL DEFAULT false,
     "reward" TEXT NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "Asset" (
+CREATE TABLE "NextBlockToSync" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "height" INTEGER NOT NULL,
-    "module" TEXT NOT NULL,
-    "data" TEXT NOT NULL,
-    CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
+    "height" INTEGER NOT NULL
 );
 
 -- CreateTable
@@ -53,13 +52,13 @@ CREATE TABLE "Transaction" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Transaction_blockHeight_key" ON "Transaction"("blockHeight");

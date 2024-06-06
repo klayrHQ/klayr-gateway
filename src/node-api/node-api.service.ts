@@ -7,8 +7,10 @@ import { NewBlockEvent, NodeInfo } from './types';
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
   SYSTEM_GET_SCHEMA = 'system_getSchema',
+  SYSTEM_GET_METADATA = 'system_getMetadata',
   CHAIN_NEW_BLOCK = 'chain_newBlock',
   CHAIN_GET_BLOCK_BY_ID = 'chain_getBlockByID',
+  CHAIN_GET_BLOCK_BY_HEIGHT = 'chain_getBlockByHeight',
   CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
 }
@@ -18,7 +20,7 @@ export enum NodeApi {
 export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
-  public nodeInfo: NodeInfo;
+  public nodeInfo: NodeInfo; // TODO: create endpoint for nodeinfo from gateway
 
   async onModuleInit() {
     await this.connectToNode();

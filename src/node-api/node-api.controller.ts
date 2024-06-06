@@ -1,8 +1,8 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { invokeNodeApiResponse } from './api/return-types';
-import { invokeNodeApiBody } from './api/request-types';
+import { invokeNodeApiResponse } from './open-api/return-types';
+import { invokeNodeApiBody } from './open-api/request-types';
 
 @ApiTags('node API')
 @Controller('invoke')

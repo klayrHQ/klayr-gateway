@@ -19,8 +19,8 @@ import {
   offsetQuery,
   sortQuery,
   timestampQuery,
-} from './api/request-types';
-import { getBlocksResponse } from './api/return-types';
+} from './open-api/request-types';
+import { getBlocksResponse } from './open-api/return-types';
 import { GatewayResponse } from 'src/utils/helpers';
 
 @ApiTags('blocks')
