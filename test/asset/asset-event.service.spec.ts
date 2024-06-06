@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AssetEventService } from '../../src/asset/asset-event.service';
+import { AssetService } from '../../src/asset/asset.service';
 import { AssetRepoService } from 'src/asset/asset-repo.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaServiceMock, clearDB } from 'test/helpers';
 
 describe('AssetService', () => {
-  let service: AssetEventService;
+  let service: AssetService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AssetEventService,
+        AssetService,
         AssetRepoService,
         {
           provide: PrismaService,
@@ -19,7 +19,7 @@ describe('AssetService', () => {
       ],
     }).compile();
 
-    service = module.get<AssetEventService>(AssetEventService);
+    service = module.get<AssetService>(AssetService);
 
     await clearDB(module.get<PrismaService>(PrismaService));
   });

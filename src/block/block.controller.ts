@@ -23,7 +23,7 @@ import {
 import { getBlocksResponse } from './open-api/return-types';
 import { GatewayResponse } from 'src/utils/helpers';
 
-@ApiTags('blocks')
+@ApiTags('Blocks')
 @Controller('blocks')
 export class BlockController {
   constructor(private readonly blockRepoService: BlockRepoService) {}
@@ -81,6 +81,7 @@ export class BlockController {
 
     blocks.forEach((block) => {
       block.aggregateCommit = JSON.parse(block.aggregateCommit);
+      delete block.generatorAddress;
     });
 
     return new GatewayResponse(blocks, { count: blocks.length, offset, total });

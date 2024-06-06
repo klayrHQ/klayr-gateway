@@ -4,7 +4,7 @@ import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { invokeNodeApiResponse } from './open-api/return-types';
 import { invokeNodeApiBody } from './open-api/request-types';
 
-@ApiTags('node API')
+@ApiTags('Invoke')
 @Controller('invoke')
 export class NodeApiController {
   constructor(private readonly nodeApiService: NodeApiService) {}

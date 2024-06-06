@@ -1,14 +1,18 @@
 import { codec } from '@klayr/codec';
 import { Injectable, Logger } from '@nestjs/common';
-import { AssetTypes, PosAsset } from 'src/asset/types';
+import { AssetTypes } from 'src/asset/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NodeInfo } from 'src/node-api/types';
+import { ValidatorService } from 'src/validator/validator.service';
 
 @Injectable()
-export class InderGenesisService {
-  private readonly logger = new Logger(InderGenesisService.name);
+export class IndexerGenesisService {
+  private readonly logger = new Logger(IndexerGenesisService.name);
 
-  constructor(private readonly nodeApiService: NodeApiService) {}
+  constructor(
+    private readonly nodeApiService: NodeApiService,
+    private readonly validatorService: ValidatorService,
+  ) {}
 
   async onModuleInit() {
     this.logger.debug(`Block module: Genesis block event`);
@@ -44,17 +48,10 @@ export class InderGenesisService {
   private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
     switch (decodedAsset.name) {
       case AssetTypes.POS:
-        await this.processPosAsset(decodedAsset.message);
-        break;
-      case AssetTypes.TOKEN:
-        // await this.processTokenAsset(decodedAsset.message);
+        await this.validatorService.processPosAsset(decodedAsset.message.validators);
         break;
       default:
-        console.log(`Unknown asset name: ${decodedAsset.name}`);
+        this.logger.warn(`Unhandled asset name: ${decodedAsset.name}`);
     }
-  }
-
-  private async processPosAsset(posAsset: PosAsset) {
-    console.log(posAsset.validators);
   }
 }

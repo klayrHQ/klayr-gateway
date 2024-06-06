@@ -6,8 +6,8 @@ import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 
 @Injectable()
-export class BlockEventService {
-  private readonly logger = new Logger(BlockEventService.name);
+export class BlockService {
+  private readonly logger = new Logger(BlockService.name);
 
   constructor(
     private blockRepo: BlockRepoService,

@@ -10,6 +10,7 @@ model Block {
   transactionRoot       String
   validatorsHash        String
   generatorAddress      String
+  generator             Validator @relation(fields: [generatorAddress], references: [address])
   maxHeightPrevoted     Int
   maxHeightGenerated    Int
   impliesMaxPrevotes    Boolean

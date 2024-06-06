@@ -6,6 +6,7 @@ import { NodeApiModule } from './node-api/node-api.module';
 import { EventModule } from './event/event.module';
 import { BlockModule } from './block/block.module';
 import { AssetModule } from './asset/asset.module';
+import { ValidatorModule } from './validator/validator.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AssetModule } from './asset/asset.module';
     EventModule,
     BlockModule,
     AssetModule,
+    ValidatorModule,
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlockEventService } from '../../src/block/block-event.service';
+import { BlockService } from '../../src/block/block.service';
 import { Block } from '../../src/node-api/types';
 import { testBlock } from 'test/mock-values/node-api-mocks';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,7 +13,7 @@ class MockEventService {
 
 describe('BlockEventService', () => {
   let repoService: BlockRepoService;
-  let blockEventService: BlockEventService;
+  let blockEventService: BlockService;
   let eventService: EventService;
   let prisma: PrismaService;
 
@@ -21,7 +21,7 @@ describe('BlockEventService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BlockRepoService,
-        BlockEventService,
+        BlockService,
         {
           provide: PrismaService,
           useValue: new PrismaServiceMock(),
@@ -31,7 +31,7 @@ describe('BlockEventService', () => {
     }).compile();
 
     repoService = module.get<BlockRepoService>(BlockRepoService);
-    blockEventService = module.get<BlockEventService>(BlockEventService);
+    blockEventService = module.get<BlockService>(BlockService);
     eventService = module.get<EventService>(EventService);
     prisma = module.get<PrismaService>(PrismaService);
 

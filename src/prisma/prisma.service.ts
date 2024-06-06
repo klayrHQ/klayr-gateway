@@ -26,9 +26,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.asset.deleteMany({});
     await this.block.deleteMany({});
     await this.nextBlockToSync.deleteMany({});
+    await this.validator.deleteMany({});
 
     // reset autoincrement
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Asset'`;
+    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Validator'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Block'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='NextBlockToSync'`;
   }

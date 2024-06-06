@@ -22,6 +22,14 @@ export class Asset {
   data: string;
 }
 
+export class Generator {
+  @ApiProperty()
+  address: string;
+
+  @ApiProperty()
+  name: string;
+}
+
 export class GetBlockResponse {
   @ApiProperty()
   height: number;
@@ -53,7 +61,7 @@ export class GetBlockResponse {
   @ApiProperty()
   validatorsHash: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => Generator, required: true })
   generatorAddress: string;
 
   @ApiProperty()

@@ -11,4 +11,5 @@ model Validator {
   commission                 Int
   lastCommissionIncreaseHeight Int
   sharingCoefficients        String
+  blocks                     Block[]
 }

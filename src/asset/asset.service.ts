@@ -5,8 +5,8 @@ import { AssetRepoService } from './asset-repo.service';
 import { Asset } from 'src/node-api/types';
 
 @Injectable()
-export class AssetEventService {
-  private logger = new Logger(AssetEventService.name);
+export class AssetService {
+  private logger = new Logger(AssetService.name);
 
   constructor(private assetRepo: AssetRepoService) {}
 

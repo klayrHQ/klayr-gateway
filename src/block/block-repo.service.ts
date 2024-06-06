@@ -12,7 +12,15 @@ export class BlockRepoService {
   ): Promise<Block | null> {
     return this.prisma.block.findUnique({
       where: blockWhereUniqueInput,
-      include: { assets: true },
+      include: {
+        assets: true,
+        generator: {
+          select: {
+            address: true,
+            name: true,
+          },
+        },
+      },
     });
   }
 
@@ -36,6 +44,12 @@ export class BlockRepoService {
       where,
       orderBy,
       include: {
+        generator: {
+          select: {
+            address: true,
+            name: true,
+          },
+        },
         assets: includeAssets
           ? {
               select: {

@@ -4,11 +4,12 @@ import { NodeApiModule } from 'src/node-api/node-api.module';
 import { EventModule } from 'src/event/event.module';
 import { IndexerRepoService } from './indexer-repo.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InderGenesisService } from './indexer-genesis.service';
+import { IndexerGenesisService } from './indexer-genesis.service';
+import { ValidatorModule } from 'src/validator/validator.module';
 
 @Module({
-  imports: [NodeApiModule, EventModule],
+  imports: [NodeApiModule, EventModule, ValidatorModule],
   controllers: [],
-  providers: [PrismaService, IndexerRepoService, IndexerService, InderGenesisService],
+  providers: [PrismaService, IndexerRepoService, IndexerService, IndexerGenesisService],
 })
 export class IndexerModule {}
