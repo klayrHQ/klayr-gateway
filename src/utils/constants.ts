@@ -14,8 +14,8 @@ export const GLOBAL_PREFIX = 'api/v1';
 ///       Node API       ///
 ////////////////////////////
 
-// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
-export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
+export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
+// export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
 export const RETRY_TIMEOUT = 5000; // 5 sec
 
 ////////////////////////////
