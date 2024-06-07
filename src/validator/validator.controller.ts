@@ -1,9 +1,10 @@
 import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
 import { GatewayResponse } from 'src/utils/helpers';
-import { Validator } from '@prisma/client';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { addressQuery } from './open-api/request-types';
+import { GetValidatorResponse, getValidatorResponse } from './open-api/return-types';
 
 class ValidatorQueryDto {
   @IsString()
@@ -17,9 +18,11 @@ export class ValidatorController {
   constructor(private readonly validatorRepoService: ValidatorRepoService) {}
 
   @Get()
+  @ApiQuery(addressQuery)
+  @ApiResponse(getValidatorResponse)
   async getValidator(
     @Query() query: ValidatorQueryDto,
-  ): Promise<GatewayResponse<Partial<Validator>>> {
+  ): Promise<GatewayResponse<GetValidatorResponse>> {
     const validator = await this.validatorRepoService.getValidator({ address: query.address });
 
     if (!validator) {

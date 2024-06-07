@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventService, Events } from '../../src/event/event.service';
+import { EventService } from '../../src/event/event.service';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { newBlockArrayMock } from 'test/mock-values/node-api-mocks';
+import { Events } from 'src/event/types';
 
 describe('EventService', () => {
   let service: EventService;
@@ -32,8 +33,14 @@ describe('EventService', () => {
   });
 
   it('should emit asset event', async () => {
-    const assets = [{ height: 1, assets: [] }];
+    const assets = [{ height: 1, data: [] }];
     await service.pushToTxAndAssetsEventQ({ event: Events.NEW_ASSETS_EVENT, payload: assets });
     expect(eventEmitterSpy).toHaveBeenCalledWith('new.assets.event', assets);
+  });
+
+  it('should emit transaction event', async () => {
+    const transactions = [{ height: 1, data: [] }];
+    await service.pushToTxAndAssetsEventQ({ event: Events.NEW_TX_EVENT, payload: transactions });
+    expect(eventEmitterSpy).toHaveBeenCalledWith('new.transaction.event', transactions);
   });
 });

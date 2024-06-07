@@ -2,8 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
-import { BlockEvent, EventService, Events } from 'src/event/event.service';
+import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
+import { BlockEvent, Events } from 'src/event/types';
 
 export enum IndexerState {
   SYNCING,
@@ -29,8 +30,6 @@ export class IndexerService {
   }
 
   async onApplicationBootstrap() {
-    // TODO: Check if genesis is different, it is
-    // no sig and generator different
     await this.setNextBlockToSync();
 
     // Errors will be unhandled

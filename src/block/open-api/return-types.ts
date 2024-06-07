@@ -77,7 +77,7 @@ export class GetBlockResponse {
   signature: string;
 
   @ApiProperty({ type: () => AggregateCommit })
-  aggregateCommit: AggregateCommit;
+  aggregateCommit: string | AggregateCommit;
 
   @ApiProperty()
   numberOfTransactions: number;

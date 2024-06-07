@@ -1,6 +1,6 @@
 export interface Block {
   header: BlockHeader;
-  transactions: Transaction[]; // TODO
+  transactions: Transaction[];
   assets: Asset[];
 }
 
@@ -53,4 +53,8 @@ export interface NodeInfo {
   genesisHeight: number;
   finalizedHeight: number;
   [key: string]: unknown;
+}
+
+export interface RewardAtHeight {
+  reward: string;
 }

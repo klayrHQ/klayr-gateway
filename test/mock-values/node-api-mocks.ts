@@ -1,4 +1,22 @@
 import { Block, NewBlockEvent } from 'src/node-api/types';
+
+export const mockValidator = {
+  address: 'klyythpdte6squq3h95k4xnk8njd65w5akrn8pwc3',
+  name: 'uzamaru_testnet',
+  blsKey:
+    '8909c0b466ee39fe29a7797e6c070838c3190cf59288d1bc4fc194e8aa2b7ee164ed27f76645c9a4a0eb71948193349e',
+  proofOfPossession:
+    'a6e164c59b14172bc9be4392dcc022645adb7a84e38b13dc20d596bf36f96085393696eef94faea5e3ca9101f77583bf026b342b904e4e2befd04bfe87a5cc544c18980686c3b2e8162e50c0049bd49e09b4d89f50d6a47d44091b3c38d56904',
+  generatorKey: '035357ac899392a0f61f39eb02fe45b1b8afc60cbe9109787a22cc48927bcfa2',
+  lastGeneratedHeight: 0,
+  isBanned: false,
+  reportMisbehaviorHeights: [],
+  consecutiveMissedBlocks: 0,
+  commission: 10000,
+  lastCommissionIncreaseHeight: 0,
+  sharingCoefficients: [[Object]],
+};
+
 export const mockTransactions = [
   {
     module: 'token',
@@ -55,7 +73,7 @@ export const testBlock: Block = {
   header: {
     version: 2,
     timestamp: 1716473560,
-    height: 1077,
+    height: 133,
     previousBlockID: '515c48de90ea79d34354fef321c0c5e144594b577ab10d9f6c3c9178a6d7c15e',
     stateRoot: 'd84c24e7fa69cec425dd24063904e837ad8bae089142717b5631b0f031780f37',
     assetRoot: 'a827a79e36775d5945b74185753e42f2ffe7fb19bb453131c667b111a69730fe',
@@ -79,33 +97,6 @@ export const newBlockArrayMock: Block[] = [
   {
     header: {
       version: 2,
-      timestamp: 1715848131,
-      height: 5,
-      previousBlockID: '0000000000000000000000000000000000000000000000000000000000000000',
-      stateRoot: '7f90bc94ce3ca10cc1700c095119aa4b4070b7e186644eb68419feef4d339a5d',
-      assetRoot: 'c5213526c655da499031ea27a9aca7da32cf8a30ef0946113f90a66b136d88be',
-      eventRoot: 'd442b9b7d4cbc86a365425faf4f044ba7d30cb0a89a1fda54ef2339c25bfe7e1',
-      transactionRoot: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      validatorsHash: 'fd63f965ad2899f06378c601158376e156c0f396559c57b47e7feeed5daa385b',
-      aggregateCommit: {
-        height: 0,
-        aggregationBits: 'ffffffff7f',
-        certificateSignature:
-          'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
-      },
-      generatorAddress: 'klyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz5fw596',
-      maxHeightPrevoted: 0,
-      maxHeightGenerated: 0,
-      impliesMaxPrevotes: true,
-      signature: '',
-      id: 'eafcbecc4978e827f6d12a982c90574636edc20f567010abf4902452ee7a2702',
-    },
-    transactions: mockTransactions,
-    assets: [{ module: 'random', data: '0a108313188162a5d1a7d9c83fd9272e7c28' }],
-  },
-  {
-    header: {
-      version: 2,
       timestamp: 1715848423,
       height: 4,
       previousBlockID: 'eafcbecc4978e827f6d12a982c90574636edc20f567010abf4902452ee7a2702',
@@ -120,7 +111,7 @@ export const newBlockArrayMock: Block[] = [
         certificateSignature:
           'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
       },
-      generatorAddress: 'kly2nd42c95pq86bs3yf6jyp2qzmxfas3bcbn9rkf',
+      generatorAddress: 'klycgxqv3zoj3zyecrtqoug5efup7enn24jn4u3bx',
       maxHeightPrevoted: 0,
       maxHeightGenerated: 0,
       impliesMaxPrevotes: true,
@@ -148,7 +139,7 @@ export const newBlockArrayMock: Block[] = [
         certificateSignature:
           'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
       },
-      generatorAddress: 'klya88przk8of3cj8rg28jm7sj9nsty44284jjatv',
+      generatorAddress: 'klycgxqv3zoj3zyecrtqoug5efup7enn24jn4u3bx',
       maxHeightPrevoted: 0,
       maxHeightGenerated: 0,
       impliesMaxPrevotes: true,
@@ -176,7 +167,7 @@ export const newBlockArrayMock: Block[] = [
         certificateSignature:
           'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
       },
-      generatorAddress: 'klyj64akppm64z837twzzrhqeo2r2mzayxr7fazyp',
+      generatorAddress: 'klycgxqv3zoj3zyecrtqoug5efup7enn24jn4u3bx',
       maxHeightPrevoted: 0,
       maxHeightGenerated: 0,
       impliesMaxPrevotes: true,
@@ -204,7 +195,7 @@ export const newBlockArrayMock: Block[] = [
         certificateSignature:
           'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
       },
-      generatorAddress: 'klyhmea88d4vb5hf68mpusma3dgyx9s9wodczgryp',
+      generatorAddress: 'klycgxqv3zoj3zyecrtqoug5efup7enn24jn4u3bx',
       maxHeightPrevoted: 0,
       maxHeightGenerated: 0,
       impliesMaxPrevotes: true,
@@ -232,7 +223,7 @@ export const newBlockArrayMock: Block[] = [
         certificateSignature:
           'a49a3661acf1118866c47917455bb702a751869f9e6933c3c314d0bb7adbdd4d01e44f824c30a9d970e150591e25736b000db0e10e2b4710cf1f34e767b641dae64b229d2288c5baad7923a6d507c11b0b2abb1b9993a05dc0a496a155d7d56e',
       },
-      generatorAddress: 'klyhozckft5w9t5wxg4qk83xt22ks2u6n9rncztux',
+      generatorAddress: 'klycgxqv3zoj3zyecrtqoug5efup7enn24jn4u3bx',
       maxHeightPrevoted: 0,
       maxHeightGenerated: 0,
       impliesMaxPrevotes: true,

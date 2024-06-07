@@ -8,7 +8,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { BlockRepoService } from './block-repo.service';
-import { Block } from '@prisma/client';
 import { DEFAULT_BLOCKS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -20,7 +19,7 @@ import {
   sortQuery,
   timestampQuery,
 } from './open-api/request-types';
-import { getBlocksResponse } from './open-api/return-types';
+import { GetBlockResponse, getBlocksResponse } from './open-api/return-types';
 import { GatewayResponse } from 'src/utils/helpers';
 
 @ApiTags('Blocks')
@@ -47,7 +46,7 @@ export class BlockController {
     @Query('offset', new DefaultValuePipe(0), new ParseIntPipe()) offset: number,
     @Query('includeAssets', new DefaultValuePipe(false), new ParseBoolPipe())
     includeAssets: boolean,
-  ): Promise<GatewayResponse<Block[]>> {
+  ): Promise<GatewayResponse<GetBlockResponse[]>> {
     const { field, direction } = this.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
     const where = {};

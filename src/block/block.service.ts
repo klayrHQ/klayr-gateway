@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EventService, Events, Payload } from 'src/event/event.service';
-import { Asset, Block, Transaction } from 'src/node-api/types';
+import { EventService } from 'src/event/event.service';
+import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
+import { Events, Payload } from 'src/event/types';
 
 @Injectable()
 export class BlockService {
@@ -16,7 +17,7 @@ export class BlockService {
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
-  async handleNewBlockEvent(payload: Block[]) {
+  public async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
     await this.blockRepo.createBlocksBulk(await this.processBlocks(payload));
@@ -37,14 +38,14 @@ export class BlockService {
 
   private async processBlocks(blocks: Block[]): Promise<any[]> {
     const promises = blocks.map(async (block) => {
-      const reward = await this.nodeApiService.invokeApi<any>(
+      const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
         NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
         { height: block.header.height },
       );
 
       return {
         ...block.header,
-        reward: reward.reward,
+        reward,
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),

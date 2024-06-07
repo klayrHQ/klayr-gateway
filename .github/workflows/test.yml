@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: Run prisma
-        run: npx prisma migrate dev --preview-feature --schema prisma/test-schema.prisma
+        run: npm run prisma
 
       - name: Run tests
         run: npm run test

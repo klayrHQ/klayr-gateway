@@ -15,7 +15,7 @@ export class IndexerGenesisService {
   ) {}
 
   async onModuleInit() {
-    this.logger.debug(`Block module: Genesis block event`);
+    this.logger.debug(`Genesis block event`);
     const nodeInfo: NodeInfo = await this.nodeApiService.getAndSetNodeInfo();
     const genesisBlock = await this.nodeApiService.invokeApi<Block>(
       NodeApi.CHAIN_GET_BLOCK_BY_HEIGHT,

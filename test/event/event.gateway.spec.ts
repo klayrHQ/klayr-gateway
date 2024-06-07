@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server } from 'socket.io';
 import { EventGateway } from 'src/event/event.gateway';
-import { Events } from 'src/event/event.service';
+import { Events } from 'src/event/types';
 import { newBlockArrayMock } from 'test/mock-values/node-api-mocks';
 
 describe('EventGateway', () => {

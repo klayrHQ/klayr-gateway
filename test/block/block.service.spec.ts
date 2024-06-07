@@ -4,8 +4,10 @@ import { Block } from '../../src/node-api/types';
 import { testBlock } from 'test/mock-values/node-api-mocks';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BlockRepoService } from 'src/block/block-repo.service';
-import { PrismaServiceMock, clearDB } from 'test/helpers';
+import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';
 import { EventService } from 'src/event/event.service';
+import { NodeApiService } from 'src/node-api/node-api.service';
+import { MockNodeApiService } from 'test/helpers/mock-services';
 
 class MockEventService {
   pushToTxAndAssetsEventQ = jest.fn();
@@ -13,7 +15,7 @@ class MockEventService {
 
 describe('BlockEventService', () => {
   let repoService: BlockRepoService;
-  let blockEventService: BlockService;
+  let blockService: BlockService;
   let eventService: EventService;
   let prisma: PrismaService;
 
@@ -27,25 +29,26 @@ describe('BlockEventService', () => {
           useValue: new PrismaServiceMock(),
         },
         { provide: EventService, useClass: MockEventService },
+        { provide: NodeApiService, useClass: MockNodeApiService },
       ],
     }).compile();
 
     repoService = module.get<BlockRepoService>(BlockRepoService);
-    blockEventService = module.get<BlockService>(BlockService);
+    blockService = module.get<BlockService>(BlockService);
     eventService = module.get<EventService>(EventService);
     prisma = module.get<PrismaService>(PrismaService);
 
-    await clearDB(prisma);
+    await initDB(prisma);
   });
 
   it('should be defined', () => {
-    expect(blockEventService).toBeDefined();
+    expect(blockService).toBeDefined();
   });
 
   it('should create a block and retrieve it from test DB', async () => {
     const block: Block = testBlock;
 
-    await blockEventService.handleNewBlockEvent([block]);
+    await blockService.handleNewBlockEvent([block]);
     const createdBlock = await repoService.getBlock({ id: block.header.id });
 
     expect(eventService.pushToTxAndAssetsEventQ).toHaveBeenCalledTimes(2);
@@ -66,5 +69,10 @@ describe('BlockEventService', () => {
     expect(createdBlock.maxHeightGenerated).toBe(block.header.maxHeightGenerated);
     expect(createdBlock.impliesMaxPrevotes).toBe(block.header.impliesMaxPrevotes);
     expect(createdBlock.signature).toBe(block.header.signature);
+    expect(createdBlock.reward).toBe('5000000');
+    expect(createdBlock.numberOfTransactions).toBe(2);
+    expect(createdBlock.numberOfAssets).toBe(1);
+    expect(createdBlock.aggregateCommit).toBe(JSON.stringify(block.header.aggregateCommit));
+    expect(createdBlock.isFinal).toBe(true);
   });
 });

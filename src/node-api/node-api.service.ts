@@ -20,7 +20,7 @@ export enum NodeApi {
 export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
-  public nodeInfo: NodeInfo; // TODO: create endpoint for nodeinfo from gateway
+  public nodeInfo: NodeInfo; // TODO: create endpoint for nodeinfo
 
   async onModuleInit() {
     await this.connectToNode();
@@ -44,7 +44,6 @@ export class NodeApiService {
   }
 
   // Have to avoid retrying here cause of memory leaks
-  ////////////
   public subscribeToNewBlock(callback: (data: NewBlockEvent) => void): void {
     try {
       this.client.subscribe(NodeApi.CHAIN_NEW_BLOCK, async (data: unknown) => {
@@ -60,7 +59,6 @@ export class NodeApiService {
   // Is being called every new block event in the block event service
   public async getAndSetNodeInfo(): Promise<NodeInfo> {
     this.nodeInfo = await this.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {});
-    // this.client.
     return this.nodeInfo;
   }
 }

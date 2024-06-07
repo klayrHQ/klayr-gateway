@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Validator } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GetValidatorResponse } from './open-api/return-types';
 
 @Injectable()
 export class ValidatorRepoService {
@@ -8,7 +9,7 @@ export class ValidatorRepoService {
 
   public async getValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
-  ): Promise<Partial<Validator> | null> {
+  ): Promise<GetValidatorResponse | null> {
     return this.prisma.validator.findUnique({
       where: validatorWhereUniqueInput,
       select: {
