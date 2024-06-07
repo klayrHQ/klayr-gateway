@@ -28,12 +28,8 @@ export class IndexerGenesisService {
   }
 
   private async processGenesisBlock(block: Block) {
-    const schema = await this.nodeApiService.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
-    const assetSchema = schema.modules;
-
     const decodedAssets = block.assets.map((asset) => {
-      const schema = assetSchema.find((schema: { name: string }) => schema.name === asset.module);
-      const decoded = codec.decodeJSON(schema.assets[0].data, Buffer.from(asset.data, 'hex'));
+      const decoded = this.nodeApiService.decodeAssetData(asset.module, asset.data);
       return {
         name: asset.module,
         message: decoded,

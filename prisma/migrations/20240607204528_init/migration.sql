@@ -40,16 +40,17 @@ CREATE TABLE "NextBlockToSync" (
 
 -- CreateTable
 CREATE TABLE "Transaction" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "height" INTEGER NOT NULL,
     "module" TEXT NOT NULL,
     "command" TEXT NOT NULL,
     "nonce" TEXT NOT NULL,
     "fee" TEXT NOT NULL,
+    "minFee" TEXT NOT NULL,
     "senderPublicKey" TEXT NOT NULL,
     "params" TEXT NOT NULL,
     "signatures" TEXT NOT NULL,
-    "blockHeight" INTEGER NOT NULL,
-    CONSTRAINT "Transaction_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Transaction_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -76,6 +77,3 @@ CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Transaction_blockHeight_key" ON "Transaction"("blockHeight");

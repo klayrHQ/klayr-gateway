@@ -14,8 +14,11 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { TransactionRepoService } from './transaction-repo.service';
 import { Transform } from 'class-transformer';
 import { DEFAULT_BLOCKS_TO_FETCH, MAX_TXS_TO_FETCH } from 'src/utils/constants';
+import { ApiBody, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { transactionBody } from './open-api/request-types';
+import { PostTransactionResponse, postTransactionResponse } from './open-api/return-types';
 
-class PostTransactionDto {
+export class PostTransactionDto {
   @IsString()
   @IsNotEmpty()
   transaction: string;
@@ -59,7 +62,7 @@ export class TransactionController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   // @ApiResponse(getNodeInfoResponse)
-  async getTransaction(@Query() query: GetTransactionDto) {
+  public async getTransaction(@Query() query: GetTransactionDto) {
     const { transactionID, senderAddress, moduleCommand, limit, height } = query;
     const take = Math.min(limit, MAX_TXS_TO_FETCH);
     const [module, command] = moduleCommand.split(':');
@@ -87,14 +90,21 @@ export class TransactionController {
 
     console.log(transactions);
 
+    transactions.forEach((tx) => {
+      tx.params = JSON.parse(tx.params);
+      tx.signatures = JSON.parse(tx.signatures);
+    });
+
     // gateway response
     return transactions;
   }
 
   @Post()
-  // @ApiBody(invokeNodeApiBody) TODO
-  // @ApiResponse(invokeNodeApiResponse)
-  async transactionNodeApi(@Body() body: PostTransactionDto) {
+  @ApiBody(transactionBody)
+  @ApiResponse(postTransactionResponse)
+  public async transactionNodeApi(
+    @Body() body: PostTransactionDto,
+  ): Promise<PostTransactionResponse> {
     try {
       return await this.nodeApiService.invokeApi(NodeApi.TXPOOL_POST_TX, body);
     } catch (error) {

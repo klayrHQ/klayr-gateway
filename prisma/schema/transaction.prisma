@@ -5,6 +5,7 @@ model Transaction {
   command          String
   nonce            String
   fee              String
+  minFee           String 
   senderPublicKey  String
   params           String
   signatures       String   // stringifiy

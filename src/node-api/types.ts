@@ -59,3 +59,16 @@ export interface NodeInfo {
 export interface RewardAtHeight {
   reward: string;
 }
+
+export type SchemaModule = {
+  name: string;
+  commands: any[];
+  events: any[];
+  stores: any[];
+  endpoints: any[];
+  assets: any[];
+};
+
+export type Schema = {
+  modules: SchemaModule[];
+};

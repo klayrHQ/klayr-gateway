@@ -7,7 +7,8 @@ import {
 } from '@nestjs/common';
 import { NODE_URL, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
-import { NewBlockEvent, NodeInfo } from './types';
+import { NewBlockEvent, NodeInfo, SchemaModule } from './types';
+import { codec } from '@klayr/codec';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -27,10 +28,12 @@ export enum NodeApi {
 export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
+  private schemaMap: Map<string, SchemaModule>;
   public nodeInfo: NodeInfo; // TODO: create endpoint for nodeinfo
 
   async onModuleInit() {
     await this.connectToNode();
+    await this.getAndSetSchemas();
   }
 
   private async connectToNode() {
@@ -67,5 +70,38 @@ export class NodeApiService {
   public async getAndSetNodeInfo(): Promise<NodeInfo> {
     this.nodeInfo = await this.invokeApi<NodeInfo>(NodeApi.SYSTEM_GET_NODE_INFO, {});
     return this.nodeInfo;
+  }
+
+  private async getAndSetSchemas() {
+    const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
+    this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
+  }
+
+  public decodeTxData(mod: string, command: string, data: string): unknown {
+    const schema = this.schemaMap.get(mod);
+    if (!schema) {
+      throw new BadRequestException(`Schema for module ${mod} not found`);
+    }
+
+    const commandSchema = schema.commands.find((c) => c.name === command);
+    if (!commandSchema) {
+      throw new BadRequestException(`Command ${command} not found in module ${mod}`);
+    }
+
+    return codec.decodeJSON(commandSchema.params, Buffer.from(data, 'hex'));
+  }
+
+  public decodeAssetData(mod: string, data: string): unknown {
+    const schema = this.schemaMap.get(mod);
+    if (!schema) {
+      throw new BadRequestException(`Schema for module ${mod} not found`);
+    }
+
+    return codec.decodeJSON(schema.assets[0].data, Buffer.from(data, 'hex'));
+  }
+
+  // TODO: Cant import type
+  public calcMinFee(tx: any) {
+    return this.client.transaction.computeMinFee(tx).toString();
   }
 }

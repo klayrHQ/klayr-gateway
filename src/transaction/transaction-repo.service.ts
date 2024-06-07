@@ -28,6 +28,9 @@ export class TransactionRepoService {
       cursor,
       where,
       orderBy,
+      include: {
+        block: { select: { id: true, height: true, timestamp: true, isFinal: true } },
+      },
     });
   }
 
