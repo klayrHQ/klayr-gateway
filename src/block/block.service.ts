@@ -21,15 +21,19 @@ export class BlockService {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
     await this.blockRepo.createBlocksBulk(await this.processBlocks(payload));
+
     await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_ASSETS_EVENT,
       payload: this.processAssets(payload),
     });
 
-    await this.eventService.pushToTxAndAssetsEventQ({
-      event: Events.NEW_TX_EVENT,
-      payload: this.processTransactions(payload),
-    });
+    const transactions = this.processTransactions(payload);
+    if (transactions && transactions.length > 0) {
+      await this.eventService.pushToTxAndAssetsEventQ({
+        event: Events.NEW_TX_EVENT,
+        payload: transactions,
+      });
+    }
 
     await this.checkForBlockFinality();
 
@@ -56,10 +60,12 @@ export class BlockService {
   }
 
   private processTransactions(blocks: Block[]): Payload<Transaction>[] {
-    return blocks.map((block: Block) => ({
-      height: block.header.height,
-      data: block.transactions,
-    }));
+    return blocks
+      .filter((block: Block) => block.transactions.length > 0)
+      .map((block: Block) => ({
+        height: block.header.height,
+        data: block.transactions,
+      }));
   }
 
   private processAssets(blocks: Block[]): Payload<Asset>[] {

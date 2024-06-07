@@ -55,3 +55,11 @@ npx prisma migrate dev --preview-feature --schema prisma/test-schema.prisma
 ## Swagger api
 
 http://localhost:9901/api
+
+## Create tx
+
+sunset arctic describe battle negative grace fame pottery spin warm wasp arctic country possible corn company front spin pear together dizzy try actress one
+
+```bash
+./bin/run transaction:create token transfer 10000000 --params='{"tokenID": "0400000000000000", "recipientAddress": "klys9u6yy466q2mpbj92cmbp64eg7gvpuz7v4efm8", "amount": "9999", "data": ""}' --json --pretty
+```

@@ -29,6 +29,7 @@ export interface BlockHeader {
 }
 
 export interface Transaction {
+  id: string;
   module: string;
   command: string;
   params: string;

@@ -1,5 +1,6 @@
 model Transaction {
-  id               Int      @id @default(autoincrement())
+  id               String      @id 
+  height           Int      
   module           String
   command          String
   nonce            String
@@ -7,6 +8,5 @@ model Transaction {
   senderPublicKey  String
   params           String
   signatures       String   // stringifiy
-  block            Block    @relation(fields: [blockHeight], references: [height])
-  blockHeight      Int      @unique
+  block            Block    @relation(fields: [height], references: [height])
 }

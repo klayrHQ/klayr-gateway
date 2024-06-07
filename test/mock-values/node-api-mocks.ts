@@ -19,6 +19,7 @@ export const mockValidator = {
 
 export const mockTransactions = [
   {
+    id: '123',
     module: 'token',
     command: 'transfer',
     nonce: '2',
@@ -30,6 +31,7 @@ export const mockTransactions = [
     ],
   },
   {
+    id: '123123',
     module: 'token',
     command: 'transfer',
     nonce: '3',

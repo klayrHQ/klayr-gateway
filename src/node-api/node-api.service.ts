@@ -1,5 +1,10 @@
 import { apiClient } from '@klayr/client';
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { NODE_URL, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import { NewBlockEvent, NodeInfo } from './types';
@@ -13,6 +18,8 @@ export enum NodeApi {
   CHAIN_GET_BLOCK_BY_HEIGHT = 'chain_getBlockByHeight',
   CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
+  TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
+  TXPOOL_POST_TX = 'txpool_postTransaction',
 }
 
 // Functions to interact with the Node API
@@ -39,7 +46,7 @@ export class NodeApiService {
   public async invokeApi<T>(endpoint: string, params: any): Promise<T> {
     return this.client.invoke<T>(endpoint, params).catch((err) => {
       this.logger.error(err);
-      throw new Error(`Failed invoking ${endpoint}`);
+      throw new BadRequestException(err);
     });
   }
 
@@ -52,7 +59,7 @@ export class NodeApiService {
       });
     } catch (err) {
       this.logger.error(err);
-      throw new InternalServerErrorException('Failed to subscribe');
+      throw new InternalServerErrorException(err);
     }
   }
 

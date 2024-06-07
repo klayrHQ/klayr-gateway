@@ -14,8 +14,8 @@ export const GLOBAL_PREFIX = 'api/v1';
 ///       Node API       ///
 ////////////////////////////
 
-export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
-// export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
+// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
+export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
 export const RETRY_TIMEOUT = 5000; // 5 sec
 
 ////////////////////////////
@@ -31,3 +31,9 @@ export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 1000; // Can go to 5k or 10k may
 
 export const DEFAULT_BLOCKS_TO_FETCH = 10;
 export const MAX_BLOCKS_TO_FETCH = 100;
+
+////////////////////////////
+///       Transaction    ///
+////////////////////////////
+
+export const MAX_TXS_TO_FETCH = 100;

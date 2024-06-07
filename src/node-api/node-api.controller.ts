@@ -1,4 +1,11 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { invokeNodeApiResponse } from './open-api/return-types';
@@ -29,6 +36,15 @@ export class NodeApiController {
       throw new BadRequestException('Missing endpoint or params');
     }
 
-    return this.nodeApiService.invokeApi(endpoint, params);
+    try {
+      return await this.nodeApiService.invokeApi(endpoint, params);
+    } catch (error) {
+      throw new HttpException(
+        {
+          error,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

@@ -6,7 +6,7 @@ import { Events, Payload } from 'src/event/types';
 
 @Injectable()
 export class AssetService {
-  private logger = new Logger(AssetService.name);
+  private readonly logger = new Logger(AssetService.name);
 
   constructor(private assetRepo: AssetRepoService) {}
 

@@ -7,6 +7,7 @@ import { EventModule } from './event/event.module';
 import { BlockModule } from './block/block.module';
 import { AssetModule } from './asset/asset.module';
 import { ValidatorModule } from './validator/validator.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ValidatorModule } from './validator/validator.module';
     BlockModule,
     AssetModule,
     ValidatorModule,
+    TransactionModule,
   ],
   controllers: [],
   providers: [],
