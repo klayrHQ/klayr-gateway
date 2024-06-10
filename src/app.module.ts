@@ -8,6 +8,7 @@ import { BlockModule } from './block/block.module';
 import { AssetModule } from './asset/asset.module';
 import { ValidatorModule } from './validator/validator.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TransactionModule } from './transaction/transaction.module';
     AssetModule,
     ValidatorModule,
     TransactionModule,
+    AccountModule,
   ],
   controllers: [],
   providers: [],

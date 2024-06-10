@@ -1,13 +1,14 @@
 model Transaction {
-  id               String      @id 
-  height           Int      
-  module           String
-  command          String
-  nonce            String
-  fee              String
-  minFee           String 
-  senderPublicKey  String
-  params           String
-  signatures       String   // stringifiy
-  block            Block    @relation(fields: [height], references: [height])
+  id            String  @id
+  height        Int
+  module        String
+  command       String
+  nonce         String
+  fee           String
+  minFee        String
+  senderAddress String
+  sender        Account @relation(fields: [senderAddress], references: [address])
+  params        String
+  signatures    String // stringifiy
+  block         Block   @relation(fields: [height], references: [height])
 }

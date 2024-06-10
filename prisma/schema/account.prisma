@@ -1,0 +1,8 @@
+model Account {
+  address     String        @id @unique
+  publicKey   String?       @unique
+  name        String?
+  block       Block[]
+  transaction Transaction[]
+  validator   Validator?
+}

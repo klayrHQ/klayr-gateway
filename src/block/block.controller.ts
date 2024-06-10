@@ -80,6 +80,8 @@ export class BlockController {
 
     blocks.forEach((block) => {
       block.aggregateCommit = JSON.parse(block.aggregateCommit);
+      if (!block.generator.publicKey) delete block.generator.publicKey;
+      if (!block.generator.name) delete block.generator.name;
       delete block.generatorAddress;
     });
 

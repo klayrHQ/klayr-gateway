@@ -29,6 +29,6 @@ export class ValidatorController {
       throw new NotFoundException(`Validator with address ${query.address} not found`);
     }
 
-    return new GatewayResponse(validator, { address: validator.address, name: validator.name });
+    return new GatewayResponse(validator, { address: validator.account.address });
   }
 }

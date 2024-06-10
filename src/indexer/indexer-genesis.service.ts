@@ -46,6 +46,7 @@ export class IndexerGenesisService {
       case AssetTypes.POS:
         await this.validatorService.processPosAsset(decodedAsset.message.validators);
         break;
+
       default:
         this.logger.warn(`Unhandled asset name: ${decodedAsset.name}`);
     }

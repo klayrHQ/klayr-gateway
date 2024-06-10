@@ -2,12 +2,21 @@ import { ApiResponseOptions } from '@nestjs/swagger';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-export class GetValidatorResponse {
+// TODO: Move probably
+class Account {
   @ApiProperty()
   address: string;
 
   @ApiProperty()
-  name: string;
+  publicKey?: string;
+
+  @ApiProperty()
+  name?: string;
+}
+
+export class GetValidatorResponse {
+  @ApiProperty({ type: () => Account, required: true })
+  account: Account;
 
   @ApiProperty()
   blsKey: string;

@@ -20,7 +20,7 @@ export class TransactionRepoService {
     cursor?: Prisma.TransactionWhereUniqueInput;
     where?: Prisma.TransactionWhereInput;
     orderBy?: Prisma.TransactionOrderByWithRelationInput;
-  }): Promise<Transaction[]> {
+  }): Promise<Prisma.TransactionGetPayload<{ include: { sender: true } }>[]> {
     const { skip, take, cursor, where, orderBy } = params;
     return await this.prisma.transaction.findMany({
       skip,
@@ -30,6 +30,7 @@ export class TransactionRepoService {
       orderBy,
       include: {
         block: { select: { id: true, height: true, timestamp: true, isFinal: true } },
+        sender: true,
       },
     });
   }

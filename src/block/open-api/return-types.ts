@@ -27,6 +27,9 @@ export class Generator {
   address: string;
 
   @ApiProperty()
+  publicKey: string;
+
+  @ApiProperty()
   name: string;
 }
 

@@ -1,25 +1,25 @@
 model Block {
-  height                Int      @id @unique
-  id                    String   @unique
-  version               Int
-  timestamp             Int
-  previousBlockID       String
-  stateRoot             String
-  assetRoot             String
-  eventRoot             String
-  transactionRoot       String
-  validatorsHash        String
-  generatorAddress      String
-  generator             Validator @relation(fields: [generatorAddress], references: [address])
-  maxHeightPrevoted     Int
-  maxHeightGenerated    Int
-  impliesMaxPrevotes    Boolean
-  signature             String
-  aggregateCommit       String
-  numberOfTransactions  Int
-  numberOfAssets        Int
-  isFinal               Boolean   @default(false)
-  reward                String
-  assets                Asset[] 
-  transactions          Transaction[]
+  height               Int           @id @unique
+  id                   String        @unique
+  version              Int
+  timestamp            Int
+  previousBlockID      String
+  stateRoot            String
+  assetRoot            String
+  eventRoot            String
+  transactionRoot      String
+  validatorsHash       String
+  generatorAddress     String
+  generator            Account       @relation(fields: [generatorAddress], references: [address])
+  maxHeightPrevoted    Int
+  maxHeightGenerated   Int
+  impliesMaxPrevotes   Boolean
+  signature            String
+  aggregateCommit      String
+  numberOfTransactions Int
+  numberOfAssets       Int
+  isFinal              Boolean       @default(false)
+  reward               String
+  assets               Asset[]
+  transactions         Transaction[]
 }

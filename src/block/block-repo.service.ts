@@ -17,7 +17,6 @@ export class BlockRepoService {
         generator: {
           select: {
             address: true,
-            name: true,
           },
         },
       },
@@ -35,7 +34,7 @@ export class BlockRepoService {
     where?: Prisma.BlockWhereInput;
     orderBy?: Prisma.BlockOrderByWithRelationInput;
     includeAssets?: boolean;
-  }): Promise<Block[]> {
+  }): Promise<Prisma.BlockGetPayload<{ include: { generator: true } }>[]> {
     const { skip, take, cursor, where, orderBy, includeAssets } = params;
     return await this.prisma.block.findMany({
       skip,
@@ -47,6 +46,7 @@ export class BlockRepoService {
         generator: {
           select: {
             address: true,
+            publicKey: true,
             name: true,
           },
         },

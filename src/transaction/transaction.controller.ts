@@ -66,8 +66,6 @@ export class TransactionController {
     const { transactionID, senderAddress, moduleCommand, limit, height } = query;
     const take = Math.min(limit, MAX_TXS_TO_FETCH);
     const [module, command] = moduleCommand.split(':');
-    console.log(query);
-    console.log(take);
 
     const where = {
       module: module,
@@ -88,11 +86,11 @@ export class TransactionController {
       // skip: offset,
     });
 
-    console.log(transactions);
-
     transactions.forEach((tx) => {
       tx.params = JSON.parse(tx.params);
       tx.signatures = JSON.parse(tx.signatures);
+      delete tx.senderAddress;
+      if (!tx.sender.name) delete tx.sender.name;
     });
 
     // gateway response

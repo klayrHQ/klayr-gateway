@@ -1,4 +1,11 @@
 -- CreateTable
+CREATE TABLE "Account" (
+    "address" TEXT NOT NULL PRIMARY KEY,
+    "publicKey" TEXT,
+    "name" TEXT
+);
+
+-- CreateTable
 CREATE TABLE "Asset" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "height" INTEGER NOT NULL,
@@ -29,7 +36,7 @@ CREATE TABLE "Block" (
     "numberOfAssets" INTEGER NOT NULL,
     "isFinal" BOOLEAN NOT NULL DEFAULT false,
     "reward" TEXT NOT NULL,
-    CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Validator" ("address") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Account" ("address") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -47,16 +54,16 @@ CREATE TABLE "Transaction" (
     "nonce" TEXT NOT NULL,
     "fee" TEXT NOT NULL,
     "minFee" TEXT NOT NULL,
-    "senderPublicKey" TEXT NOT NULL,
+    "senderAddress" TEXT NOT NULL,
     "params" TEXT NOT NULL,
     "signatures" TEXT NOT NULL,
+    CONSTRAINT "Transaction_senderAddress_fkey" FOREIGN KEY ("senderAddress") REFERENCES "Account" ("address") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Transaction_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Validator" (
     "address" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
     "blsKey" TEXT NOT NULL,
     "proofOfPossession" TEXT NOT NULL,
     "generatorKey" TEXT NOT NULL,
@@ -66,8 +73,15 @@ CREATE TABLE "Validator" (
     "consecutiveMissedBlocks" INTEGER NOT NULL,
     "commission" INTEGER NOT NULL,
     "lastCommissionIncreaseHeight" INTEGER NOT NULL,
-    "sharingCoefficients" TEXT NOT NULL
+    "sharingCoefficients" TEXT NOT NULL,
+    CONSTRAINT "Validator_address_fkey" FOREIGN KEY ("address") REFERENCES "Account" ("address") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Account_address_key" ON "Account"("address");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Account_publicKey_key" ON "Account"("publicKey");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");

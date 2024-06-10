@@ -13,8 +13,7 @@ export class ValidatorRepoService {
     return this.prisma.validator.findUnique({
       where: validatorWhereUniqueInput,
       select: {
-        address: true,
-        name: true,
+        account: true,
         blsKey: true,
         proofOfPossession: true,
         generatorKey: true,
