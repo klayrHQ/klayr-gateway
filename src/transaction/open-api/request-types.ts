@@ -31,7 +31,8 @@ export const nonceQuery: ApiQueryOptions = {
   name: 'nonce',
   type: 'number',
   required: false,
-  description: 'Filter transactions by nonce.',
+  description:
+    'Filter transactions by nonce. Nonce is only allowed if senderAddress is supplied as a parameter.',
 };
 
 export const addressQuery: ApiQueryOptions = {

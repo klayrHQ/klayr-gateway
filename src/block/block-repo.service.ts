@@ -23,8 +23,11 @@ export class BlockRepoService {
     });
   }
 
-  public async countBlocks(where: Prisma.BlockWhereInput): Promise<number> {
-    return this.prisma.block.count({ where });
+  public async countBlocks(params: { where?: Prisma.BlockWhereInput }): Promise<number> {
+    const { where } = params;
+    return this.prisma.block.count({
+      where,
+    });
   }
 
   public async getBlocks(params: {

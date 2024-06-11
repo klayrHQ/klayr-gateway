@@ -72,9 +72,6 @@ export class GetTransactions {
   @ApiProperty()
   minFee: string;
 
-  // @ApiProperty()
-  // timestamp: number;
-
   @ApiProperty({ type: Params })
   params: string | Params;
 

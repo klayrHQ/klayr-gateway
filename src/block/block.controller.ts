@@ -52,12 +52,12 @@ export class BlockController {
 
     if (height) {
       const [start, end] = height.split(':');
-      where['height'] = ControllerHelpers.buildCondition(start, end, take);
+      where['height'] = ControllerHelpers.buildCondition(start, end);
     }
 
     if (timestamp) {
       const [start, end] = timestamp.split(':');
-      where['timestamp'] = ControllerHelpers.buildCondition(start, end, take);
+      where['timestamp'] = ControllerHelpers.buildCondition(start, end);
     }
 
     if (blockID) {
@@ -74,7 +74,7 @@ export class BlockController {
         skip: offset,
         includeAssets,
       }),
-      this.blockRepoService.countBlocks({}),
+      this.blockRepoService.countBlocks({ where }),
     ]);
 
     blocks.forEach((block) => {

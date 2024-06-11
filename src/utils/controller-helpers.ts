@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 export class ControllerHelpers {
-  static buildCondition(start: string, end: string, take: number) {
+  static buildCondition(start: string, end: string) {
     if (start && end) {
       return {
         gte: Number(start),
@@ -13,7 +13,6 @@ export class ControllerHelpers {
       };
     } else if (end) {
       return {
-        gt: Number(end) - take,
         lte: Number(end),
       };
     }

@@ -52,4 +52,16 @@ export class TransactionRepoService {
       data: transactions,
     });
   }
+
+  public async countTransactions(params: {
+    where?: Prisma.TransactionWhereInput & {
+      sender?: { address?: string };
+      block?: { id?: string };
+    };
+  }): Promise<number> {
+    const { where } = params;
+    return this.prisma.transaction.count({
+      where,
+    });
+  }
 }

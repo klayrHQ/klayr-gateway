@@ -66,9 +66,6 @@ export class TransactionController {
     // TODO: recipient
     // TODO: receivingChainID
     // TODO: executionStatus
-    // TODO: add timestamp to tx model
-    // TODO: add total in response
-    // TODO: change any in response
     const {
       transactionID,
       blockID,
@@ -82,11 +79,11 @@ export class TransactionController {
       sort,
       offset,
     } = query;
+    if (nonce) this.checkSenderAddress(senderAddress);
+
     const take = Math.min(limit, MAX_TXS_TO_FETCH);
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const [module, command] = moduleCommand ? moduleCommand.split(':') : [];
-    const [startHeight, endHeight] = height ? height.split(':') : [];
-    const [startTimestamp, endTimestamp] = timestamp ? timestamp.split(':') : [];
 
     const where: Prisma.TransactionWhereInput & {
       sender?: { address?: string };
@@ -98,33 +95,30 @@ export class TransactionController {
       ...(address && { sender: { address } }),
       ...(module && { module }),
       ...(command && { command }),
-      ...(startHeight &&
-        endHeight && { height: ControllerHelpers.buildCondition(startHeight, endHeight, take) }),
-      ...(startTimestamp &&
-        endTimestamp && {
-          timestamp: ControllerHelpers.buildCondition(startTimestamp, endTimestamp, take),
-        }),
+      ...(nonce && { nonce }),
     };
 
-    console.log(where);
-
-    if (nonce) {
-      if (!senderAddress)
-        throw new HttpException(
-          'senderAddress is required when using nonce',
-          HttpStatus.BAD_REQUEST,
-        );
-      where.nonce = nonce;
+    if (height) {
+      const [start, end] = height.split(':');
+      where['height'] = ControllerHelpers.buildCondition(start, end);
     }
 
-    const transactions = await this.transactionRepoService.getTransactions({
-      where,
-      take,
-      orderBy: {
-        [field]: direction,
-      },
-      skip: offset,
-    });
+    if (timestamp) {
+      const [start, end] = timestamp.split(':');
+      where['block'] = { timestamp: ControllerHelpers.buildCondition(start, end) };
+    }
+
+    const [transactions, total] = await Promise.all([
+      this.transactionRepoService.getTransactions({
+        where,
+        take,
+        orderBy: {
+          [field]: direction,
+        },
+        skip: offset,
+      }),
+      this.transactionRepoService.countTransactions({ where }),
+    ]);
 
     transactions.forEach((tx) => {
       tx.params = JSON.parse(tx.params);
@@ -133,7 +127,7 @@ export class TransactionController {
       if (!tx.sender.name) delete tx.sender.name;
     });
 
-    return new GatewayResponse(transactions, { count: transactions.length, offset, total: 0 });
+    return new GatewayResponse(transactions, { count: transactions.length, offset, total });
   }
 
   @Post()
@@ -151,6 +145,12 @@ export class TransactionController {
         },
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  private checkSenderAddress(senderAddress: string) {
+    if (!senderAddress) {
+      throw new HttpException('senderAddress is required when using nonce', HttpStatus.BAD_REQUEST);
     }
   }
 }
