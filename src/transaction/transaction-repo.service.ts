@@ -18,9 +18,19 @@ export class TransactionRepoService {
     skip?: number;
     take?: number;
     cursor?: Prisma.TransactionWhereUniqueInput;
-    where?: Prisma.TransactionWhereInput;
+    where?: Prisma.TransactionWhereInput & {
+      sender?: { address?: string };
+      block?: { id?: string };
+    };
     orderBy?: Prisma.TransactionOrderByWithRelationInput;
-  }): Promise<Prisma.TransactionGetPayload<{ include: { sender: true } }>[]> {
+  }): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        sender: true;
+        block: { select: { id: true; height: true; timestamp: true; isFinal: true } };
+      };
+    }>[]
+  > {
     const { skip, take, cursor, where, orderBy } = params;
     return await this.prisma.transaction.findMany({
       skip,

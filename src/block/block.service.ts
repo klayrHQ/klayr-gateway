@@ -41,6 +41,25 @@ export class BlockService {
     // TODO: emit event events (chain event)
   }
 
+  public async updateBlocksFee(map: Map<number, UpdateBlockFee>): Promise<void> {
+    for (const [height, { totalBurnt, totalFee }] of map.entries()) {
+      const { reward } = await this.blockRepo.getBlock({ height });
+      const networkFee = totalFee - totalBurnt;
+      const totalForged = Number(reward) + networkFee + totalBurnt;
+
+      await this.blockRepo.updateBlock({
+        where: {
+          height: height,
+        },
+        data: {
+          totalBurnt: totalBurnt,
+          networkFee: networkFee,
+          totalForged: totalForged,
+        },
+      });
+    }
+  }
+
   private async processBlocks(blocks: Block[]): Promise<any[]> {
     const promises = blocks.map(async (block) => {
       const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
@@ -90,24 +109,5 @@ export class BlockService {
         isFinal: true,
       },
     });
-  }
-
-  public async updateBlocksFee(map: Map<number, UpdateBlockFee>): Promise<void> {
-    for (const [height, { totalBurnt, totalFee }] of map.entries()) {
-      const { reward } = await this.blockRepo.getBlock({ height });
-      const networkFee = totalFee - totalBurnt;
-      const totalForged = Number(reward) + networkFee + totalBurnt;
-
-      await this.blockRepo.updateBlock({
-        where: {
-          height: height,
-        },
-        data: {
-          totalBurnt: totalBurnt,
-          networkFee: networkFee,
-          totalForged: totalForged,
-        },
-      });
-    }
   }
 }

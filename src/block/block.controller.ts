@@ -20,7 +20,7 @@ import {
   timestampQuery,
 } from './open-api/request-types';
 import { GetBlockResponse, getBlocksResponse } from './open-api/return-types';
-import { GatewayResponse } from 'src/utils/helpers';
+import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 
 @ApiTags('Blocks')
 @Controller('blocks')
@@ -37,7 +37,6 @@ export class BlockController {
   @ApiQuery(includeAssetsQuery)
   @ApiResponse(getBlocksResponse)
   async getBlocks(
-    // TODO: Module name query???
     @Query('height') height: string,
     @Query('timestamp') timestamp: string,
     @Query('blockID') blockID: string,
@@ -47,18 +46,18 @@ export class BlockController {
     @Query('includeAssets', new DefaultValuePipe(false), new ParseBoolPipe())
     includeAssets: boolean,
   ): Promise<GatewayResponse<GetBlockResponse[]>> {
-    const { field, direction } = this.validateSortParameter(sort);
+    const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
     const where = {};
 
     if (height) {
       const [start, end] = height.split(':');
-      where['height'] = this.buildCondition(start, end, take);
+      where['height'] = ControllerHelpers.buildCondition(start, end, take);
     }
 
     if (timestamp) {
       const [start, end] = timestamp.split(':');
-      where['timestamp'] = this.buildCondition(start, end, take);
+      where['timestamp'] = ControllerHelpers.buildCondition(start, end, take);
     }
 
     if (blockID) {
@@ -86,36 +85,5 @@ export class BlockController {
     });
 
     return new GatewayResponse(blocks, { count: blocks.length, offset, total });
-  }
-
-  private buildCondition(start: string, end: string, take: number) {
-    if (start && end) {
-      return {
-        gte: Number(start),
-        lte: Number(end),
-      };
-    } else if (start) {
-      return {
-        gte: Number(start),
-      };
-    } else if (end) {
-      return {
-        gt: Number(end) - take,
-        lte: Number(end),
-      };
-    }
-  }
-
-  private validateSortParameter(sort: string) {
-    const [field, direction] = sort.split(':');
-    if (
-      !['height', 'timestamp'].includes(field) ||
-      !['asc', 'desc'].includes(direction.toLowerCase())
-    ) {
-      throw new BadRequestException(
-        'Invalid sort parameter. It should be one of "height:asc", "height:desc", "timestamp:asc", "timestamp:desc".',
-      );
-    }
-    return { field, direction };
   }
 }

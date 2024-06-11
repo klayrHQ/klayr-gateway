@@ -1,10 +1,10 @@
 import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
-import { GatewayResponse } from 'src/utils/helpers';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { addressQuery } from './open-api/request-types';
 import { GetValidatorResponse, getValidatorResponse } from './open-api/return-types';
+import { GatewayResponse } from 'src/utils/controller-helpers';
 
 class ValidatorQueryDto {
   @IsString()

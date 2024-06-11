@@ -80,7 +80,7 @@ export class GetBlockResponse {
   signature: string;
 
   @ApiProperty({ type: () => AggregateCommit })
-  aggregateCommit: string | AggregateCommit;
+  aggregateCommit: string | AggregateCommit; // to satisfy the JSON.parse() in the controller
 
   @ApiProperty()
   numberOfTransactions: number;

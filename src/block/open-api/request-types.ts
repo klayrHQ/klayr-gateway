@@ -1,12 +1,6 @@
 import { ApiQueryOptions } from '@nestjs/swagger';
 import { DEFAULT_BLOCKS_TO_FETCH } from 'src/utils/constants';
-
-enum SortTypes {
-  HEIGHT_ASC = 'height:asc',
-  HEIGHT_DESC = 'height:desc',
-  TIMESTAMP_ASC = 'timestamp:asc',
-  TIMESTAMP_DESC = 'timestamp:desc',
-}
+import { SortTypes } from 'src/utils/controller-helpers';
 
 export const heightQuery: ApiQueryOptions = {
   name: 'height',
@@ -50,4 +44,3 @@ export const includeAssetsQuery: ApiQueryOptions = {
   required: false,
   description: 'Include assets in the blocks fetched. Default is false.',
 };
-
