@@ -36,6 +36,9 @@ CREATE TABLE "Block" (
     "numberOfAssets" INTEGER NOT NULL,
     "isFinal" BOOLEAN NOT NULL DEFAULT false,
     "reward" TEXT NOT NULL,
+    "totalBurnt" INTEGER NOT NULL DEFAULT 0,
+    "networkFee" INTEGER NOT NULL DEFAULT 0,
+    "totalForged" INTEGER NOT NULL,
     CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Account" ("address") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

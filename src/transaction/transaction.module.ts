@@ -5,9 +5,10 @@ import { NodeApiModule } from 'src/node-api/node-api.module';
 import { TransactionService } from './transaction.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AccountModule } from 'src/account/account.module';
+import { BlockModule } from 'src/block/block.module';
 
 @Module({
-  imports: [NodeApiModule, AccountModule],
+  imports: [NodeApiModule, AccountModule, BlockModule],
   providers: [PrismaService, TransactionRepoService, TransactionService],
   controllers: [TransactionController],
 })

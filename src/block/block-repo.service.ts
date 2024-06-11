@@ -67,10 +67,10 @@ export class BlockRepoService {
     return this.prisma.block.create({ data: createBlockInput });
   }
 
-  public async updateBlock(params: {
+  public updateBlock(params: {
     where: Prisma.BlockWhereUniqueInput;
     data: Prisma.BlockUpdateInput;
-  }): Promise<Block> {
+  }): PrismaPromise<Block> {
     const { data, where } = params;
     return this.prisma.block.update({
       data,
@@ -101,5 +101,9 @@ export class BlockRepoService {
     return this.prisma.block.createMany({
       data: blocks,
     });
+  }
+
+  public async updateBlocksTransaction(updates: PrismaPromise<Block>[]): Promise<Block[]> {
+    return this.prisma.$transaction(updates);
   }
 }

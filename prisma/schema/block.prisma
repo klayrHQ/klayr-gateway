@@ -20,6 +20,9 @@ model Block {
   numberOfAssets       Int
   isFinal              Boolean       @default(false)
   reward               String
+  totalBurnt           Int           @default(0)// sum(txs.minFee)
+  networkFee           Int           @default(0)// sum(txs.fee) - sum(txs.minFee)
+  totalForged          Int           // reward + networkFee + totalBurnt
   assets               Asset[]
   transactions         Transaction[]
 }

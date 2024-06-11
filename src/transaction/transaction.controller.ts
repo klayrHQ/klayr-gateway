@@ -14,7 +14,7 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { TransactionRepoService } from './transaction-repo.service';
 import { Transform } from 'class-transformer';
 import { DEFAULT_BLOCKS_TO_FETCH, MAX_TXS_TO_FETCH } from 'src/utils/constants';
-import { ApiBody, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { transactionBody } from './open-api/request-types';
 import { PostTransactionResponse, postTransactionResponse } from './open-api/return-types';
 
@@ -52,7 +52,8 @@ class GetTransactionDto {
   height: string;
 }
 
-@Controller('transaction')
+@ApiTags('Transactions')
+@Controller('transactions')
 export class TransactionController {
   constructor(
     private readonly nodeApiService: NodeApiService,

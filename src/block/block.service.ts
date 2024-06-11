@@ -5,6 +5,7 @@ import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, Payload } from 'src/event/types';
+import { UpdateBlockFee } from 'src/transaction/transaction.service';
 
 @Injectable()
 export class BlockService {
@@ -53,6 +54,7 @@ export class BlockService {
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),
+        totalForged: Number(reward),
       };
     });
 
@@ -89,7 +91,23 @@ export class BlockService {
       },
     });
   }
-}
 
-// 100k => 35s old code
-// 3 jaar => 8m block  => 45min old code
+  public async updateBlocksFee(map: Map<number, UpdateBlockFee>): Promise<void> {
+    for (const [height, { totalBurnt, totalFee }] of map.entries()) {
+      const { reward } = await this.blockRepo.getBlock({ height });
+      const networkFee = totalFee - totalBurnt;
+      const totalForged = Number(reward) + networkFee + totalBurnt;
+
+      await this.blockRepo.updateBlock({
+        where: {
+          height: height,
+        },
+        data: {
+          totalBurnt: totalBurnt,
+          networkFee: networkFee,
+          totalForged: totalForged,
+        },
+      });
+    }
+  }
+}

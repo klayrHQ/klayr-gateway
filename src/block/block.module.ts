@@ -10,5 +10,6 @@ import { NodeApiModule } from 'src/node-api/node-api.module';
   imports: [EventModule, NodeApiModule],
   providers: [PrismaService, BlockService, BlockRepoService],
   controllers: [BlockController],
+  exports: [BlockService],
 })
 export class BlockModule {}
