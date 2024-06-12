@@ -38,6 +38,9 @@ export class BlockService {
 
     await this.checkForBlockFinality();
 
+    payload.forEach((block) => {
+      if (block.transactions.length > 0) console.log(block.transactions);
+    });
     // TODO: emit event events (chain event)
   }
 
