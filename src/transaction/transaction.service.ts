@@ -31,7 +31,7 @@ export class TransactionService {
 
     const txInput = await Promise.all(
       payload.flatMap(({ height, data: txs }) =>
-        txs.map((tx) => this.processTransaction(tx, height, totalBurntPerBlock)),
+        txs.map((tx, i) => this.processTransaction({ tx, height, index: i, totalBurntPerBlock })),
       ),
     );
 
@@ -41,11 +41,13 @@ export class TransactionService {
     ]);
   }
 
-  private async processTransaction(
-    tx: Transaction,
-    height: number,
-    totalBurntPerBlock: Map<number, UpdateBlockFee>,
-  ): Promise<any> {
+  private async processTransaction(params: {
+    tx: Transaction;
+    height: number;
+    index: number;
+    totalBurntPerBlock: Map<number, UpdateBlockFee>;
+  }): Promise<any> {
+    const { tx, height, index, totalBurntPerBlock } = params;
     const senderAddress = await this.upsertAccount(tx);
     const txMinFee = this.calcFeePerBlock(totalBurntPerBlock, height, tx);
 
@@ -59,6 +61,7 @@ export class TransactionService {
       fee: tx.fee,
       minFee: txMinFee,
       senderAddress,
+      index,
       params: JSON.stringify(this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params)),
     };
   }

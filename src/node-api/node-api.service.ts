@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { NODE_URL, RETRY_TIMEOUT } from 'src/utils/constants';
+import { RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import { NewBlockEvent, NodeInfo, SchemaModule } from './types';
 import { codec } from '@klayr/codec';
@@ -38,7 +38,7 @@ export class NodeApiService {
 
   private async connectToNode() {
     while (!this.client) {
-      this.client = await apiClient.createWSClient(NODE_URL).catch(async (err) => {
+      this.client = await apiClient.createWSClient(process.env.NODE_URL).catch(async (err) => {
         this.logger.error('Failed connecting to node, retrying...', err);
         await waitTimeout(RETRY_TIMEOUT);
         return null;

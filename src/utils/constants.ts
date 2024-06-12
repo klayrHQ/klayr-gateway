@@ -6,6 +6,7 @@ export const SWAGGERCONFIG = {
   title: 'Klayr Gateway API',
   description: 'The Klayr gateway API description',
   version: '0.0.1',
+  route: 'api/v1/spec',
 };
 
 export const GLOBAL_PREFIX = 'api/v1';
@@ -14,8 +15,7 @@ export const GLOBAL_PREFIX = 'api/v1';
 ///       Node API       ///
 ////////////////////////////
 
-// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws';
-export const NODE_URL = 'ws://127.0.0.1:7887/rpc-ws';
+// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws'; MOVED TO ENV
 export const RETRY_TIMEOUT = 5000; // 5 sec
 
 ////////////////////////////

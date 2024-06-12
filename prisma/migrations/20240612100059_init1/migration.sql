@@ -60,6 +60,7 @@ CREATE TABLE "Transaction" (
     "senderAddress" TEXT NOT NULL,
     "params" TEXT NOT NULL,
     "signatures" TEXT NOT NULL,
+    "index" INTEGER NOT NULL,
     CONSTRAINT "Transaction_senderAddress_fkey" FOREIGN KEY ("senderAddress") REFERENCES "Account" ("address") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Transaction_height_fkey" FOREIGN KEY ("height") REFERENCES "Block" ("height") ON DELETE RESTRICT ON UPDATE CASCADE
 );

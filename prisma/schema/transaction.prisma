@@ -10,5 +10,6 @@ model Transaction {
   sender        Account @relation(fields: [senderAddress], references: [address])
   params        String
   signatures    String // stringifiy
+  index         Int
   block         Block   @relation(fields: [height], references: [height])
 }
