@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AccountRepoService } from 'src/account/account-repo.service';
+import { AccountService } from 'src/account/account.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ValidatorRepoService } from 'src/validator/validator.repo-service';
 import { ValidatorService } from 'src/validator/validator.service';
-import { PrismaServiceMock } from 'test/helpers/mock-prisma-service';
+import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';
 import { mockValidator } from 'test/mock-values/node-api-mocks';
 
 describe('ValidatorService', () => {
@@ -14,6 +16,8 @@ describe('ValidatorService', () => {
       providers: [
         ValidatorService,
         ValidatorRepoService,
+        { provide: AccountService, useClass: AccountService },
+        { provide: AccountRepoService, useClass: AccountRepoService },
         {
           provide: PrismaService,
           useValue: new PrismaServiceMock(),
@@ -23,6 +27,8 @@ describe('ValidatorService', () => {
 
     service = module.get<ValidatorService>(ValidatorService);
     repoService = module.get<ValidatorRepoService>(ValidatorRepoService);
+
+    await initDB(module.get<PrismaService>(PrismaService));
   });
 
   it('should be defined', () => {
@@ -34,8 +40,8 @@ describe('ValidatorService', () => {
 
     const createdValidator = await repoService.getValidator({ address: mockValidator.address });
 
-    expect(createdValidator.address).toBe(mockValidator.address);
-    expect(createdValidator.name).toBe(mockValidator.name);
+    expect(createdValidator.account.address).toBe(mockValidator.address);
+    expect(createdValidator.account.name).toBe(mockValidator.name);
     expect(createdValidator.blsKey).toBe(mockValidator.blsKey);
     expect(createdValidator.proofOfPossession).toBe(mockValidator.proofOfPossession);
     expect(createdValidator.generatorKey).toBe(mockValidator.generatorKey);

@@ -8,6 +8,7 @@ import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';
 import { EventService } from 'src/event/event.service';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { MockNodeApiService } from 'test/helpers/mock-services';
+import { ValidatorService } from 'src/validator/validator.service';
 
 class MockEventService {
   pushToTxAndAssetsEventQ = jest.fn();
@@ -24,6 +25,7 @@ describe('BlockEventService', () => {
       providers: [
         BlockRepoService,
         BlockService,
+        { provide: ValidatorService, useClass: jest.fn() },
         {
           provide: PrismaService,
           useValue: new PrismaServiceMock(),

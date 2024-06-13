@@ -1,7 +1,7 @@
 import { Block, NewBlockEvent } from 'src/node-api/types';
 
 export const mockValidator = {
-  address: 'klyythpdte6squq3h95k4xnk8njd65w5akrn8pwc3',
+  address: 'klyythpdte6squq3h95k4xnk8njd65w5akrn8pwc4',
   name: 'uzamaru_testnet',
   blsKey:
     '8909c0b466ee39fe29a7797e6c070838c3190cf59288d1bc4fc194e8aa2b7ee164ed27f76645c9a4a0eb71948193349e',
