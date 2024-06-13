@@ -1,9 +1,3 @@
-# Dockerfile best practices
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
-# Dockerized NodeJS best practices
-# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md
-# ! Dont forget to run "npx prisma migrate dev --preview-feature" before building
-
 FROM node:18 as build
 WORKDIR /usr/src/app
 
@@ -12,6 +6,7 @@ COPY package-lock.json .
 RUN npm install
 COPY . .
 RUN npx prisma generate
+RUN npx prisma migrate dev --preview-feature --name init
 RUN npm run build
 
 FROM node:18-slim
@@ -22,10 +17,10 @@ COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 COPY --chown=node:node --from=build /usr/src/app/.env .env
 COPY --chown=node:node --from=build /usr/src/app/package.json .
 COPY --chown=node:node --from=build /usr/src/app/package-lock.json .
+COPY --chown=node:node --from=build /usr/src/app/prisma/db/dev.db ./prisma/db/dev.db
 
 RUN npm install --omit=dev
 COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client  ./node_modules/.prisma/client
-COPY prisma/db/dev.db /usr/src/app/prisma/db/dev.db
 
 EXPOSE 9901
 CMD ["dumb-init", "node", "dist/main"]
