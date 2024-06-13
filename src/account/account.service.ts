@@ -6,11 +6,19 @@ import { Prisma } from '@prisma/client';
 export class AccountService {
   constructor(private readonly accountRepoService: AccountRepoService) {}
 
+  public async getAccount(accountWhereUniqueInput: Prisma.AccountWhereUniqueInput) {
+    return this.accountRepoService.getAccount(accountWhereUniqueInput);
+  }
+
   public async createAccountsBulk(accounts: Prisma.AccountCreateManyInput[]) {
     return this.accountRepoService.createAccountsBulk(accounts);
   }
 
-  public async upsertAccounts(accountData: Prisma.AccountUpsertArgs) {
+  public async upsertAccount(accountData: Prisma.AccountUpsertArgs) {
     return this.accountRepoService.upsertAccount(accountData);
+  }
+
+  public async updateAccount(accountData: Prisma.AccountUpdateArgs) {
+    return this.accountRepoService.updateAccount(accountData);
   }
 }

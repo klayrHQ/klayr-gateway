@@ -13,7 +13,7 @@ export class AssetService {
   // TODO: Is this map the most efficient way to handle this?
   @OnEvent(Events.NEW_ASSETS_EVENT)
   public async createAsset(payload: Payload<Asset>[]) {
-    this.logger.debug('Asset module: New asset event');
+    // this.logger.debug('Asset module: New asset event');
 
     const assetsInput = payload.flatMap(({ height, data }) =>
       data.map((asset) => ({
@@ -22,6 +22,9 @@ export class AssetService {
         data: asset.data,
       })),
     );
+    // assetsInput.forEach((asset) => {
+    //   if (asset.module !== 'random') console.log(asset);
+    // });
 
     await this.assetRepo.createAssetsBulk(assetsInput);
   }

@@ -1,3 +1,4 @@
+// TODO: recipient?
 model Transaction {
   id            String  @id
   height        Int

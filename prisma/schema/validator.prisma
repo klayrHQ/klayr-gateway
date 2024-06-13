@@ -4,11 +4,11 @@ model Validator {
   blsKey                       String
   proofOfPossession            String
   generatorKey                 String
-  lastGeneratedHeight          Int
-  isBanned                     Boolean
-  reportMisbehaviorHeights     String
-  consecutiveMissedBlocks      Int
-  commission                   Int
-  lastCommissionIncreaseHeight Int
-  sharingCoefficients          String
+  lastGeneratedHeight          Int?
+  isBanned                     Boolean  @default(false)
+  reportMisbehaviorHeights     String?
+  consecutiveMissedBlocks      Int?
+  commission                   Int?
+  lastCommissionIncreaseHeight Int?
+  sharingCoefficients          String?
 }

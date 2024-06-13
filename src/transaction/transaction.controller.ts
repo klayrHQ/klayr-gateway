@@ -63,9 +63,9 @@ export class TransactionController {
   public async getTransaction(
     @Query() query: GetTransactionDto,
   ): Promise<GatewayResponse<GetTransactions[]>> {
-    // TODO: recipient
-    // TODO: receivingChainID
-    // TODO: executionStatus
+    // TODO: recipientAddress query
+    // TODO: receivingChainID query
+    // TODO: executionStatus query
     const {
       transactionID,
       blockID,

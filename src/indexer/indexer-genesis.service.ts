@@ -41,6 +41,7 @@ export class IndexerGenesisService {
     }
   }
 
+  // TODO: handle other genesis assets
   private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
     switch (decodedAsset.name) {
       case AssetTypes.POS:
@@ -48,7 +49,7 @@ export class IndexerGenesisService {
         break;
 
       default:
-        this.logger.warn(`Unhandled asset name: ${decodedAsset.name}`);
+        this.logger.warn(`Unhandled asset in Genesis block: ${decodedAsset.name}`);
     }
   }
 }

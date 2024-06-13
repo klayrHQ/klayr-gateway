@@ -6,6 +6,8 @@ import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
+import { TransactionType } from 'src/transaction/types';
+import { ValidatorService } from 'src/validator/validator.service';
 
 @Injectable()
 export class BlockService {
@@ -15,6 +17,7 @@ export class BlockService {
     private blockRepo: BlockRepoService,
     private eventService: EventService,
     private nodeApiService: NodeApiService,
+    private validatorService: ValidatorService,
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
@@ -37,10 +40,6 @@ export class BlockService {
     }
 
     await this.checkForBlockFinality();
-
-    payload.forEach((block) => {
-      if (block.transactions.length > 0) console.log(block.transactions);
-    });
     // TODO: emit event events (chain event)
   }
 
@@ -70,6 +69,14 @@ export class BlockService {
         { height: block.header.height },
       );
 
+      // Handling transaction 'events' here before bulk inserting blocks
+      // Only for updating accounts for now
+      // TODO: Emit these events to the event service for custom handling
+      // TODO: Not sure if this is the right place for that because the TXs & Blocks are not in the DB yet
+      if (block.transactions.length > 0) {
+        await this.processTransactionEvents(block.transactions);
+      }
+
       return {
         ...block.header,
         reward,
@@ -81,6 +88,22 @@ export class BlockService {
     });
 
     return Promise.all(promises);
+  }
+
+  // TODO: types
+  // TODO: handle other transaction event types
+  private async processTransactionEvents(txs: any[]) {
+    for (const tx of txs) {
+      const decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+      switch (`${tx.module}:${tx.command}`) {
+        case TransactionType.POS_REGISTER_VALIDATOR:
+          await this.validatorService.processRegisterValidator(tx, decodedParams);
+          break;
+        default:
+          this.logger.warn(`Unhandled transaction event ${tx.module}:${tx.command}`);
+          break;
+      }
+    }
   }
 
   private processTransactions(blocks: Block[]): Payload<Transaction>[] {

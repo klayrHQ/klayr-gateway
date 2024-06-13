@@ -4,9 +4,10 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Events, Payload } from 'src/event/types';
 import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
-import { cryptography } from '@klayr/client';
 import { AccountService } from 'src/account/account.service';
 import { BlockService } from 'src/block/block.service';
+import { Prisma } from '@prisma/client';
+import { getKlayer32Address } from 'src/utils/helpers';
 
 export interface UpdateBlockFee {
   totalBurnt: number;
@@ -31,7 +32,7 @@ export class TransactionService {
 
     const txInput = await Promise.all(
       payload.flatMap(({ height, data: txs }) =>
-        txs.map((tx, i) => this.processTransaction({ tx, height, index: i, totalBurntPerBlock })),
+        txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
       ),
     );
 
@@ -41,12 +42,12 @@ export class TransactionService {
     ]);
   }
 
-  private async processTransaction(params: {
+  private async createTransaction(params: {
     tx: Transaction;
     height: number;
     index: number;
     totalBurntPerBlock: Map<number, UpdateBlockFee>;
-  }): Promise<any> {
+  }): Promise<Prisma.TransactionCreateManyInput> {
     const { tx, height, index, totalBurntPerBlock } = params;
     const senderAddress = await this.upsertAccount(tx);
     const txMinFee = this.calcFeePerBlock(totalBurntPerBlock, height, tx);
@@ -91,20 +92,22 @@ export class TransactionService {
   }
 
   private async upsertAccount(tx: Transaction) {
-    const senderAddress = cryptography.address.getKlayr32AddressFromPublicKey(
-      Buffer.from(tx.senderPublicKey),
-    );
+    const senderAddress = getKlayer32Address(tx.senderPublicKey);
 
-    await this.accountService.upsertAccounts({
-      where: { address: senderAddress },
-      create: {
-        address: senderAddress,
-        publicKey: tx.senderPublicKey,
-      },
-      update: {
-        publicKey: tx.senderPublicKey,
-      },
-    });
+    // ! Upserting gives problems.
+    // ! tx.nonce === '0' can give problems because not all txs are handled yet
+    // TODO: Can be more optimized and pretty same in validator service
+    const account = await this.accountService.getAccount({ address: senderAddress });
+    if (!account && tx.nonce === '0') {
+      await this.accountService.createAccountsBulk([
+        { address: senderAddress, publicKey: tx.senderPublicKey },
+      ]);
+    } else if (account) {
+      await this.accountService.updateAccount({
+        where: { address: senderAddress },
+        data: { publicKey: tx.senderPublicKey },
+      });
+    }
 
     return senderAddress;
   }
