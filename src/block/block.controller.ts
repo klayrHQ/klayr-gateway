@@ -77,13 +77,21 @@ export class BlockController {
       this.blockRepoService.countBlocks({ where }),
     ]);
 
-    blocks.forEach((block) => {
-      block.aggregateCommit = JSON.parse(block.aggregateCommit);
+    // TODO: can probably be done prettier
+    const blockResponse: GetBlockResponse[] = blocks.map((block) => {
+      const newBlock: GetBlockResponse = {
+        ...block,
+        totalBurnt: block.totalBurnt.toString(),
+        networkFee: block.networkFee.toString(),
+        totalForged: block.totalForged.toString(),
+        aggregateCommit: JSON.parse(block.aggregateCommit),
+        generatorAddress: undefined,
+      };
       if (!block.generator.publicKey) delete block.generator.publicKey;
       if (!block.generator.name) delete block.generator.name;
-      delete block.generatorAddress;
+      return newBlock;
     });
 
-    return new GatewayResponse(blocks, { count: blocks.length, offset, total });
+    return new GatewayResponse(blockResponse, { count: blocks.length, offset, total });
   }
 }

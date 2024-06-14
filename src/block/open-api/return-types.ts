@@ -94,6 +94,15 @@ export class GetBlockResponse {
   @ApiProperty()
   isFinal: boolean;
 
+  @ApiProperty()
+  totalBurnt: string;
+
+  @ApiProperty()
+  networkFee: string;
+
+  @ApiProperty()
+  totalForged: string;
+
   @ApiProperty({ type: () => [Asset], required: false })
   assets?: Asset[];
 }

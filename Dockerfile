@@ -27,5 +27,4 @@ COPY --chown=node:node --from=build /usr/src/app/prisma/db/dev.db ./prisma/db/de
 RUN npm install --omit=dev
 COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client  ./node_modules/.prisma/client
 
-EXPOSE 9901
 CMD ["dumb-init", "node", "dist/main"]
