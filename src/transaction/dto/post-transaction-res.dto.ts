@@ -1,7 +1,6 @@
 import { ApiProperty, ApiResponseOptions } from '@nestjs/swagger';
 
 export class PostTransactionResponseDto {
-  @ApiProperty()
   transactionID: string;
 }
 
@@ -12,15 +11,8 @@ export const postTransactionResponse: ApiResponseOptions = {
 };
 
 export class Params {
-  @ApiProperty()
   tokenID: string;
-
-  @ApiProperty()
   amount: string;
-
-  @ApiProperty()
   recipient: string;
-
-  @ApiProperty()
   data: string;
 }
