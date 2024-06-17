@@ -33,4 +33,10 @@ export class AccountRepoService {
   ): Promise<Prisma.AccountUpdateInput> {
     return this.prisma.account.update(accountData);
   }
+
+  public async updateAccounts(
+    accounts: Prisma.AccountUpdateManyArgs,
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.account.updateMany(accounts);
+  }
 }

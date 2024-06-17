@@ -50,12 +50,9 @@ class Block {
   isFinal: boolean;
 }
 
-export class GetTransactions {
+export class GetTransactionsRes {
   @ApiProperty()
   id: string;
-
-  @ApiProperty()
-  senderAddress: string;
 
   @ApiProperty()
   module: string;
@@ -71,6 +68,9 @@ export class GetTransactions {
 
   @ApiProperty()
   minFee: string;
+
+  @ApiProperty()
+  index: number;
 
   @ApiProperty({ type: Params })
   params: string | Params;
@@ -88,5 +88,5 @@ export class GetTransactions {
 export const getTransactionsResponse: ApiResponseOptions = {
   status: 200,
   description: 'Transactions has been successfully retrieved.',
-  type: GetTransactions,
+  type: GetTransactionsRes,
 };

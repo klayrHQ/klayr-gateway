@@ -28,7 +28,7 @@ import {
   transactionIDQuery,
 } from './open-api/request-types';
 import {
-  GetTransactions,
+  GetTransactionsRes,
   PostTransactionResponse,
   getTransactionsResponse,
   postTransactionResponse,
@@ -62,10 +62,10 @@ export class TransactionController {
   @ApiResponse(getTransactionsResponse)
   public async getTransaction(
     @Query() query: GetTransactionDto,
-  ): Promise<GatewayResponse<GetTransactions[]>> {
-    // TODO: recipientAddress query
-    // TODO: receivingChainID query
-    // TODO: executionStatus query
+  ): Promise<GatewayResponse<GetTransactionsRes[]>> {
+    // TODO: recipientAddress query and implementation
+    // TODO: receivingChainID query and implementation
+    // TODO: executionStatus query and implementation
     const {
       transactionID,
       blockID,
@@ -96,17 +96,9 @@ export class TransactionController {
       ...(module && { module }),
       ...(command && { command }),
       ...(nonce && { nonce }),
+      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(timestamp && { block: { timestamp: ControllerHelpers.buildRangeCondition(timestamp) } }),
     };
-
-    if (height) {
-      const [start, end] = height.split(':');
-      where['height'] = ControllerHelpers.buildCondition(start, end);
-    }
-
-    if (timestamp) {
-      const [start, end] = timestamp.split(':');
-      where['block'] = { timestamp: ControllerHelpers.buildCondition(start, end) };
-    }
 
     const [transactions, total] = await Promise.all([
       this.transactionRepoService.getTransactions({
@@ -120,14 +112,9 @@ export class TransactionController {
       this.transactionRepoService.countTransactions({ where }),
     ]);
 
-    transactions.forEach((tx) => {
-      tx.params = JSON.parse(tx.params);
-      tx.signatures = JSON.parse(tx.signatures);
-      delete tx.senderAddress;
-      if (!tx.sender.name) delete tx.sender.name;
-    });
+    const transactionRes = transactions.map(this.toGetTransactionResponse);
 
-    return new GatewayResponse(transactions, { count: transactions.length, offset, total });
+    return new GatewayResponse(transactionRes, { count: transactions.length, offset, total });
   }
 
   @Post()
@@ -152,5 +139,24 @@ export class TransactionController {
     if (!senderAddress) {
       throw new HttpException('senderAddress is required when using nonce', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private toGetTransactionResponse(
+    transaction: Prisma.TransactionGetPayload<{
+      include: {
+        sender: true;
+        block: { select: { id: true; height: true; timestamp: true; isFinal: true } };
+      };
+    }>,
+  ): GetTransactionsRes {
+    const { sender, params, signatures, senderAddress, height, ...rest } = transaction;
+    const newTransaction: GetTransactionsRes = {
+      ...rest,
+      sender,
+      params: JSON.parse(params),
+      signatures: JSON.parse(signatures),
+    };
+    if (!sender.name) delete sender.name;
+    return newTransaction;
   }
 }

@@ -1,4 +1,4 @@
-// TODO: recipient?
+// TODO: recipient, probably when handled all tx events?
 model Transaction {
   id            String  @id
   height        Int

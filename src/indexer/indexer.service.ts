@@ -45,7 +45,7 @@ export class IndexerService {
     }
 
     // Nodeinfo already set during genesis block processing
-    this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight + 1;
+    this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight;
 
     await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
   }

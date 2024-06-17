@@ -33,7 +33,7 @@ export class Generator {
   name: string;
 }
 
-export class GetBlockResponse {
+export class GetBlockRes {
   @ApiProperty()
   height: number;
 
@@ -110,6 +110,6 @@ export class GetBlockResponse {
 export const getBlocksResponse: ApiResponseOptions = {
   status: 200,
   description: 'The blocks have been successfully fetched.',
-  type: GetBlockResponse,
+  type: GetBlockRes,
   isArray: true,
 };

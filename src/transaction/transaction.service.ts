@@ -94,18 +94,13 @@ export class TransactionService {
   private async upsertAccount(tx: Transaction) {
     const senderAddress = getKlayer32Address(tx.senderPublicKey);
 
-    // ! Upserting gives problems.
-    // ! tx.nonce === '0' can give problems because not all txs are handled yet
-    // TODO: Can be more optimized and pretty same in validator service
-    const account = await this.accountService.getAccount({ address: senderAddress });
-    if (!account && tx.nonce === '0') {
-      await this.accountService.createAccountsBulk([
-        { address: senderAddress, publicKey: tx.senderPublicKey },
-      ]);
-    } else if (account) {
-      await this.accountService.updateAccount({
-        where: { address: senderAddress },
-        data: { publicKey: tx.senderPublicKey },
+    // ! Upserting gives prisma problems.
+    // TODO: tx.nonce === '0' can give problems for now because not all txs are handled yet
+    // TODO: So it can be that the account is not created yet
+    if (tx.nonce === '0') {
+      await this.accountService.updateOrCreateAccount({
+        address: senderAddress,
+        publicKey: tx.senderPublicKey,
       });
     }
 

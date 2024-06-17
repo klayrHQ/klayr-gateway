@@ -22,9 +22,6 @@ export class AssetService {
         data: asset.data,
       })),
     );
-    // assetsInput.forEach((asset) => {
-    //   if (asset.module !== 'random') console.log(asset);
-    // });
 
     await this.assetRepo.createAssetsBulk(assetsInput);
   }

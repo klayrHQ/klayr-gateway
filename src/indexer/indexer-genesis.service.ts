@@ -1,5 +1,5 @@
-import { codec } from '@klayr/codec';
 import { Injectable, Logger } from '@nestjs/common';
+import { AccountService } from 'src/account/account.service';
 import { AssetTypes } from 'src/asset/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NodeInfo } from 'src/node-api/types';
@@ -12,6 +12,7 @@ export class IndexerGenesisService {
   constructor(
     private readonly nodeApiService: NodeApiService,
     private readonly validatorService: ValidatorService,
+    private readonly accountService: AccountService,
   ) {}
 
   async onModuleInit() {
@@ -37,11 +38,13 @@ export class IndexerGenesisService {
     });
 
     for (const decodedAsset of decodedAssets) {
-      this.handleDecodedAssets(decodedAsset);
+      await this.handleDecodedAssets(decodedAsset);
     }
+
+    await this.accountService.createAccountsBulk([{ address: block.header.generatorAddress }]);
   }
 
-  // TODO: handle other genesis assets
+  // TODO: handle other genesis assets. Probably in new modules
   private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
     switch (decodedAsset.name) {
       case AssetTypes.POS:

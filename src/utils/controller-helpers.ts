@@ -1,6 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 
 export class ControllerHelpers {
+  static buildRangeCondition(value: string): Record<string, any> {
+    if (!value) {
+      return {};
+    }
+
+    const [start, end] = value.split(':');
+    return this.buildCondition(start, end);
+  }
+
   static buildCondition(start: string, end: string) {
     if (start && end) {
       return {
@@ -16,6 +25,8 @@ export class ControllerHelpers {
         lte: Number(end),
       };
     }
+
+    return {};
   }
 
   static validateSortParameter(sort: string) {

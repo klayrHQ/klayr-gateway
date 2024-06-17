@@ -8,6 +8,7 @@ import { Events, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
 import { TransactionType } from 'src/transaction/types';
 import { ValidatorService } from 'src/validator/validator.service';
+import { RegisterValidatorParams } from 'src/validator/types';
 
 @Injectable()
 export class BlockService {
@@ -90,14 +91,16 @@ export class BlockService {
     return Promise.all(promises);
   }
 
-  // TODO: types
-  // TODO: handle other transaction event types
-  private async processTransactionEvents(txs: any[]) {
+  // TODO: handle other transaction event types, probably in new modules
+  private async processTransactionEvents(txs: Transaction[]) {
     for (const tx of txs) {
       const decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
       switch (`${tx.module}:${tx.command}`) {
         case TransactionType.POS_REGISTER_VALIDATOR:
-          await this.validatorService.processRegisterValidator(tx, decodedParams);
+          await this.validatorService.processRegisterValidator(
+            tx,
+            decodedParams as RegisterValidatorParams,
+          );
           break;
         default:
           this.logger.warn(`Unhandled transaction event ${tx.module}:${tx.command}`);

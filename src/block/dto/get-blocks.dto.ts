@@ -1,36 +1,9 @@
 import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { DEFAULT_TX_TO_FETCH } from 'src/utils/constants';
+import { DEFAULT_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
 
-export class GetTransactionDto {
-  @IsString()
-  @IsOptional()
-  transactionID: string;
-
-  @IsString()
-  @IsOptional()
-  senderAddress: string;
-
-  @IsString()
-  @IsOptional()
-  nonce: string;
-
-  @IsString()
-  @IsOptional()
-  address: string;
-
-  @IsString()
-  @IsOptional()
-  @Matches(/^[a-z]+:[a-z]+$/, {
-    message: 'moduleCommand must have a format "token:transfer"',
-  })
-  moduleCommand: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value), { toClassOnly: true })
-  limit: number = DEFAULT_TX_TO_FETCH;
-
+export class GetBlocksDto {
   @IsString()
   @IsOptional()
   blockID: string;
@@ -56,5 +29,13 @@ export class GetTransactionDto {
   sort: SortTypes = SortTypes.HEIGHT_ASC;
 
   @IsNumber()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
+  limit: number = DEFAULT_BLOCKS_TO_FETCH;
+
+  @IsNumber()
   offset: number = 0;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true', { toClassOnly: true })
+  includeAssets: boolean = false;
 }

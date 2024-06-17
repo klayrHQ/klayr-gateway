@@ -1,9 +1,11 @@
-import { ConsoleLogger, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ValidatorRepoService } from './validator.repo-service';
 import { Validator } from 'src/asset/types';
 import { Prisma } from '@prisma/client';
 import { AccountService } from 'src/account/account.service';
 import { getKlayer32Address } from 'src/utils/helpers';
+import { Transaction } from 'src/node-api/types';
+import { RegisterValidatorParams } from './types';
 
 @Injectable()
 export class ValidatorService {
@@ -37,25 +39,20 @@ export class ValidatorService {
     return this.validatorRepoService.createValidatorsBulk(validatorsInput);
   }
 
-  // TODO: types
-  public async processRegisterValidator(registerValidatorTx: any, params: any) {
+  public async processRegisterValidator(
+    registerValidatorTx: Transaction,
+    params: RegisterValidatorParams,
+  ) {
     const { senderPublicKey } = registerValidatorTx;
     const senderAddress = getKlayer32Address(senderPublicKey);
     const { name, blsKey, proofOfPossession, generatorKey } = params;
 
-    // ! Upserting gives problems.
-    // TODO: Can be more optimized and pretty same in tx service
-    const account = await this.accountService.getAccount({ address: senderAddress });
-    if (!account) {
-      await this.accountService.createAccountsBulk([
-        { address: senderAddress, name, publicKey: senderPublicKey },
-      ]);
-    } else {
-      await this.accountService.updateAccount({
-        where: { address: senderAddress },
-        data: { publicKey: senderPublicKey, name },
-      });
-    }
+    // ! upserting gives prisma problems
+    await this.accountService.updateOrCreateAccount({
+      address: senderAddress,
+      name,
+      publicKey: senderPublicKey,
+    });
 
     const validatorInput: Prisma.ValidatorCreateManyInput = {
       address: senderAddress,

@@ -1,14 +1,6 @@
-import {
-  BadRequestException,
-  Controller,
-  DefaultValuePipe,
-  Get,
-  ParseBoolPipe,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BlockRepoService } from './block-repo.service';
-import { DEFAULT_BLOCKS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
+import { MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   blockIDQuery,
@@ -19,8 +11,10 @@ import {
   sortQuery,
   timestampQuery,
 } from './open-api/request-types';
-import { GetBlockResponse, getBlocksResponse } from './open-api/return-types';
+import { GetBlockRes, getBlocksResponse } from './open-api/return-types';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
+import { Prisma } from '@prisma/client';
+import { GetBlocksDto } from './dto/get-blocks.dto';
 
 @ApiTags('Blocks')
 @Controller('blocks')
@@ -35,34 +29,18 @@ export class BlockController {
   @ApiQuery(limitQuery)
   @ApiQuery(offsetQuery)
   @ApiQuery(includeAssetsQuery)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getBlocksResponse)
-  async getBlocks(
-    @Query('height') height: string,
-    @Query('timestamp') timestamp: string,
-    @Query('blockID') blockID: string,
-    @Query('sort', new DefaultValuePipe('height:asc')) sort: string,
-    @Query('limit', new DefaultValuePipe(DEFAULT_BLOCKS_TO_FETCH)) limit: number,
-    @Query('offset', new DefaultValuePipe(0), new ParseIntPipe()) offset: number,
-    @Query('includeAssets', new DefaultValuePipe(false), new ParseBoolPipe())
-    includeAssets: boolean,
-  ): Promise<GatewayResponse<GetBlockResponse[]>> {
+  async getBlocks(@Query() query: GetBlocksDto): Promise<GatewayResponse<GetBlockRes[]>> {
+    const { blockID, height, timestamp, sort, limit, offset, includeAssets } = query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
-    const where = {};
 
-    if (height) {
-      const [start, end] = height.split(':');
-      where['height'] = ControllerHelpers.buildCondition(start, end);
-    }
-
-    if (timestamp) {
-      const [start, end] = timestamp.split(':');
-      where['timestamp'] = ControllerHelpers.buildCondition(start, end);
-    }
-
-    if (blockID) {
-      where['id'] = blockID;
-    }
+    const where: Prisma.BlockWhereInput = {
+      ...(blockID && { id: blockID }),
+      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
+    };
 
     const [blocks, total] = await Promise.all([
       this.blockRepoService.getBlocks({
@@ -77,21 +55,25 @@ export class BlockController {
       this.blockRepoService.countBlocks({ where }),
     ]);
 
-    // TODO: can probably be done prettier
-    const blockResponse: GetBlockResponse[] = blocks.map((block) => {
-      const newBlock: GetBlockResponse = {
-        ...block,
-        totalBurnt: block.totalBurnt.toString(),
-        networkFee: block.networkFee.toString(),
-        totalForged: block.totalForged.toString(),
-        aggregateCommit: JSON.parse(block.aggregateCommit),
-        generatorAddress: undefined,
-      };
-      if (!block.generator.publicKey) delete block.generator.publicKey;
-      if (!block.generator.name) delete block.generator.name;
-      return newBlock;
-    });
+    const blockResponse: GetBlockRes[] = blocks.map((block) => this.toGetBlockResponse(block));
 
     return new GatewayResponse(blockResponse, { count: blocks.length, offset, total });
+  }
+
+  private toGetBlockResponse(
+    block: Prisma.BlockGetPayload<{ include: { generator: true } }>,
+  ): GetBlockRes {
+    const { generator, ...rest } = block;
+    const newBlock: GetBlockRes = {
+      ...rest,
+      totalBurnt: block.totalBurnt.toString(),
+      networkFee: block.networkFee.toString(),
+      totalForged: block.totalForged.toString(),
+      aggregateCommit: JSON.parse(block.aggregateCommit),
+      generatorAddress: undefined,
+    };
+    if (!generator.publicKey) delete generator.publicKey;
+    if (!generator.name) delete generator.name;
+    return newBlock;
   }
 }
