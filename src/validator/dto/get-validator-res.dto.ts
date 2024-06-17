@@ -14,7 +14,7 @@ class Account {
   name?: string;
 }
 
-export class GetValidatorResponse {
+export class GetValidatorResponseDto {
   @ApiProperty({ type: () => Account, required: true })
   account: Account;
 
@@ -31,6 +31,6 @@ export class GetValidatorResponse {
 export const getValidatorResponse: ApiResponseOptions = {
   status: 200,
   description: 'The validator have been successfully fetched.',
-  type: GetValidatorResponse,
+  type: GetValidatorResponseDto,
   isArray: false,
 };

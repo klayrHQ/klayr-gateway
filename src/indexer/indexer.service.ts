@@ -74,7 +74,7 @@ export class IndexerService {
     this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
       const newBlockHeight = newBlockData.blockHeader.height;
       if (this.state === IndexerState.SYNCING)
-        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync - 1}`);
+        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`
       if (newBlockHeight > this.nextBlockToSync) {

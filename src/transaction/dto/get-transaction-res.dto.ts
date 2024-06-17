@@ -1,29 +1,5 @@
 import { ApiProperty, ApiResponseOptions } from '@nestjs/swagger';
-
-export class PostTransactionResponse {
-  @ApiProperty()
-  transactionID: string;
-}
-
-export const postTransactionResponse: ApiResponseOptions = {
-  status: 200,
-  description: 'Transaction has been successfully posted.',
-  type: PostTransactionResponse,
-};
-
-export class Params {
-  @ApiProperty()
-  tokenID: string;
-
-  @ApiProperty()
-  amount: string;
-
-  @ApiProperty()
-  recipient: string;
-
-  @ApiProperty()
-  data: string;
-}
+import { Params } from './post-transaction-res.dto';
 
 class Sender {
   @ApiProperty()
@@ -50,7 +26,7 @@ class Block {
   isFinal: boolean;
 }
 
-export class GetTransactionsRes {
+export class GetTransactionsResDto {
   @ApiProperty()
   id: string;
 
@@ -88,5 +64,5 @@ export class GetTransactionsRes {
 export const getTransactionsResponse: ApiResponseOptions = {
   status: 200,
   description: 'Transactions has been successfully retrieved.',
-  type: GetTransactionsRes,
+  type: GetTransactionsResDto,
 };
