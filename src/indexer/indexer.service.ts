@@ -102,9 +102,12 @@ export class IndexerService {
   }
 
   private async getBlocks(): Promise<Block[]> {
+    const nodeHeight = this.nodeApiService.nodeInfo.height;
+    const heightToGet = this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE;
+
     return this.nodeApiService.invokeApi<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
       from: this.nextBlockToSync,
-      to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+      to: heightToGet > nodeHeight ? nodeHeight : heightToGet,
     });
   }
 }

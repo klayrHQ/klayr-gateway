@@ -29,7 +29,7 @@ export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
   private schemaMap: Map<string, SchemaModule>;
-  public nodeInfo: NodeInfo; // TODO: create endpoint for nodeinfo
+  public nodeInfo: NodeInfo;
 
   async onModuleInit() {
     await this.connectToNode();

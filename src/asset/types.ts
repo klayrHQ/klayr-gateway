@@ -27,5 +27,5 @@ export interface Validator {
   consecutiveMissedBlocks: number;
   commission: number;
   lastCommissionIncreaseHeight: number;
-  sharingCoefficients: any[]; // TODO: dont know type
+  sharingCoefficients: object[];
 }

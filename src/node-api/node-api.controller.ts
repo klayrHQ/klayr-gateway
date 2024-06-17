@@ -2,13 +2,14 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
 } from '@nestjs/common';
 import { NodeApiService } from './node-api.service';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { invokeNodeApiResponse } from './open-api/return-types';
+import { getNodeInfoResponse, invokeNodeApiResponse } from './open-api/return-types';
 import { invokeNodeApiBody } from './open-api/request-types';
 import { IsNotEmpty, IsObject, IsString, ValidateNested } from 'class-validator';
 
@@ -23,11 +24,17 @@ class InvokeBodyDto {
 }
 
 @ApiTags('Invoke')
-@Controller('invoke')
+@Controller('node')
 export class NodeApiController {
   constructor(private readonly nodeApiService: NodeApiService) {}
 
-  @Post()
+  @Get('info')
+  @ApiResponse(getNodeInfoResponse)
+  getNodeInfo() {
+    return this.nodeApiService.nodeInfo;
+  }
+
+  @Post('invoke')
   @ApiBody(invokeNodeApiBody)
   @ApiResponse(invokeNodeApiResponse)
   async invokeNodeApi(@Body() body: InvokeBodyDto) {

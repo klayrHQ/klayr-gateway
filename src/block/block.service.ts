@@ -97,7 +97,6 @@ export class BlockService {
       const decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
       switch (`${tx.module}:${tx.command}`) {
         case TransactionType.POS_REGISTER_VALIDATOR:
-          console.log(tx);
           await this.validatorService.processRegisterValidator(
             tx,
             decodedParams as RegisterValidatorParams,
