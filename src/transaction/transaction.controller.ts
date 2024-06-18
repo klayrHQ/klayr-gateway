@@ -17,7 +17,7 @@ import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers
 import { Prisma } from '@prisma/client';
 import { GetTransactionDto } from './dto/get-transactions.dto';
 import { PostTransactionDto } from './dto/post-transaction.dto';
-import { GetTransactionsResDto, getTransactionsResponse } from './dto/get-transaction-res.dto';
+import { GetTransactionsResDto, getTransactionsResponse } from './dto/get-transactions-res.dto';
 import {
   PostTransactionResponseDto,
   postTransactionResponse,
@@ -37,13 +37,13 @@ export class TransactionController {
   public async getTransaction(
     @Query() query: GetTransactionDto,
   ): Promise<GatewayResponse<GetTransactionsResDto[]>> {
-    // TODO: recipientAddress query and implementation
     // TODO: receivingChainID query and implementation
     // TODO: executionStatus query and implementation
     const {
       transactionID,
       blockID,
       senderAddress,
+      recipientAddress,
       nonce,
       address,
       timestamp,
@@ -61,17 +61,21 @@ export class TransactionController {
 
     const where: Prisma.TransactionWhereInput & {
       sender?: { address?: string };
+      recipient?: { address?: string };
       block?: { id?: string };
     } = {
       ...(transactionID && { id: transactionID }),
       ...(blockID && { block: { id: blockID } }),
       ...(senderAddress && { senderAddress }),
-      ...(address && { sender: { address } }),
+      ...(recipientAddress && { recipientAddress }),
       ...(module && { module }),
       ...(command && { command }),
       ...(nonce && { nonce }),
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
       ...(timestamp && { block: { timestamp: ControllerHelpers.buildRangeCondition(timestamp) } }),
+      ...(address && {
+        OR: [{ senderAddress: address }, { recipientAddress: address }],
+      }),
     };
 
     const [transactions, total] = await Promise.all([
@@ -118,18 +122,31 @@ export class TransactionController {
     transaction: Prisma.TransactionGetPayload<{
       include: {
         sender: true;
+        recipient: true;
         block: { select: { id: true; height: true; timestamp: true; isFinal: true } };
       };
     }>,
   ): GetTransactionsResDto {
-    const { sender, params, signatures, senderAddress, height, ...rest } = transaction;
+    const {
+      sender,
+      recipient,
+      params,
+      signatures,
+      senderAddress,
+      recipientAddress,
+      height,
+      ...rest
+    } = transaction;
     const newTransaction: GetTransactionsResDto = {
       ...rest,
       sender,
+      recipient,
       params: JSON.parse(params),
       signatures: JSON.parse(signatures),
     };
     if (!sender.name) delete sender.name;
+    if (!recipient.publicKey) delete recipient.publicKey;
+    if (!recipient.name) delete recipient.name;
     return newTransaction;
   }
 }

@@ -22,18 +22,22 @@ export class AccountService {
     return this.accountRepoService.updateAccount(accountData);
   }
 
+  // ! Upserting gives prisma problems
   public async updateOrCreateAccount(params: {
     address: string;
     name?: string;
     publicKey?: string;
   }) {
     const { address, name, publicKey } = params;
+
     const updateResult = await this.accountRepoService.updateAccounts({
       where: { address },
       data: { publicKey, name },
     });
 
     if (updateResult.count === 0) {
+      const account = await this.getAccount({ address });
+      if (account) return;
       await this.createAccountsBulk([{ address, name, publicKey }]);
     }
   }

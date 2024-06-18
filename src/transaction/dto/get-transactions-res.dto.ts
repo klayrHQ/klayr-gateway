@@ -1,7 +1,7 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 import { Params } from './post-transaction-res.dto';
 
-class Sender {
+class Account {
   address: string;
   publicKey?: string;
   name?: string;
@@ -24,7 +24,8 @@ export class GetTransactionsResDto {
   index: number;
   params: string | Params;
   signatures: string[];
-  sender: Sender;
+  sender: Account;
+  recipient: Account;
   block: Block;
 }
 

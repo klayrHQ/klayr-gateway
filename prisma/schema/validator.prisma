@@ -5,7 +5,7 @@ model Validator {
   proofOfPossession            String
   generatorKey                 String
   lastGeneratedHeight          Int?
-  isBanned                     Boolean  @default(false)
+  isBanned                     Boolean @default(false)
   reportMisbehaviorHeights     String?
   consecutiveMissedBlocks      Int?
   commission                   Int?

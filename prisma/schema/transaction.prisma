@@ -1,16 +1,18 @@
 // TODO: recipient, probably when handled all tx events?
 model Transaction {
-  id            String  @id
-  height        Int
-  module        String
-  command       String
-  nonce         String
-  fee           String
-  minFee        String
-  senderAddress String
-  sender        Account @relation(fields: [senderAddress], references: [address])
-  params        String
-  signatures    String // stringifiy
-  index         Int
-  block         Block   @relation(fields: [height], references: [height])
+  id               String   @id
+  height           Int
+  module           String
+  command          String
+  nonce            String
+  fee              String
+  minFee           String
+  params           String
+  signatures       String 
+  index            Int
+  senderAddress    String
+  recipientAddress String?
+  sender           Account  @relation("sender", fields: [senderAddress], references: [address])
+  recipient        Account? @relation("recipient", fields: [recipientAddress], references: [address])
+  block            Block    @relation(fields: [height], references: [height])
 }

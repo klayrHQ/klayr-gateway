@@ -2,7 +2,7 @@ import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common
 import { BlockRepoService } from './block-repo.service';
 import { MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetBlockResDto, getBlocksResponse } from './dto/get-block-res.dto';
+import { GetBlockResDto, getBlocksResponse } from './dto/get-blocks-res.dto';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { Prisma } from '@prisma/client';
 import { GetBlocksDto } from './dto/get-blocks.dto';

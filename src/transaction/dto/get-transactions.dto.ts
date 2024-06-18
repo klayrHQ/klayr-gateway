@@ -19,18 +19,25 @@ export class GetTransactionDto {
   senderAddress?: string;
 
   /**
+   * Filter transactions by recipient address.
+   */
+  @IsString()
+  @IsOptional()
+  recipientAddress?: string;
+
+  /**
+   * Resolves for both senderAddress and recipientAddress
+   */
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  /**
    * Filter transactions by nonce. Nonce is only allowed if senderAddress is supplied as a parameter.
    */
   @IsString()
   @IsOptional()
   nonce?: string;
-
-  /**
-   * Filter transactions by address.
-   */
-  @IsString()
-  @IsOptional()
-  address?: string;
 
   /**
    * Filter transactions by module and command. Format: "module:command".
@@ -43,7 +50,7 @@ export class GetTransactionDto {
   moduleCommand?: string;
 
   /**
-   * Limit the number of transactions fetched. Default is ${DEFAULT_TX_TO_FETCH}.
+   * Limit the number of transactions fetched.
    */
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
@@ -77,7 +84,7 @@ export class GetTransactionDto {
   timestamp?: string;
 
   /**
-   * Sort transactions. Default is "height:asc".
+   * Sort transactions.
    */
   @IsString()
   @IsEnum(SortTypes, {
@@ -86,7 +93,7 @@ export class GetTransactionDto {
   sort?: SortTypes = SortTypes.HEIGHT_ASC;
 
   /**
-   * Offset for the transactions fetched. Default is 0.
+   * Offset for the transactions fetched.
    */
   @IsNumber()
   offset?: number = 0;

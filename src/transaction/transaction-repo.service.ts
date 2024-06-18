@@ -20,6 +20,7 @@ export class TransactionRepoService {
     cursor?: Prisma.TransactionWhereUniqueInput;
     where?: Prisma.TransactionWhereInput & {
       sender?: { address?: string };
+      recipient?: { address?: string };
       block?: { id?: string };
     };
     orderBy?: Prisma.TransactionOrderByWithRelationInput;
@@ -27,6 +28,7 @@ export class TransactionRepoService {
     Prisma.TransactionGetPayload<{
       include: {
         sender: true;
+        recipient: true;
         block: { select: { id: true; height: true; timestamp: true; isFinal: true } };
       };
     }>[]
@@ -39,8 +41,9 @@ export class TransactionRepoService {
       where,
       orderBy,
       include: {
-        block: { select: { id: true, height: true, timestamp: true, isFinal: true } },
         sender: true,
+        recipient: true,
+        block: { select: { id: true, height: true, timestamp: true, isFinal: true } },
       },
     });
   }

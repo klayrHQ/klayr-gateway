@@ -30,11 +30,23 @@ export class TransactionService {
     this.logger.debug('New TX event');
     let totalBurntPerBlock = new Map<number, UpdateBlockFee>();
 
-    const txInput = await Promise.all(
-      payload.flatMap(({ height, data: txs }) =>
-        txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
-      ),
-    );
+    // const txInput = await Promise.all(
+    //   payload.flatMap(({ height, data: txs }) =>
+    //     txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
+    //   ),
+    // );
+
+    // TODO: The map above is causing race conditions in the `updateOrCreateAccount` method.
+    // TODO: Not too happy with this solution yet.
+
+    const txInput = [];
+    for (const { height, data: txs } of payload) {
+      for (let i = 0; i < txs.length; i++) {
+        const tx = txs[i];
+        const result = await this.createTransaction({ tx, height, index: i, totalBurntPerBlock });
+        txInput.push(result);
+      }
+    }
 
     await Promise.all([
       this.transactionRepoService.createTransactionsBulk(txInput),
@@ -49,7 +61,13 @@ export class TransactionService {
     totalBurntPerBlock: Map<number, UpdateBlockFee>;
   }): Promise<Prisma.TransactionCreateManyInput> {
     const { tx, height, index, totalBurntPerBlock } = params;
-    const senderAddress = await this.upsertAccount(tx);
+    const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+    const recipientAddress = txParams['recipientAddress'] || null;
+
+    const [senderAddress] = await Promise.all([
+      this.upsertSenderAccount(tx),
+      this.upsertRecipientAccount(recipientAddress),
+    ]);
     const txMinFee = this.calcFeePerBlock(totalBurntPerBlock, height, tx);
 
     return {
@@ -62,8 +80,9 @@ export class TransactionService {
       fee: tx.fee,
       minFee: txMinFee,
       senderAddress,
+      recipientAddress,
       index,
-      params: JSON.stringify(this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params)),
+      params: JSON.stringify(tx.params),
     };
   }
 
@@ -91,10 +110,9 @@ export class TransactionService {
     });
   }
 
-  private async upsertAccount(tx: Transaction) {
+  private async upsertSenderAccount(tx: Transaction) {
     const senderAddress = getKlayer32Address(tx.senderPublicKey);
 
-    // ! Upserting gives prisma problems.
     // TODO: tx.nonce === '0' can give problems for now because not all txs are handled yet
     // TODO: So it can be that the account is not created yet
     if (tx.nonce === '0') {
@@ -105,5 +123,10 @@ export class TransactionService {
     }
 
     return senderAddress;
+  }
+
+  private async upsertRecipientAccount(address: string) {
+    if (!address) return;
+    await this.accountService.updateOrCreateAccount({ address });
   }
 }
