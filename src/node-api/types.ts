@@ -37,6 +37,7 @@ export interface Transaction {
   fee: string;
   senderPublicKey: string;
   signatures: string[];
+  decodedParams?: unknown;
 }
 
 export interface Asset {

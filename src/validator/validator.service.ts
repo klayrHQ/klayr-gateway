@@ -6,6 +6,8 @@ import { AccountService } from 'src/account/account.service';
 import { getKlayer32Address } from 'src/utils/helpers';
 import { Transaction } from 'src/node-api/types';
 import { RegisterValidatorParams } from './types';
+import { OnEvent } from '@nestjs/event-emitter';
+import { TxEvents } from 'src/event/types';
 
 @Injectable()
 export class ValidatorService {
@@ -39,19 +41,17 @@ export class ValidatorService {
     return this.validatorRepoService.createValidatorsBulk(validatorsInput);
   }
 
-  public async processRegisterValidator(
-    registerValidatorTx: Transaction,
-    params: RegisterValidatorParams,
-  ) {
+  @OnEvent(TxEvents.POS_REGISTER_VALIDATOR)
+  public async processRegisterValidator(registerValidatorTx: Transaction) {
     const { senderPublicKey } = registerValidatorTx;
-    const senderAddress = getKlayer32Address(senderPublicKey);
-    const { name, blsKey, proofOfPossession, generatorKey } = params;
+    const decodedParams = registerValidatorTx.decodedParams as RegisterValidatorParams;
 
-    // ! upserting gives prisma problems
+    const senderAddress = getKlayer32Address(senderPublicKey);
+    const { name, blsKey, proofOfPossession, generatorKey } = decodedParams;
+
     await this.accountService.updateOrCreateAccount({
       address: senderAddress,
       name,
-      publicKey: senderPublicKey,
     });
 
     const validatorInput: Prisma.ValidatorCreateManyInput = {
@@ -61,6 +61,6 @@ export class ValidatorService {
       generatorKey,
     };
 
-    return this.validatorRepoService.createValidatorsBulk([validatorInput]);
+    await this.validatorRepoService.createValidatorsBulk([validatorInput]);
   }
 }

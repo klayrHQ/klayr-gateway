@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TransactionRepoService } from './transaction-repo.service';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Events, Payload } from 'src/event/types';
+import { Events, GatewayEvents, Payload, TxEvents } from 'src/event/types';
 import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { AccountService } from 'src/account/account.service';
-import { BlockService } from 'src/block/block.service';
 import { Prisma } from '@prisma/client';
 import { getKlayer32Address } from 'src/utils/helpers';
+import { EventService } from 'src/event/event.service';
 
 export interface UpdateBlockFee {
   totalBurnt: number;
@@ -22,7 +22,7 @@ export class TransactionService {
     private nodeApiService: NodeApiService,
     private transactionRepoService: TransactionRepoService,
     private accountService: AccountService,
-    private blockService: BlockService,
+    private eventService: EventService,
   ) {}
 
   @OnEvent(Events.NEW_TX_EVENT)
@@ -35,23 +35,34 @@ export class TransactionService {
     //     txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
     //   ),
     // );
-
     // TODO: The map above is causing race conditions in the `updateOrCreateAccount` method.
     // TODO: Not too happy with this solution yet.
-
     const txInput = [];
     for (const { height, data: txs } of payload) {
-      for (let i = 0; i < txs.length; i++) {
-        const tx = txs[i];
-        const result = await this.createTransaction({ tx, height, index: i, totalBurntPerBlock });
+      for (const [index, tx] of txs.entries()) {
+        const result = await this.createTransaction({ tx, height, index, totalBurntPerBlock });
         txInput.push(result);
       }
     }
 
-    await Promise.all([
-      this.transactionRepoService.createTransactionsBulk(txInput),
-      this.blockService.updateBlocksFee(totalBurntPerBlock),
-    ]);
+    await this.transactionRepoService.createTransactionsBulk(txInput);
+
+    this.eventService.pushToGeneralEventQ({
+      event: GatewayEvents.UPDATE_BLOCK_FEE,
+      payload: totalBurntPerBlock,
+    });
+
+    // ! emit events after txs are saved
+    // TODO: can this be done in the same loop as createTransaction above?
+    payload.forEach(({ data }) => {
+      data.forEach((tx) => {
+        tx.decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+        this.eventService.pushToGeneralEventQ({
+          event: `${tx.module}:${tx.command}` as TxEvents,
+          payload: tx,
+        });
+      });
+    });
   }
 
   private async createTransaction(params: {
@@ -61,14 +72,11 @@ export class TransactionService {
     totalBurntPerBlock: Map<number, UpdateBlockFee>;
   }): Promise<Prisma.TransactionCreateManyInput> {
     const { tx, height, index, totalBurntPerBlock } = params;
-    const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
-    const recipientAddress = txParams['recipientAddress'] || null;
 
-    const [senderAddress] = await Promise.all([
-      this.upsertSenderAccount(tx),
-      this.upsertRecipientAccount(recipientAddress),
-    ]);
-    const txMinFee = this.calcFeePerBlock(totalBurntPerBlock, height, tx);
+    const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+    // TODO: Is this the best place and will this cover all cases?
+    const recipientAddress = txParams['recipientAddress'] || null;
+    await this.upsertRecipientAccount(recipientAddress);
 
     return {
       id: tx.id,
@@ -78,8 +86,8 @@ export class TransactionService {
       command: tx.command,
       nonce: tx.nonce,
       fee: tx.fee,
-      minFee: txMinFee,
-      senderAddress,
+      minFee: this.calcFeePerBlock(totalBurntPerBlock, height, tx),
+      senderAddress: getKlayer32Address(tx.senderPublicKey),
       recipientAddress,
       index,
       params: JSON.stringify(tx.params),
@@ -108,21 +116,6 @@ export class TransactionService {
       signatures: tx.signatures,
       params: tx.params,
     });
-  }
-
-  private async upsertSenderAccount(tx: Transaction) {
-    const senderAddress = getKlayer32Address(tx.senderPublicKey);
-
-    // TODO: tx.nonce === '0' can give problems for now because not all txs are handled yet
-    // TODO: So it can be that the account is not created yet
-    if (tx.nonce === '0') {
-      await this.accountService.updateOrCreateAccount({
-        address: senderAddress,
-        publicKey: tx.senderPublicKey,
-      });
-    }
-
-    return senderAddress;
   }
 
   private async upsertRecipientAccount(address: string) {

@@ -6,6 +6,23 @@ export enum Events {
   NEW_ASSETS_EVENT = 'new.assets.event',
 }
 
+export enum GatewayEvents {
+  UPDATE_BLOCK_FEE = 'update.block.fee',
+}
+
+export enum TxEvents {
+  POS_STAKE = 'pos:stake',
+  POS_REGISTER_VALIDATOR = 'pos:registerValidator',
+  POS_CHANGE_COMMISSION = 'pos:changeCommission',
+  TOKEN_TRANFER = 'token:transfer',
+}
+
+export interface GeneralEvent {
+  event: TxEvents | GatewayEvents;
+  payload: any;
+  hash?: string;
+}
+
 export interface BlockEvent {
   event: Events;
   blocks: Block[];

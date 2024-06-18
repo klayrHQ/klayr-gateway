@@ -4,11 +4,10 @@ import { EventService } from 'src/event/event.service';
 import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Events, Payload } from 'src/event/types';
+import { Events, GatewayEvents, GeneralEvent, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
-import { TransactionType } from 'src/transaction/types';
-import { ValidatorService } from 'src/validator/validator.service';
-import { RegisterValidatorParams } from 'src/validator/types';
+import { getKlayer32Address } from 'src/utils/helpers';
+import { AccountService } from 'src/account/account.service';
 
 @Injectable()
 export class BlockService {
@@ -18,7 +17,7 @@ export class BlockService {
     private blockRepo: BlockRepoService,
     private eventService: EventService,
     private nodeApiService: NodeApiService,
-    private validatorService: ValidatorService,
+    private accountService: AccountService,
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
@@ -44,8 +43,9 @@ export class BlockService {
     // TODO: emit event events (chain event)
   }
 
-  public async updateBlocksFee(map: Map<number, UpdateBlockFee>): Promise<void> {
-    for (const [height, { totalBurnt, totalFee }] of map.entries()) {
+  @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
+  public async updateBlocksFee(payload: Map<number, UpdateBlockFee>): Promise<void> {
+    for (const [height, { totalBurnt, totalFee }] of payload.entries()) {
       const { reward } = await this.blockRepo.getBlock({ height });
       const networkFee = totalFee - totalBurnt;
       const totalForged = Number(reward) + networkFee + totalBurnt;
@@ -70,13 +70,8 @@ export class BlockService {
         { height: block.header.height },
       );
 
-      // Handling transaction 'events' here before bulk inserting blocks
-      // Only for updating accounts for now
-      // TODO: Emit these events to the event service for custom handling
-      // TODO: Not sure if this is the right place for that because the TXs & Blocks are not in the DB yet
-      if (block.transactions.length > 0) {
-        await this.processTransactionEvents(block.transactions);
-      }
+      // Inserting accounts of the sender of the transactions before inserting the block
+      if (block.transactions.length > 0) await this.addSenderAccountsToDB(block.transactions);
 
       return {
         ...block.header,
@@ -91,22 +86,18 @@ export class BlockService {
     return Promise.all(promises);
   }
 
-  // TODO: handle other transaction event types, probably in new modules
-  private async processTransactionEvents(txs: Transaction[]) {
-    for (const tx of txs) {
-      const decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
-      switch (`${tx.module}:${tx.command}`) {
-        case TransactionType.POS_REGISTER_VALIDATOR:
-          await this.validatorService.processRegisterValidator(
-            tx,
-            decodedParams as RegisterValidatorParams,
-          );
-          break;
-        default:
-          this.logger.warn(`Unhandled transaction event ${tx.module}:${tx.command}`);
-          break;
-      }
-    }
+  // TODO: can this be a prisma.transaction or bulk?
+  private async addSenderAccountsToDB(txs: Transaction[]) {
+    await Promise.all(
+      txs
+        .filter(({ nonce }) => nonce === '0')
+        .map(({ senderPublicKey }) => {
+          return this.accountService.updateOrCreateAccount({
+            address: getKlayer32Address(senderPublicKey),
+            publicKey: senderPublicKey,
+          });
+        }),
+    );
   }
 
   private processTransactions(blocks: Block[]): Payload<Transaction>[] {

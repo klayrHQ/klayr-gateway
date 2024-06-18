@@ -2,13 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
-import { BlockEvent, TxOrAssetEvent } from './types';
-
-interface GeneralEvent {
-  event: string;
-  message: object;
-  hash?: string;
-}
+import { BlockEvent, GeneralEvent, TxOrAssetEvent } from './types';
 
 // Will push all events to the an event queue
 // Worker will emit the events in order through the eventEmitter
@@ -23,8 +17,10 @@ export class EventService {
   constructor(private eventEmitter: EventEmitter2) {
     this.blockEventWorker = this.blockEventWorker.bind(this);
     this.txAndAssetEventWorker = this.txAndAssetEventWorker.bind(this);
+    this.generalEventWorker = this.generalEventWorker.bind(this);
     this.blockEventQ = fastq.promise(this.blockEventWorker, 1);
     this.txAndAssetEventQ = fastq.promise(this.txAndAssetEventWorker, 1);
+    this.generalQ = fastq.promise(this.generalEventWorker, 1);
   }
 
   async pushToBlockEventQ(blockEvent: BlockEvent) {
@@ -47,14 +43,13 @@ export class EventService {
   }
 
   async pushToGeneralEventQ(event: GeneralEvent) {
-    // hash event
-    // check if event exists
-    // set event to map if not
     this.generalQ.push(event).catch((err) => this.logger.error(err));
   }
 
-  private async generalEventWorker({ event, message }): Promise<void> {
-    this.eventEmitter.emit(event, message);
-    // delete event from map
+  // TODO: Only the pos:registerValidator is handled at the moment
+  private async generalEventWorker(args: GeneralEvent): Promise<void> {
+    const { event, payload } = args;
+    this.eventEmitter.emit(event, payload);
+    this.logger.warn(`Possibly unhandled general tx event emitted ${event}`);
   }
 }
