@@ -44,7 +44,6 @@ export class ValidatorService {
   @OnEvent(ChainEvents.POS_VALIDATOR_REGISTERED)
   // TODO: this event only gets the name. Get tx or handle other events?
   public async processRegisterValidator(event: ChainEvent) {
-    console.log('processRegisterValidator');
     const { address, name } = event.data as ValidatorRegisteredData;
 
     await this.accountService.updateOrCreateAccount({

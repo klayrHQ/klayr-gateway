@@ -46,11 +46,14 @@ export class ChainEventService {
         });
 
         // TODO: Hacky temp solution for problem above
-        if (this.events.length > 500) {
+        if (this.events.length > 1000) {
           await this.repoService.createEventsBulk(this.events);
           this.events = [];
         }
       }
     }
+
+    await this.repoService.createEventsBulk(this.events);
+    this.events = [];
   }
 }
