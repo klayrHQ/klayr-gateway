@@ -18,6 +18,7 @@ export class ChainEventService {
   public async processChainEvents(blocks: Block[]) {
     for (const block of blocks) {
       // TODO: This function is overloaded, skipping blocks!
+      // ! partially solved by disabling reward invoke in transactions for now
       const chainEvents = await this.nodeApiService.invokeApi<ChainEvent[]>(
         NodeApi.CHAIN_GET_EVENTS,
         {
@@ -46,14 +47,14 @@ export class ChainEventService {
         });
 
         // TODO: Hacky temp solution for problem above and prisma batch limit
-        if (this.events.length > 1500) {
-          await this.repoService.createEventsBulk2(this.events);
-          this.events = [];
-        }
+        // if (this.events.length > 1500) {
+        //   await this.repoService.createEventsBulk2(this.events);
+        //   this.events = [];
+        // }
       }
     }
 
-    await this.repoService.createEventsBulk2(this.events);
+    await this.repoService.createEventsBulk(this.events);
     this.events = [];
   }
 }
