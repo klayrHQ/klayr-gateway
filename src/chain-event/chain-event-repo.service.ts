@@ -15,6 +15,12 @@ export class ChainEventRepoService {
     });
   }
 
+  public async createEventsBulk2(events: any[]): Promise<void> {
+    await this.prisma.$transaction(
+      events.map((event) => this.prisma.chainEvents.create({ data: event })),
+    );
+  }
+
   public async countChainEvents(params: { where?: Prisma.ChainEventsWhereInput }): Promise<number> {
     const { where } = params;
     return this.prisma.chainEvents.count({

@@ -45,15 +45,15 @@ export class ChainEventService {
           topics: JSON.stringify(e.topics),
         });
 
-        // // TODO: Hacky temp solution for problem above
+        // TODO: Hacky temp solution for problem above and prisma batch limit
         if (this.events.length > 1500) {
-          await this.repoService.createEventsBulk(this.events);
+          await this.repoService.createEventsBulk2(this.events);
           this.events = [];
         }
       }
     }
 
-    await this.repoService.createEventsBulk(this.events);
+    await this.repoService.createEventsBulk2(this.events);
     this.events = [];
   }
 }
