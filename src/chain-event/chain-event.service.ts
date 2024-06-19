@@ -45,15 +45,15 @@ export class ChainEventService {
           topics: JSON.stringify(e.topics),
         });
 
-        // TODO: Hacky temp solution for problem above
-        if (this.events.length > 1200) {
+        // // TODO: Hacky temp solution for problem above
+        if (this.events.length > 1500) {
           await this.repoService.createEventsBulk(this.events);
           this.events = [];
         }
       }
     }
 
-    // await this.repoService.createEventsBulk(this.events);
-    // this.events = [];
+    await this.repoService.createEventsBulk(this.events);
+    this.events = [];
   }
 }
