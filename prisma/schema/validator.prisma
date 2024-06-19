@@ -1,9 +1,9 @@
 model Validator {
   address                      String  @id
   account                      Account @relation(fields: [address], references: [address])
-  blsKey                       String
-  proofOfPossession            String
-  generatorKey                 String
+  blsKey                       String?
+  proofOfPossession            String?
+  generatorKey                 String?
   lastGeneratedHeight          Int?
   isBanned                     Boolean @default(false)
   reportMisbehaviorHeights     String?

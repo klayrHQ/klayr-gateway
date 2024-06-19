@@ -145,8 +145,8 @@ export class TransactionController {
       signatures: JSON.parse(signatures),
     };
     if (!sender.name) delete sender.name;
-    if (!recipient.publicKey) delete recipient.publicKey;
-    if (!recipient.name) delete recipient.name;
+    if (recipient && !recipient.publicKey) delete recipient.publicKey;
+    if (recipient && !recipient.name) delete recipient.name;
     return newTransaction;
   }
 }

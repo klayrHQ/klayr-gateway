@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
-import { BlockEvent, GeneralEvent, TxOrAssetEvent } from './types';
+import { BlockEvent, ChainEvents, GeneralEvent, TxOrAssetEvent } from './types';
 
 // Will push all events to the an event queue
 // Worker will emit the events in order through the eventEmitter
@@ -46,10 +46,13 @@ export class EventService {
     this.generalQ.push(event).catch((err) => this.logger.error(err));
   }
 
-  // TODO: Only the pos:registerValidator is handled at the moment. This should be events from the chain-events service
   private async generalEventWorker(args: GeneralEvent): Promise<void> {
     const { event, payload } = args;
     this.eventEmitter.emit(event, payload);
-    // this.logger.warn(`Possibly unhandled general tx event emitted ${event}`);
+
+    // ! for dev
+    if (event === ChainEvents.POS_VALIDATOR_REGISTERED) {
+      this.logger.warn(`Possibly unhandled tx event emitted ${event}`);
+    }
   }
 }

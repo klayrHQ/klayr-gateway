@@ -11,6 +11,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class ChainEventController {
   constructor(private readonly repoService: ChainEventRepoService) {}
 
+  // TODO: Link to transaction
   // TODO: Response dto
   // TODO: Queries
   @Get()

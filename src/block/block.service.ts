@@ -69,11 +69,12 @@ export class BlockService {
 
   private async processBlocks(blocks: Block[]): Promise<any[]> {
     const promises = blocks.map(async (block) => {
-      const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
-        NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
-        { height: block.header.height },
-      );
-
+      // TODO: temporarly set reward to 0 to fix invokeApi overload
+      // const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
+      //   NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
+      //   { height: block.header.height },
+      // );
+      const reward = '0';
       // Inserting accounts of the sender of the transactions before inserting the block
       if (block.transactions.length > 0) {
         await this.addSenderAccountsToDB(block.transactions);

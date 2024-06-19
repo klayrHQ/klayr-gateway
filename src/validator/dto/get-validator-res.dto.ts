@@ -9,9 +9,9 @@ class Account {
 
 export class GetValidatorResponseDto {
   account: Account;
-  blsKey: string;
-  proofOfPossession: string;
-  generatorKey: string;
+  blsKey?: string;
+  proofOfPossession?: string;
+  generatorKey?: string;
 }
 
 export const getValidatorResponse: ApiResponseOptions = {

@@ -4,10 +4,10 @@ import { Validator } from 'src/asset/types';
 import { Prisma } from '@prisma/client';
 import { AccountService } from 'src/account/account.service';
 import { getKlayer32Address } from 'src/utils/helpers';
-import { Transaction } from 'src/node-api/types';
-import { RegisterValidatorParams } from './types';
+import { ChainEvent } from 'src/node-api/types';
+import { ValidatorRegisteredData } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
-import { TxEvents } from 'src/event/types';
+import { ChainEvents } from 'src/event/types';
 
 @Injectable()
 export class ValidatorService {
@@ -41,26 +41,17 @@ export class ValidatorService {
     return this.validatorRepoService.createValidatorsBulk(validatorsInput);
   }
 
-  @OnEvent(TxEvents.POS_REGISTER_VALIDATOR)
-  public async processRegisterValidator(registerValidatorTx: Transaction) {
-    const { senderPublicKey } = registerValidatorTx;
-    const decodedParams = registerValidatorTx.decodedParams as RegisterValidatorParams;
-
-    const senderAddress = getKlayer32Address(senderPublicKey);
-    const { name, blsKey, proofOfPossession, generatorKey } = decodedParams;
+  @OnEvent(ChainEvents.POS_VALIDATOR_REGISTERED)
+  // TODO: this event only gets the name. Get tx or handle other events?
+  public async processRegisterValidator(event: ChainEvent) {
+    console.log('processRegisterValidator');
+    const { address, name } = event.data as ValidatorRegisteredData;
 
     await this.accountService.updateOrCreateAccount({
-      address: senderAddress,
+      address,
       name,
     });
 
-    const validatorInput: Prisma.ValidatorCreateManyInput = {
-      address: senderAddress,
-      blsKey,
-      proofOfPossession,
-      generatorKey,
-    };
-
-    await this.validatorRepoService.createValidatorsBulk([validatorInput]);
+    await this.validatorRepoService.createValidatorsBulk([{ address }]);
   }
 }

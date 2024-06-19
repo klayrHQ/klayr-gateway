@@ -75,7 +75,7 @@ export type Schema = {
 };
 
 export type ChainEvent = {
-  data: string;
+  data: string | object;
   index: number;
   module: string;
   name: string;

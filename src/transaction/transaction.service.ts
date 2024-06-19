@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TransactionRepoService } from './transaction-repo.service';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Events, GatewayEvents, Payload, TxEvents } from 'src/event/types';
+import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { AccountService } from 'src/account/account.service';
@@ -51,19 +51,6 @@ export class TransactionService {
       event: GatewayEvents.UPDATE_BLOCK_FEE,
       payload: totalBurntPerBlock,
     });
-
-    // ! emit events after txs are saved
-    // TODO: can this be done in the same loop as createTransaction above?
-    payload.forEach(({ data }) => {
-      data.forEach((tx) => {
-        tx.decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
-        // TODO: this will be removed and go to the chain-event module
-        this.eventService.pushToGeneralEventQ({
-          event: `${tx.module}:${tx.command}` as TxEvents,
-          payload: tx,
-        });
-      });
-    });
   }
 
   private async createTransaction(params: {
@@ -75,6 +62,7 @@ export class TransactionService {
     const { tx, height, index, totalBurntPerBlock } = params;
 
     const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+
     // TODO: Is this the best place and will this cover all cases?
     // TODO: Recipient to initializeUserAccount event
     const recipientAddress = txParams['recipientAddress'] || null;

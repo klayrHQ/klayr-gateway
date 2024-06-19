@@ -1,6 +1,13 @@
-export interface RegisterValidatorParams {
+export interface ValidatorRegisteredData {
   name: string;
-  blsKey: string;
+  address: string;
+}
+
+export interface BlsKeyRegistrationData {
   proofOfPossession: string;
+  blsKey: string;
+}
+
+export interface GeneratorKeyRegistration {
   generatorKey: string;
 }
