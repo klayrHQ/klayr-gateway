@@ -22,6 +22,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async DEVonlyClearDB() {
+    await this.chainEvents.deleteMany({});
     await this.transaction.deleteMany({});
     await this.asset.deleteMany({});
     await this.block.deleteMany({});
@@ -30,6 +31,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.account.deleteMany({});
 
     // reset autoincrement
+    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='ChainEvents'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Transaction'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Asset'`;
     await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Validator'`;

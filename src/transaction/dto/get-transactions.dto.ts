@@ -90,11 +90,12 @@ export class GetTransactionDto {
   @IsEnum(SortTypes, {
     message: 'sort must be one of the following values: ' + Object.values(SortTypes).join(', '),
   })
-  sort?: SortTypes = SortTypes.HEIGHT_ASC;
+  sort?: SortTypes = SortTypes.HEIGHT_DESC;
 
   /**
    * Offset for the transactions fetched.
    */
   @IsNumber()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 }

@@ -7,7 +7,7 @@ model Transaction {
   fee              String
   minFee           String
   params           String
-  signatures       String 
+  signatures       String
   index            Int
   senderAddress    String
   recipientAddress String?

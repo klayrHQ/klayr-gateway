@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
+import { Asset, Block, ChainEvent, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Events, GatewayEvents, GeneralEvent, Payload } from 'src/event/types';
+import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
 import { getKlayer32Address } from 'src/utils/helpers';
 import { AccountService } from 'src/account/account.service';
+import { ChainEventService } from 'src/chain-event/chain-event.service';
 
 @Injectable()
 export class BlockService {
@@ -18,18 +19,15 @@ export class BlockService {
     private eventService: EventService,
     private nodeApiService: NodeApiService,
     private accountService: AccountService,
+    private chainEventService: ChainEventService,
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
   public async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
-    await this.blockRepo.createBlocksBulk(await this.processBlocks(payload));
-
-    await this.eventService.pushToTxAndAssetsEventQ({
-      event: Events.NEW_ASSETS_EVENT,
-      payload: this.processAssets(payload),
-    });
+    const blocks = await this.processBlocks(payload);
+    await this.blockRepo.createBlocksBulk(blocks);
 
     const transactions = this.processTransactions(payload);
     if (transactions && transactions.length > 0) {
@@ -39,7 +37,13 @@ export class BlockService {
       });
     }
 
+    await this.eventService.pushToTxAndAssetsEventQ({
+      event: Events.NEW_ASSETS_EVENT,
+      payload: this.processAssets(payload),
+    });
+
     await this.checkForBlockFinality();
+    await this.chainEventService.processChainEvents(payload);
     // TODO: emit event events (chain event)
   }
 
@@ -71,7 +75,9 @@ export class BlockService {
       );
 
       // Inserting accounts of the sender of the transactions before inserting the block
-      if (block.transactions.length > 0) await this.addSenderAccountsToDB(block.transactions);
+      if (block.transactions.length > 0) {
+        await this.addSenderAccountsToDB(block.transactions);
+      }
 
       return {
         ...block.header,

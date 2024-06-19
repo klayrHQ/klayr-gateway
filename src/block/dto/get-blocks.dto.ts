@@ -32,29 +32,30 @@ export class GetBlocksDto {
   timestamp?: string;
 
   /**
-   * Sort blocks. Default is "height:asc".
+   * Sort blocks.
    */
   @IsString()
   @IsEnum(SortTypes, {
     message: 'sort must be one of the following values: ' + Object.values(SortTypes).join(', '),
   })
-  sort?: SortTypes = SortTypes.HEIGHT_ASC;
+  sort?: SortTypes = SortTypes.HEIGHT_DESC;
 
   /**
-   * Limit the number of blocks fetched. Default is ${DEFAULT_BLOCKS_TO_FETCH}.
+   * Limit the number of blocks fetched.
    */
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = DEFAULT_BLOCKS_TO_FETCH;
 
   /**
-   * Offset for the blocks fetched. Default is 0.
+   * Offset for the blocks fetched.
    */
   @IsNumber()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 
   /**
-   * Include assets in the blocks fetched. Default is false.
+   * Include assets in the blocks fetched.
    */
   @IsOptional()
   @Transform(({ value }) => value === 'true', { toClassOnly: true })

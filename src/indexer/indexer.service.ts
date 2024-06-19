@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
+import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE, RETRY_TIMEOUT } from 'src/utils/constants';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
 import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
 import { BlockEvent, Events } from 'src/event/types';
+import { waitTimeout } from 'src/utils/helpers';
 
 export enum IndexerState {
   SYNCING,
@@ -61,6 +62,12 @@ export class IndexerService {
         const nodeHeight = nodeInfo.height;
         if (block.header.height <= nodeHeight) block.header.isFinal = true;
       });
+
+      if (blocks.length === 0) {
+        await waitTimeout(RETRY_TIMEOUT);
+        continue;
+      }
+
       // modifying the blocks array here
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 

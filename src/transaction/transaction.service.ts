@@ -57,6 +57,7 @@ export class TransactionService {
     payload.forEach(({ data }) => {
       data.forEach((tx) => {
         tx.decodedParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+        // TODO: this will be removed and go to the chain-event module
         this.eventService.pushToGeneralEventQ({
           event: `${tx.module}:${tx.command}` as TxEvents,
           payload: tx,
@@ -75,6 +76,7 @@ export class TransactionService {
 
     const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
     // TODO: Is this the best place and will this cover all cases?
+    // TODO: Recipient to initializeUserAccount event
     const recipientAddress = txParams['recipientAddress'] || null;
     await this.upsertRecipientAccount(recipientAddress);
 

@@ -46,10 +46,10 @@ export class EventService {
     this.generalQ.push(event).catch((err) => this.logger.error(err));
   }
 
-  // TODO: Only the pos:registerValidator is handled at the moment
+  // TODO: Only the pos:registerValidator is handled at the moment. This should be events from the chain-events service
   private async generalEventWorker(args: GeneralEvent): Promise<void> {
     const { event, payload } = args;
     this.eventEmitter.emit(event, payload);
-    this.logger.warn(`Possibly unhandled general tx event emitted ${event}`);
+    // this.logger.warn(`Possibly unhandled general tx event emitted ${event}`);
   }
 }

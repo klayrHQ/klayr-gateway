@@ -25,4 +25,5 @@ model Block {
   totalForged          BigInt // reward + networkFee + totalBurnt
   assets               Asset[]
   transactions         Transaction[]
+  ChainEvents          ChainEvents[]
 }

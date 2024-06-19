@@ -38,3 +38,10 @@ export const MAX_BLOCKS_TO_FETCH = 100;
 
 export const DEFAULT_TX_TO_FETCH = 10;
 export const MAX_TXS_TO_FETCH = 100;
+
+////////////////////////////
+///       Events    ///
+////////////////////////////
+
+export const DEFAULT_EVENTS_TO_FETCH = 10;
+export const MAX_EVENTS_TO_FETCH = 100;

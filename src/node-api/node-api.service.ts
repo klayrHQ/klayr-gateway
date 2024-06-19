@@ -9,6 +9,8 @@ import { RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import { NewBlockEvent, NodeInfo, SchemaModule } from './types';
 import { codec } from '@klayr/codec';
+import { Interval } from '@nestjs/schedule';
+import { CallbackHandler } from 'supertest';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -18,6 +20,7 @@ export enum NodeApi {
   CHAIN_GET_BLOCK_BY_ID = 'chain_getBlockByID',
   CHAIN_GET_BLOCK_BY_HEIGHT = 'chain_getBlockByHeight',
   CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
+  CHAIN_GET_EVENTS = 'chain_getEvents',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
@@ -29,6 +32,7 @@ export class NodeApiService {
   private readonly logger = new Logger(NodeApiService.name);
   private client: apiClient.APIClient;
   private schemaMap: Map<string, SchemaModule>;
+  private subscription: any;
   public nodeInfo: NodeInfo;
 
   async onModuleInit() {
@@ -36,12 +40,27 @@ export class NodeApiService {
     await this.getAndSetSchemas();
   }
 
-  private async connectToNode() {
+  // TODO: reconnect on disconnect
+  public async connectToNode() {
     while (!this.client) {
       this.client = await apiClient.createWSClient(process.env.NODE_URL).catch(async (err) => {
         this.logger.error('Failed connecting to node, retrying...', err);
         await waitTimeout(RETRY_TIMEOUT);
         return null;
+      });
+    }
+  }
+
+  // TODO: Hacky way to reconnect. Need to implement a better way that works with the indexer subscribing
+  @Interval(60_000) // 1 minute
+  public async nodeStatus() {
+    try {
+      await this.client.node.getNetworkStats();
+    } catch (err) {
+      this.logger.error('Node is not reachable, reconnecting...');
+      await apiClient.createWSClient(process.env.NODE_URL).then((client) => {
+        this.client = client;
+        this.subscribeToNewBlock(this.subscription);
       });
     }
   }
@@ -55,6 +74,7 @@ export class NodeApiService {
 
   // Have to avoid retrying here cause of memory leaks
   public subscribeToNewBlock(callback: (data: NewBlockEvent) => void): void {
+    this.subscription = callback;
     try {
       this.client.subscribe(NodeApi.CHAIN_NEW_BLOCK, async (data: unknown) => {
         const newBlockData = data as NewBlockEvent;
@@ -77,6 +97,7 @@ export class NodeApiService {
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
   }
 
+  // TODO: Combine these 3 decode functions into one?
   public decodeTxData(mod: string, command: string, data: string): unknown {
     const schema = this.schemaMap.get(mod);
     if (!schema) {
@@ -89,6 +110,20 @@ export class NodeApiService {
     }
 
     return codec.decodeJSON(commandSchema.params, Buffer.from(data, 'hex'));
+  }
+
+  public decodeEventData(mod: string, event: string, data: string): unknown {
+    const schema = this.schemaMap.get(mod);
+    if (!schema) {
+      throw new BadRequestException(`Schema for module ${mod} not found`);
+    }
+
+    const eventSchema = schema.events.find((e) => e.name === event);
+    if (!eventSchema) {
+      throw new BadRequestException(`Event ${event} not found in module ${mod}`);
+    }
+
+    return codec.decodeJSON(eventSchema.data, Buffer.from(data, 'hex'));
   }
 
   public decodeAssetData(mod: string, data: string): unknown {
