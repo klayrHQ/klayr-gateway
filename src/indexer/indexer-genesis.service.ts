@@ -36,6 +36,8 @@ export class IndexerGenesisService {
         message: decoded,
       };
     });
+    // Token asset should be processed first
+    decodedAssets.sort((a) => (a.name === AssetTypes.TOKEN ? -1 : 0));
 
     for (const decodedAsset of decodedAssets) {
       await this.handleDecodedAssets(decodedAsset);
@@ -47,12 +49,22 @@ export class IndexerGenesisService {
   // TODO: handle other genesis assets. Probably in new modules
   private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
     switch (decodedAsset.name) {
+      case AssetTypes.TOKEN:
+        this.logger.debug('Genesis token asset');
+        await this.handleGenesisTokenAsset(decodedAsset.message.userSubstore);
+        break;
       case AssetTypes.POS:
+        this.logger.debug('Genesis POS asset');
         await this.validatorService.processPosAsset(decodedAsset.message.validators);
         break;
 
       default:
         this.logger.warn(`Unhandled asset in Genesis block: ${decodedAsset.name}`);
     }
+  }
+
+  private async handleGenesisTokenAsset(users: { address: string }[]) {
+    const addresses = users.map((user) => ({ address: user.address }));
+    await this.accountService.createAccountsBulk(addresses);
   }
 }

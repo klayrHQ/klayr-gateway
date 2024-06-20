@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, ChainEvent, RewardAtHeight, Transaction } from 'src/node-api/types';
+import { Asset, Block, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
-import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
+import { NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
-import { getKlayer32Address } from 'src/utils/helpers';
+import { getKlayer32FromPublic } from 'src/utils/helpers';
 import { AccountService } from 'src/account/account.service';
 import { ChainEventService } from 'src/chain-event/chain-event.service';
 
@@ -26,6 +26,8 @@ export class BlockService {
   public async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
+    await this.chainEventService.checkUserAccountsAndSaveEvents(payload);
+
     const blocks = await this.processBlocks(payload);
     await this.blockRepo.createBlocksBulk(blocks);
 
@@ -43,7 +45,7 @@ export class BlockService {
     });
 
     await this.checkForBlockFinality();
-    await this.chainEventService.processChainEvents(payload);
+    await this.chainEventService.writeChainEvents();
     // TODO: emit event events (chain event)
   }
 
@@ -75,10 +77,6 @@ export class BlockService {
       //   { height: block.header.height },
       // );
       const reward = '0';
-      // Inserting accounts of the sender of the transactions before inserting the block
-      if (block.transactions.length > 0) {
-        await this.addSenderAccountsToDB(block.transactions);
-      }
 
       return {
         ...block.header,
@@ -100,7 +98,7 @@ export class BlockService {
         .filter(({ nonce }) => nonce === '0')
         .map(({ senderPublicKey }) => {
           return this.accountService.updateOrCreateAccount({
-            address: getKlayer32Address(senderPublicKey),
+            address: getKlayer32FromPublic(senderPublicKey),
             publicKey: senderPublicKey,
           });
         }),

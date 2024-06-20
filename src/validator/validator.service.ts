@@ -3,7 +3,7 @@ import { ValidatorRepoService } from './validator.repo-service';
 import { Validator } from 'src/asset/types';
 import { Prisma } from '@prisma/client';
 import { AccountService } from 'src/account/account.service';
-import { getKlayer32Address } from 'src/utils/helpers';
+import { getKlayer32FromPublic } from 'src/utils/helpers';
 import { ChainEvent } from 'src/node-api/types';
 import { ValidatorRegisteredData } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -23,7 +23,9 @@ export class ValidatorService {
       name,
     }));
 
-    await this.accountService.createAccountsBulk(accountsInput);
+    for (const account of accountsInput) {
+      await this.accountService.updateOrCreateAccount(account);
+    }
 
     const validatorsInput: Prisma.ValidatorCreateManyInput[] = validators.map((asset) => ({
       address: asset.address,
@@ -43,6 +45,7 @@ export class ValidatorService {
 
   @OnEvent(ChainEvents.POS_VALIDATOR_REGISTERED)
   // TODO: this event only gets the name. Get tx or handle other events?
+  // TODO: Change back to original solution of handling POS:REGISTER_VALIDATOR
   public async processRegisterValidator(event: ChainEvent) {
     const { address, name } = event.data as ValidatorRegisteredData;
 

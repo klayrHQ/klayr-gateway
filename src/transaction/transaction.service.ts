@@ -6,7 +6,7 @@ import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { AccountService } from 'src/account/account.service';
 import { Prisma } from '@prisma/client';
-import { getKlayer32Address } from 'src/utils/helpers';
+import { getKlayer32FromPublic } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
 
 export interface UpdateBlockFee {
@@ -63,11 +63,6 @@ export class TransactionService {
 
     const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
 
-    // TODO: Is this the best place and will this cover all cases?
-    // TODO: Recipient to initializeUserAccount event
-    const recipientAddress = txParams['recipientAddress'] || null;
-    await this.upsertRecipientAccount(recipientAddress);
-
     return {
       id: tx.id,
       height,
@@ -77,8 +72,8 @@ export class TransactionService {
       nonce: tx.nonce,
       fee: tx.fee,
       minFee: this.calcFeePerBlock(totalBurntPerBlock, height, tx),
-      senderAddress: getKlayer32Address(tx.senderPublicKey),
-      recipientAddress,
+      senderAddress: getKlayer32FromPublic(tx.senderPublicKey),
+      recipientAddress: txParams['recipientAddress'] || null,
       index,
       params: JSON.stringify(tx.params),
     };
@@ -106,10 +101,5 @@ export class TransactionService {
       signatures: tx.signatures,
       params: tx.params,
     });
-  }
-
-  private async upsertRecipientAccount(address: string) {
-    if (!address) return;
-    await this.accountService.updateOrCreateAccount({ address });
   }
 }
