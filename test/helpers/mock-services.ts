@@ -8,6 +8,7 @@ export class MockNodeApiService {
   getBlocksFromNode = jest.fn().mockResolvedValue(newBlockArrayMock);
   subscribeToNewBlock = jest.fn().mockResolvedValue(newBlockEventMock);
   nodeInfo = { height: 5, genesisHeight: 0, finalizedHeight: 150 };
+  decodeTxData = jest.fn().mockResolvedValue({ type: 'transfer', data: {} });
 
   invokeApi = jest.fn().mockImplementation((apiName, params) => {
     switch (apiName) {

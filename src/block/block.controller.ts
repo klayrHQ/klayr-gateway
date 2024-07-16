@@ -1,26 +1,11 @@
-import {
-  BadRequestException,
-  Controller,
-  DefaultValuePipe,
-  Get,
-  ParseBoolPipe,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BlockRepoService } from './block-repo.service';
-import { DEFAULT_BLOCKS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  blockIDQuery,
-  heightQuery,
-  includeAssetsQuery,
-  limitQuery,
-  offsetQuery,
-  sortQuery,
-  timestampQuery,
-} from './open-api/request-types';
-import { GetBlockResponse, getBlocksResponse } from './open-api/return-types';
-import { GatewayResponse } from 'src/utils/helpers';
+import { MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GetBlockResDto, getBlocksResponse } from './dto/get-blocks-res.dto';
+import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
+import { Prisma } from '@prisma/client';
+import { GetBlocksDto } from './dto/get-blocks.dto';
 
 @ApiTags('Blocks')
 @Controller('blocks')
@@ -28,42 +13,18 @@ export class BlockController {
   constructor(private readonly blockRepoService: BlockRepoService) {}
 
   @Get()
-  @ApiQuery(heightQuery)
-  @ApiQuery(timestampQuery)
-  @ApiQuery(blockIDQuery)
-  @ApiQuery(sortQuery)
-  @ApiQuery(limitQuery)
-  @ApiQuery(offsetQuery)
-  @ApiQuery(includeAssetsQuery)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getBlocksResponse)
-  async getBlocks(
-    // TODO: Module name query???
-    @Query('height') height: string,
-    @Query('timestamp') timestamp: string,
-    @Query('blockID') blockID: string,
-    @Query('sort', new DefaultValuePipe('height:asc')) sort: string,
-    @Query('limit', new DefaultValuePipe(DEFAULT_BLOCKS_TO_FETCH)) limit: number,
-    @Query('offset', new DefaultValuePipe(0), new ParseIntPipe()) offset: number,
-    @Query('includeAssets', new DefaultValuePipe(false), new ParseBoolPipe())
-    includeAssets: boolean,
-  ): Promise<GatewayResponse<GetBlockResponse[]>> {
-    const { field, direction } = this.validateSortParameter(sort);
+  async getBlocks(@Query() query: GetBlocksDto): Promise<GatewayResponse<GetBlockResDto[]>> {
+    const { blockID, height, timestamp, sort, limit, offset, includeAssets } = query;
+    const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
-    const where = {};
 
-    if (height) {
-      const [start, end] = height.split(':');
-      where['height'] = this.buildCondition(start, end, take);
-    }
-
-    if (timestamp) {
-      const [start, end] = timestamp.split(':');
-      where['timestamp'] = this.buildCondition(start, end, take);
-    }
-
-    if (blockID) {
-      where['id'] = blockID;
-    }
+    const where: Prisma.BlockWhereInput = {
+      ...(blockID && { id: blockID }),
+      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
+    };
 
     const [blocks, total] = await Promise.all([
       this.blockRepoService.getBlocks({
@@ -75,45 +36,28 @@ export class BlockController {
         skip: offset,
         includeAssets,
       }),
-      this.blockRepoService.countBlocks({}),
+      this.blockRepoService.countBlocks({ where }),
     ]);
 
-    blocks.forEach((block) => {
-      block.aggregateCommit = JSON.parse(block.aggregateCommit);
-      delete block.generatorAddress;
-    });
+    const blockResponse: GetBlockResDto[] = blocks.map((block) => this.toGetBlockResponse(block));
 
-    return new GatewayResponse(blocks, { count: blocks.length, offset, total });
+    return new GatewayResponse(blockResponse, { count: blocks.length, offset, total });
   }
 
-  private buildCondition(start: string, end: string, take: number) {
-    if (start && end) {
-      return {
-        gte: Number(start),
-        lte: Number(end),
-      };
-    } else if (start) {
-      return {
-        gte: Number(start),
-      };
-    } else if (end) {
-      return {
-        gt: Number(end) - take,
-        lte: Number(end),
-      };
-    }
-  }
-
-  private validateSortParameter(sort: string) {
-    const [field, direction] = sort.split(':');
-    if (
-      !['height', 'timestamp'].includes(field) ||
-      !['asc', 'desc'].includes(direction.toLowerCase())
-    ) {
-      throw new BadRequestException(
-        'Invalid sort parameter. It should be one of "height:asc", "height:desc", "timestamp:asc", "timestamp:desc".',
-      );
-    }
-    return { field, direction };
+  private toGetBlockResponse(
+    block: Prisma.BlockGetPayload<{ include: { generator: true } }>,
+  ): GetBlockResDto {
+    const { generator, ...rest } = block;
+    const newBlock: GetBlockResDto = {
+      ...rest,
+      totalBurnt: block.totalBurnt.toString(),
+      networkFee: block.networkFee.toString(),
+      totalForged: block.totalForged.toString(),
+      aggregateCommit: JSON.parse(block.aggregateCommit),
+      generatorAddress: undefined,
+    };
+    if (!generator.publicKey) delete generator.publicKey;
+    if (!generator.name) delete generator.name;
+    return newBlock;
   }
 }

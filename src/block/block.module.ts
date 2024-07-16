@@ -5,10 +5,13 @@ import { BlockRepoService } from './block-repo.service';
 import { BlockController } from './block.controller';
 import { EventModule } from 'src/event/event.module';
 import { NodeApiModule } from 'src/node-api/node-api.module';
+import { AccountModule } from 'src/account/account.module';
+import { ChainEventModule } from 'src/chain-event/chain-event.module';
 
 @Module({
-  imports: [EventModule, NodeApiModule],
+  imports: [EventModule, NodeApiModule, AccountModule, ChainEventModule],
   providers: [PrismaService, BlockService, BlockRepoService],
   controllers: [BlockController],
+  exports: [BlockService],
 })
 export class BlockModule {}

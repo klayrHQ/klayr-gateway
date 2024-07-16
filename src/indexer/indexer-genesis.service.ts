@@ -1,5 +1,5 @@
-import { codec } from '@klayr/codec';
 import { Injectable, Logger } from '@nestjs/common';
+import { AccountService } from 'src/account/account.service';
 import { AssetTypes } from 'src/asset/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NodeInfo } from 'src/node-api/types';
@@ -12,6 +12,7 @@ export class IndexerGenesisService {
   constructor(
     private readonly nodeApiService: NodeApiService,
     private readonly validatorService: ValidatorService,
+    private readonly accountService: AccountService,
   ) {}
 
   async onModuleInit() {
@@ -28,30 +29,42 @@ export class IndexerGenesisService {
   }
 
   private async processGenesisBlock(block: Block) {
-    const schema = await this.nodeApiService.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
-    const assetSchema = schema.modules;
-
     const decodedAssets = block.assets.map((asset) => {
-      const schema = assetSchema.find((schema: { name: string }) => schema.name === asset.module);
-      const decoded = codec.decodeJSON(schema.assets[0].data, Buffer.from(asset.data, 'hex'));
+      const decoded = this.nodeApiService.decodeAssetData(asset.module, asset.data);
       return {
         name: asset.module,
         message: decoded,
       };
     });
+    // Token asset should be processed first
+    decodedAssets.sort((a) => (a.name === AssetTypes.TOKEN ? -1 : 0));
 
     for (const decodedAsset of decodedAssets) {
-      this.handleDecodedAssets(decodedAsset);
+      await this.handleDecodedAssets(decodedAsset);
+    }
+
+    await this.accountService.createAccountsBulk([{ address: block.header.generatorAddress }]);
+  }
+
+  // TODO: handle other genesis assets. Probably in new modules
+  private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
+    switch (decodedAsset.name) {
+      case AssetTypes.TOKEN:
+        this.logger.debug('Genesis token asset');
+        await this.handleGenesisTokenAsset(decodedAsset.message.userSubstore);
+        break;
+      case AssetTypes.POS:
+        this.logger.debug('Genesis POS asset');
+        await this.validatorService.processPosAsset(decodedAsset.message.validators);
+        break;
+
+      default:
+        this.logger.warn(`Unhandled asset in Genesis block: ${decodedAsset.name}`);
     }
   }
 
-  private async handleDecodedAssets(decodedAsset: { name: string; message: any }) {
-    switch (decodedAsset.name) {
-      case AssetTypes.POS:
-        await this.validatorService.processPosAsset(decodedAsset.message.validators);
-        break;
-      default:
-        this.logger.warn(`Unhandled asset name: ${decodedAsset.name}`);
-    }
+  private async handleGenesisTokenAsset(users: { address: string }[]) {
+    const addresses = users.map((user) => ({ address: user.address }));
+    await this.accountService.createAccountsBulk(addresses);
   }
 }

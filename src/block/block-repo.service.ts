@@ -17,15 +17,17 @@ export class BlockRepoService {
         generator: {
           select: {
             address: true,
-            name: true,
           },
         },
       },
     });
   }
 
-  public async countBlocks(where: Prisma.BlockWhereInput): Promise<number> {
-    return this.prisma.block.count({ where });
+  public async countBlocks(params: { where?: Prisma.BlockWhereInput }): Promise<number> {
+    const { where } = params;
+    return this.prisma.block.count({
+      where,
+    });
   }
 
   public async getBlocks(params: {
@@ -35,7 +37,7 @@ export class BlockRepoService {
     where?: Prisma.BlockWhereInput;
     orderBy?: Prisma.BlockOrderByWithRelationInput;
     includeAssets?: boolean;
-  }): Promise<Block[]> {
+  }): Promise<Prisma.BlockGetPayload<{ include: { generator: true } }>[]> {
     const { skip, take, cursor, where, orderBy, includeAssets } = params;
     return await this.prisma.block.findMany({
       skip,
@@ -47,6 +49,7 @@ export class BlockRepoService {
         generator: {
           select: {
             address: true,
+            publicKey: true,
             name: true,
           },
         },
@@ -67,10 +70,10 @@ export class BlockRepoService {
     return this.prisma.block.create({ data: createBlockInput });
   }
 
-  public async updateBlock(params: {
+  public updateBlock(params: {
     where: Prisma.BlockWhereUniqueInput;
     data: Prisma.BlockUpdateInput;
-  }): Promise<Block> {
+  }): PrismaPromise<Block> {
     const { data, where } = params;
     return this.prisma.block.update({
       data,
@@ -101,5 +104,9 @@ export class BlockRepoService {
     return this.prisma.block.createMany({
       data: blocks,
     });
+  }
+
+  public async updateBlocksTransaction(updates: PrismaPromise<Block>[]): Promise<Block[]> {
+    return this.prisma.$transaction(updates);
   }
 }

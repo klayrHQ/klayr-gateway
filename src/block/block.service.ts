@@ -1,10 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
+import { Asset, Block, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
-import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Events, Payload } from 'src/event/types';
+import { NodeApiService } from 'src/node-api/node-api.service';
+import { Events, GatewayEvents, Payload } from 'src/event/types';
+import { UpdateBlockFee } from 'src/transaction/transaction.service';
+import { getKlayer32FromPublic } from 'src/utils/helpers';
+import { AccountService } from 'src/account/account.service';
+import { ChainEventService } from 'src/chain-event/chain-event.service';
 
 @Injectable()
 export class BlockService {
@@ -14,34 +18,65 @@ export class BlockService {
     private blockRepo: BlockRepoService,
     private eventService: EventService,
     private nodeApiService: NodeApiService,
+    private accountService: AccountService,
+    private chainEventService: ChainEventService,
   ) {}
 
   @OnEvent(Events.NEW_BLOCKS_EVENT)
   public async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
-    await this.blockRepo.createBlocksBulk(await this.processBlocks(payload));
+    await this.chainEventService.checkUserAccountsAndSaveEvents(payload);
+
+    const blocks = await this.processBlocks(payload);
+    await this.blockRepo.createBlocksBulk(blocks);
+
+    const transactions = this.processTransactions(payload);
+    if (transactions && transactions.length > 0) {
+      await this.eventService.pushToTxAndAssetsEventQ({
+        event: Events.NEW_TX_EVENT,
+        payload: transactions,
+      });
+    }
+
     await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_ASSETS_EVENT,
       payload: this.processAssets(payload),
     });
 
-    await this.eventService.pushToTxAndAssetsEventQ({
-      event: Events.NEW_TX_EVENT,
-      payload: this.processTransactions(payload),
-    });
-
     await this.checkForBlockFinality();
-
+    await this.chainEventService.writeChainEvents();
     // TODO: emit event events (chain event)
+  }
+
+  @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
+  public async updateBlocksFee(payload: Map<number, UpdateBlockFee>): Promise<void> {
+    for (const [height, { totalBurnt, totalFee }] of payload.entries()) {
+      const { reward } = await this.blockRepo.getBlock({ height });
+      const networkFee = totalFee - totalBurnt;
+      const totalForged = Number(reward) + networkFee + totalBurnt;
+
+      await this.blockRepo.updateBlock({
+        where: {
+          height: height,
+        },
+        data: {
+          totalBurnt: totalBurnt,
+          networkFee: networkFee,
+          totalForged: totalForged,
+        },
+      });
+    }
   }
 
   private async processBlocks(blocks: Block[]): Promise<any[]> {
     const promises = blocks.map(async (block) => {
-      const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
-        NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
-        { height: block.header.height },
-      );
+      // TODO: temporarly set reward to 0 to fix invokeApi overload
+      // const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
+      //   NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
+      //   { height: block.header.height },
+      // );
+      const reward = '0';
 
       return {
         ...block.header,
@@ -49,17 +84,34 @@ export class BlockService {
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),
+        totalForged: Number(reward),
       };
     });
 
     return Promise.all(promises);
   }
 
+  // TODO: can this be a prisma.transaction or bulk?
+  private async addSenderAccountsToDB(txs: Transaction[]) {
+    await Promise.all(
+      txs
+        .filter(({ nonce }) => nonce === '0')
+        .map(({ senderPublicKey }) => {
+          return this.accountService.updateOrCreateAccount({
+            address: getKlayer32FromPublic(senderPublicKey),
+            publicKey: senderPublicKey,
+          });
+        }),
+    );
+  }
+
   private processTransactions(blocks: Block[]): Payload<Transaction>[] {
-    return blocks.map((block: Block) => ({
-      height: block.header.height,
-      data: block.transactions,
-    }));
+    return blocks
+      .filter((block: Block) => block.transactions.length > 0)
+      .map((block: Block) => ({
+        height: block.header.height,
+        data: block.transactions,
+      }));
   }
 
   private processAssets(blocks: Block[]): Payload<Asset>[] {
@@ -84,6 +136,3 @@ export class BlockService {
     });
   }
 }
-
-// 100k => 35s old code
-// 3 jaar => 8m block  => 45min old code

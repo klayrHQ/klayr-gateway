@@ -47,7 +47,7 @@ describe('IndexerService', () => {
   it('should set syncedBlockHeight and sync and set states on module init', async () => {
     expect(indexerService.state).toBe(IndexerState.SYNCING);
     await indexerService.onApplicationBootstrap();
-    expect(indexerService.nextBlockToSync).toBe(1); // genesis is 0 so + 1
+    expect(indexerService.nextBlockToSync).toBe(0); // genesis is 0
     await waitTimeout(1000);
     expect(indexerService.nextBlockToSync).toBe(134); // block number is 133
     expect(eventService.pushToBlockEventQ).toHaveBeenCalledTimes(1);

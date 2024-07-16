@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE } from 'src/utils/constants';
+import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE, RETRY_TIMEOUT } from 'src/utils/constants';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
 import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
 import { BlockEvent, Events } from 'src/event/types';
+import { waitTimeout } from 'src/utils/helpers';
 
 export enum IndexerState {
   SYNCING,
@@ -45,7 +46,7 @@ export class IndexerService {
     }
 
     // Nodeinfo already set during genesis block processing
-    this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight + 1;
+    this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight;
 
     await this.indexerRepoService.setNextBlockToSync({ height: this.nextBlockToSync });
   }
@@ -61,6 +62,12 @@ export class IndexerService {
         const nodeHeight = nodeInfo.height;
         if (block.header.height <= nodeHeight) block.header.isFinal = true;
       });
+
+      if (blocks.length === 0) {
+        await waitTimeout(RETRY_TIMEOUT);
+        continue;
+      }
+
       // modifying the blocks array here
       this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 
@@ -74,7 +81,7 @@ export class IndexerService {
     this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
       const newBlockHeight = newBlockData.blockHeader.height;
       if (this.state === IndexerState.SYNCING)
-        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync - 1}`);
+        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`
       if (newBlockHeight > this.nextBlockToSync) {
@@ -102,9 +109,12 @@ export class IndexerService {
   }
 
   private async getBlocks(): Promise<Block[]> {
+    const nodeHeight = this.nodeApiService.nodeInfo.height;
+    const heightToGet = this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE;
+
     return this.nodeApiService.invokeApi<Block[]>(NodeApi.CHAIN_GET_BLOCKS_BY_HEIGHT, {
       from: this.nextBlockToSync,
-      to: this.nextBlockToSync + NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+      to: heightToGet > nodeHeight ? nodeHeight : heightToGet,
     });
   }
 }

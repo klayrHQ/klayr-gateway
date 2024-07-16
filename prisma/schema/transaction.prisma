@@ -1,12 +1,17 @@
 model Transaction {
-  id               Int      @id @default(autoincrement())
+  id               String   @id
+  height           Int
   module           String
   command          String
   nonce            String
   fee              String
-  senderPublicKey  String
+  minFee           String
   params           String
-  signatures       String   // stringifiy
-  block            Block    @relation(fields: [blockHeight], references: [height])
-  blockHeight      Int      @unique
+  signatures       String
+  index            Int
+  senderAddress    String
+  recipientAddress String?
+  sender           Account  @relation("sender", fields: [senderAddress], references: [address])
+  recipient        Account? @relation("recipient", fields: [recipientAddress], references: [address])
+  block            Block    @relation(fields: [height], references: [height])
 }

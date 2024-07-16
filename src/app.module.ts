@@ -7,17 +7,25 @@ import { EventModule } from './event/event.module';
 import { BlockModule } from './block/block.module';
 import { AssetModule } from './asset/asset.module';
 import { ValidatorModule } from './validator/validator.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { AccountModule } from './account/account.module';
+import { ChainEventModule } from './chain-event/chain-event.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
-    IndexerModule,
     NodeApiModule,
     EventModule,
     BlockModule,
+    TransactionModule,
     AssetModule,
     ValidatorModule,
+    AccountModule,
+    IndexerModule,
+    ChainEventModule,
   ],
   controllers: [],
   providers: [],

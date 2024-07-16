@@ -1,0 +1,10 @@
+model ChainEvents {
+  id     Int    @id @default(autoincrement())
+  height Int
+  module String
+  name   String
+  data   String?
+  topics String?
+  index  Int?
+  block  Block  @relation(fields: [height], references: [height])
+}

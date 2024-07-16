@@ -29,6 +29,7 @@ export interface BlockHeader {
 }
 
 export interface Transaction {
+  id: string;
   module: string;
   command: string;
   params: string;
@@ -36,6 +37,7 @@ export interface Transaction {
   fee: string;
   senderPublicKey: string;
   signatures: string[];
+  decodedParams?: unknown;
 }
 
 export interface Asset {
@@ -58,3 +60,25 @@ export interface NodeInfo {
 export interface RewardAtHeight {
   reward: string;
 }
+
+export type SchemaModule = {
+  name: string;
+  commands: any[];
+  events: any[];
+  stores: any[];
+  endpoints: any[];
+  assets: any[];
+};
+
+export type Schema = {
+  modules: SchemaModule[];
+};
+
+export type ChainEvent = {
+  data: string | object;
+  index: number;
+  module: string;
+  name: string;
+  topics: string[] | string;
+  height: number;
+};
