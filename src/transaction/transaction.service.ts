@@ -75,7 +75,7 @@ export class TransactionService {
       senderAddress: getKlayer32FromPublic(tx.senderPublicKey),
       recipientAddress: txParams['recipientAddress'] || null,
       index,
-      params: JSON.stringify(tx.params),
+      params: JSON.stringify(txParams),
     };
   }
 
