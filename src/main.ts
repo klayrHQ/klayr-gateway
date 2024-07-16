@@ -21,6 +21,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors(); // TODO: Settings
 
   await setupSwagger(app);
   await app.listen(process.env.PORT || 9901, '0.0.0.0');
