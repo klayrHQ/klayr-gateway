@@ -43,6 +43,15 @@ export class ChainEventService {
     });
 
     const events = await Promise.all(promises);
+    // ! temp
+    for (const e of events) {
+      for (const event of e) {
+        if (event.name !== 'rewardMinted' && event.name !== 'mint' && event.name !== 'lock') {
+          console.log(event.module, event.name);
+        }
+      }
+    }
+    //
     this.chainEvents.push(...events.flat());
   }
 
