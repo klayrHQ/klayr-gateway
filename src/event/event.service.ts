@@ -49,10 +49,5 @@ export class EventService {
   private async generalEventWorker(args: GeneralEvent): Promise<void> {
     const { event, payload } = args;
     this.eventEmitter.emit(event, payload);
-
-    // ! for dev
-    if (event === ChainEvents.POS_VALIDATOR_REGISTERED) {
-      this.logger.warn(`Possibly unhandled tx event emitted ${event}`);
-    }
   }
 }

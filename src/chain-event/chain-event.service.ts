@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, ChainEvent } from 'src/node-api/types';
 import { ChainEventRepoService } from './chain-event-repo.service';
-import { ChainEvents } from 'src/event/types';
 import { EventService } from 'src/event/event.service';
-import { getKlayer32Address, getKlayer32FromPublic } from 'src/utils/helpers';
 import { AccountService } from 'src/account/account.service';
 
 @Injectable()
@@ -43,20 +41,24 @@ export class ChainEventService {
     });
 
     const events = await Promise.all(promises);
-    // ! temp
-    for (const e of events) {
-      for (const event of e) {
-        if (event.name !== 'rewardMinted' && event.name !== 'mint' && event.name !== 'lock') {
-          console.log(event.module, event.name);
-        }
-      }
-    }
-    //
     this.chainEvents.push(...events.flat());
   }
 
-  public async writeChainEvents() {
+  public async writeAndEmitChainEvents() {
     await this.repoService.createEventsBulk(this.chainEvents);
+    // ! DELETE
+    for (const event of this.chainEvents) {
+      if (event.module === 'validators') {
+        // console.log(event);
+      }
+    }
+    this.chainEvents.forEach((e) => {
+      this.eventService.pushToGeneralEventQ({
+        //TODO: Fix this type, dont know a clean solution yet
+        event: `${e.module}:${e.name}` as any,
+        payload: e,
+      });
+    });
     this.chainEvents = [];
   }
 

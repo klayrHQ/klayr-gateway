@@ -6,7 +6,7 @@ import { BlockRepoService } from './block-repo.service';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
-import { getKlayer32FromPublic } from 'src/utils/helpers';
+import { getKlayr32FromPublic } from 'src/utils/helpers';
 import { AccountService } from 'src/account/account.service';
 import { ChainEventService } from 'src/chain-event/chain-event.service';
 
@@ -45,7 +45,7 @@ export class BlockService {
     });
 
     await this.checkForBlockFinality();
-    await this.chainEventService.writeChainEvents();
+    await this.chainEventService.writeAndEmitChainEvents();
     // TODO: emit event events (chain event)
   }
 
@@ -98,7 +98,7 @@ export class BlockService {
         .filter(({ nonce }) => nonce === '0')
         .map(({ senderPublicKey }) => {
           return this.accountService.updateOrCreateAccount({
-            address: getKlayer32FromPublic(senderPublicKey),
+            address: getKlayr32FromPublic(senderPublicKey),
             publicKey: senderPublicKey,
           });
         }),

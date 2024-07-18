@@ -12,11 +12,8 @@ export class ValidatorRepoService {
   ): Promise<GetValidatorResponseDto | null> {
     return this.prisma.validator.findUnique({
       where: validatorWhereUniqueInput,
-      select: {
+      include: {
         account: true,
-        blsKey: true,
-        proofOfPossession: true,
-        generatorKey: true,
       },
     });
   }
@@ -26,6 +23,22 @@ export class ValidatorRepoService {
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.validator.createMany({
       data: validators,
+    });
+  }
+
+  public async createValidator(validator: Prisma.ValidatorCreateInput): Promise<Validator> {
+    return this.prisma.validator.create({
+      data: validator,
+    });
+  }
+
+  public async updateValidator(
+    validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
+    validatorUpdateInput: Prisma.ValidatorUpdateInput,
+  ): Promise<Validator | null> {
+    return this.prisma.validator.update({
+      where: validatorWhereUniqueInput,
+      data: validatorUpdateInput,
     });
   }
 }

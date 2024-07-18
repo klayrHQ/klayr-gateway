@@ -10,7 +10,6 @@ import { waitTimeout } from 'src/utils/helpers';
 import { NewBlockEvent, NodeInfo, SchemaModule } from './types';
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
-import { CallbackHandler } from 'supertest';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -24,6 +23,9 @@ export enum NodeApi {
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
+  POS_GET_VALIDATOR = 'pos_getValidator',
+  POS_GET_VALIDATORS = 'pos_getValidators',
+  VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
 }
 
 // Functions to interact with the Node API

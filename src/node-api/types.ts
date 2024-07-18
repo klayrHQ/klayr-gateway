@@ -82,3 +82,28 @@ export type ChainEvent = {
   topics: string[] | string;
   height: number;
 };
+
+export type ValidatorInfo = {
+  name: string;
+  totalStake: string;
+  selfStake: string;
+  lastGeneratedHeight: number;
+  isBanned: boolean;
+  reportMisbehaviorHeights: number[];
+  consecutiveMissedBlocks: number;
+  commission: number;
+  lastCommissionIncreaseHeight: number;
+  sharingCoefficients: SharingCoefficient[];
+  address: string;
+  punishmentPeriods: any[];
+};
+
+export type SharingCoefficient = {
+  tokenID: string;
+  coefficient: string;
+};
+
+export type ValidatorKeys = {
+  generatorKey: string;
+  blsKey: string;
+};
