@@ -21,6 +21,7 @@ export class Generator {
 export class GetBlockResDto {
   height: number;
   id: string;
+  generator: Generator;
   version: number;
   timestamp: number;
   previousBlockID: string;

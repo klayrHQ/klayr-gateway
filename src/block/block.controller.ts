@@ -50,6 +50,7 @@ export class BlockController {
     const { generator, ...rest } = block;
     const newBlock: GetBlockResDto = {
       ...rest,
+      generator: generator,
       totalBurnt: block.totalBurnt.toString(),
       networkFee: block.networkFee.toString(),
       totalForged: block.totalForged.toString(),
