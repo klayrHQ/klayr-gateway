@@ -47,7 +47,7 @@ export class TransactionService {
 
     await this.transactionRepoService.createTransactionsBulk(txInput);
 
-    this.eventService.pushToGeneralEventQ({
+    await this.eventService.pushToGeneralEventQ({
       event: GatewayEvents.UPDATE_BLOCK_FEE,
       payload: totalBurntPerBlock,
     });

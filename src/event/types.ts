@@ -8,6 +8,8 @@ export enum Events {
 
 export enum GatewayEvents {
   UPDATE_BLOCK_FEE = 'update.block.fee',
+  PROCESS_POS_ASSET = 'process.pos.asset',
+  INDEXER_STATE_INDEXING = 'indexer.state.indexing',
 }
 
 export enum ChainEvents {

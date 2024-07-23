@@ -45,3 +45,10 @@ export const MAX_TXS_TO_FETCH = 100;
 
 export const DEFAULT_EVENTS_TO_FETCH = 10;
 export const MAX_EVENTS_TO_FETCH = 100;
+
+////////////////////////////
+///       Validator      ///
+////////////////////////////
+
+export const DEFAULT_VALIDATORS_TO_FETCH = 20;
+export const MAX_VALIDATORS_TO_FETCH = 100;

@@ -1,9 +1,10 @@
 model Validator {
   address                      String  @id
   account                      Account @relation(fields: [address], references: [address])
-  totalStake                   String?
-  selfStake                    String?
-  validatorWeight              String?
+  totalStake                   String  @default("0")
+  selfStake                    String  @default("0")
+  validatorWeight              String  @default("0")
+  rank                         Int?
   blsKey                       String?
   proofOfPossession            String?
   generatorKey                 String?

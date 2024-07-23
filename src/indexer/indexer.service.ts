@@ -4,7 +4,7 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
 import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
-import { BlockEvent, Events } from 'src/event/types';
+import { BlockEvent, Events, GatewayEvents } from 'src/event/types';
 import { waitTimeout } from 'src/utils/helpers';
 
 export enum IndexerState {
@@ -73,7 +73,13 @@ export class IndexerService {
 
       await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
-      if (this.nextBlockToSync > nodeInfo.height) this.state = IndexerState.INDEXING;
+      if (this.nextBlockToSync > nodeInfo.height) {
+        this.state = IndexerState.INDEXING;
+        await this.eventService.pushToGeneralEventQ({
+          event: GatewayEvents.INDEXER_STATE_INDEXING,
+          payload: {},
+        });
+      }
     }
   }
 

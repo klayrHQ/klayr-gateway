@@ -9,3 +9,7 @@ export const getKlayr32FromPublic = (publicKey: string): string => {
 export const getKlayr32Address = (address: string): string => {
   return cryptography.address.getKlayr32AddressFromAddress(Buffer.from(address, 'hex'));
 };
+
+export const getBytesFromKlayr32 = (klayr32: string): Buffer => {
+  return cryptography.address.getAddressFromKlayr32Address(klayr32, 'kly');
+};

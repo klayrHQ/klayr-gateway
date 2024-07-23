@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ValidatorRepoService } from './validator.repo-service';
 import { Validator } from 'src/asset/types';
 import { Prisma } from '@prisma/client';
@@ -6,23 +6,25 @@ import { AccountService } from 'src/account/account.service';
 import { ChainEvent, ValidatorInfo, ValidatorKeys } from 'src/node-api/types';
 import { ValidatorStakedData } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ChainEvents } from 'src/event/types';
+import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { get } from 'node:http';
-import { getKlayr32FromPublic } from 'src/utils/helpers';
+import { IndexerService, IndexerState } from 'src/indexer/indexer.service';
+import { getBytesFromKlayr32 } from 'src/utils/helpers';
 
 @Injectable()
 export class ValidatorService {
   // TODO: Locking to avoid race conditions. Might change to seperate service if needed
   private lockStore = new Map<string, boolean>();
+  private logger = new Logger(ValidatorService.name);
 
   constructor(
     private readonly validatorRepoService: ValidatorRepoService,
     private readonly accountService: AccountService,
     private readonly nodeApiService: NodeApiService,
+    private readonly indexerService: IndexerService,
   ) {}
 
-  // being called by indexer-genesis service
+  @OnEvent(GatewayEvents.PROCESS_POS_ASSET)
   public async processPosAsset(validators: Validator[]) {
     const accountsInput = validators.map(({ address, name }) => ({
       address,
@@ -76,7 +78,35 @@ export class ValidatorService {
         },
       );
     }
+
+    if (this.indexerService.state === IndexerState.INDEXING) {
+      // await this.updateValidatorRanks();
+    }
+
     this.releaseLock(validatorAddress);
+  }
+
+  @OnEvent(GatewayEvents.INDEXER_STATE_INDEXING)
+  private async updateValidatorRanks() {
+    this.logger.log('Updating validator ranks');
+    const validators = await this.validatorRepoService.getAllValidators();
+
+    // Sorting validators with the same weight by address(bytes)
+    const sortedValidators = validators.sort((a, b) => {
+      if (a.validatorWeight === b.validatorWeight) {
+        const bytesA = getBytesFromKlayr32(a.address);
+        const bytesB = getBytesFromKlayr32(b.address);
+        return bytesB.compare(bytesA);
+      }
+      return Number(b.validatorWeight) - Number(a.validatorWeight);
+    });
+
+    for await (const [index, validator] of sortedValidators.entries()) {
+      await this.validatorRepoService.updateValidator(
+        { address: validator.address },
+        { rank: index + 1 },
+      );
+    }
   }
 
   private async getValidatorPosInfo(address: string): Promise<ValidatorInfo> {

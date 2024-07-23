@@ -5,9 +5,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ValidatorController } from './validator.controller';
 import { AccountModule } from 'src/account/account.module';
 import { NodeApiModule } from 'src/node-api/node-api.module';
+import { IndexerModule } from 'src/indexer/indexer.module';
 
 @Module({
-  imports: [AccountModule, NodeApiModule],
+  imports: [AccountModule, NodeApiModule, IndexerModule],
   providers: [ValidatorRepoService, ValidatorService, PrismaService],
   exports: [ValidatorService],
   controllers: [ValidatorController],

@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountService } from 'src/account/account.service';
 import { AssetTypes } from 'src/asset/types';
+import { EventService } from 'src/event/event.service';
+import { GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NodeInfo } from 'src/node-api/types';
-import { ValidatorService } from 'src/validator/validator.service';
 
 @Injectable()
 export class IndexerGenesisService {
@@ -11,8 +12,8 @@ export class IndexerGenesisService {
 
   constructor(
     private readonly nodeApiService: NodeApiService,
-    private readonly validatorService: ValidatorService,
     private readonly accountService: AccountService,
+    private readonly eventService: EventService,
   ) {}
 
   async onModuleInit() {
@@ -55,7 +56,13 @@ export class IndexerGenesisService {
         break;
       case AssetTypes.POS:
         this.logger.debug('Genesis POS asset');
-        await this.validatorService.processPosAsset(decodedAsset.message.validators);
+        // TODO: Abit hacky because of the call in the onModuleInit
+        setTimeout(async () => {
+          await this.eventService.pushToGeneralEventQ({
+            event: GatewayEvents.PROCESS_POS_ASSET,
+            payload: decodedAsset.message.validators,
+          });
+        }, 2000);
         break;
 
       default:
