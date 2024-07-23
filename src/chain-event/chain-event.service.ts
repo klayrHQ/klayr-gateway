@@ -46,12 +46,7 @@ export class ChainEventService {
 
   public async writeAndEmitChainEvents() {
     await this.repoService.createEventsBulk(this.chainEvents);
-    // ! DELETE
-    for (const event of this.chainEvents) {
-      if (event.module === 'validators') {
-        // console.log(event);
-      }
-    }
+
     this.chainEvents.forEach((e) => {
       this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
