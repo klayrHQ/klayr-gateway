@@ -9,7 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { IndexerService, IndexerState } from 'src/indexer/indexer.service';
-import { getBytesFromKlayr32 } from 'src/utils/helpers';
+import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 
 @Injectable()
 export class ValidatorService {
@@ -94,8 +94,8 @@ export class ValidatorService {
     // Sorting validators with the same weight by address(bytes)
     const sortedValidators = validators.sort((a, b) => {
       if (a.validatorWeight === b.validatorWeight) {
-        const bytesA = getBytesFromKlayr32(a.address);
-        const bytesB = getBytesFromKlayr32(b.address);
+        const bytesA = getAddressFromKlayr32Address(a.address);
+        const bytesB = getAddressFromKlayr32Address(b.address);
         return bytesB.compare(bytesA);
       }
       return Number(b.validatorWeight) - Number(a.validatorWeight);
