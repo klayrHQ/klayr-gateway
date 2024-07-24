@@ -8,6 +8,8 @@ export enum Events {
 
 export enum GatewayEvents {
   UPDATE_BLOCK_FEE = 'update.block.fee',
+  PROCESS_POS_ASSET = 'process.pos.asset',
+  INDEXER_STATE_INDEXING = 'indexer.state.indexing',
 }
 
 export enum ChainEvents {
@@ -15,6 +17,11 @@ export enum ChainEvents {
   VALIDATORS_GENERATOR_KEY_REGISTRATION = 'validators:generatorKeyRegistration',
   VALIDATORS_BLS_KEY_REGISTRATION = 'validators:blsKeyRegistration',
   POS_VALIDATOR_REGISTERED = 'pos:validatorRegistered',
+  POS_VALIDATOR_STAKED = 'pos:validatorStaked',
+  POS_COMMISION_CHANGE = 'pos:commissionChange',
+  POS_REWARDS_ASSIGNED = 'pos:rewardsAssigned',
+  FEE_INSUFFICIENT_FEE = 'fee:insufficientFee',
+  FEE_GENERATOR_FEE_PROCESSED = 'fee:generatorFeeProcessed',
 }
 
 // export enum TxEvents {

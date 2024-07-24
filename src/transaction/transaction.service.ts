@@ -6,7 +6,7 @@ import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { AccountService } from 'src/account/account.service';
 import { Prisma } from '@prisma/client';
-import { getKlayer32FromPublic } from 'src/utils/helpers';
+import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
 
 export interface UpdateBlockFee {
@@ -47,7 +47,7 @@ export class TransactionService {
 
     await this.transactionRepoService.createTransactionsBulk(txInput);
 
-    this.eventService.pushToGeneralEventQ({
+    await this.eventService.pushToGeneralEventQ({
       event: GatewayEvents.UPDATE_BLOCK_FEE,
       payload: totalBurntPerBlock,
     });
@@ -72,7 +72,7 @@ export class TransactionService {
       nonce: tx.nonce,
       fee: tx.fee,
       minFee: this.calcFeePerBlock(totalBurntPerBlock, height, tx),
-      senderAddress: getKlayer32FromPublic(tx.senderPublicKey),
+      senderAddress: getKlayr32AddressFromPublicKey(tx.senderPublicKey),
       recipientAddress: txParams['recipientAddress'] || null,
       index,
       params: JSON.stringify(txParams),

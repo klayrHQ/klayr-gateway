@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Validator } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetValidatorResponseDto } from './dto/get-validator-res.dto';
 
 @Injectable()
 export class ValidatorRepoService {
@@ -9,15 +8,45 @@ export class ValidatorRepoService {
 
   public async getValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
-  ): Promise<GetValidatorResponseDto | null> {
+  ): Promise<Validator | null> {
     return this.prisma.validator.findUnique({
       where: validatorWhereUniqueInput,
-      select: {
+      include: {
         account: true,
-        blsKey: true,
-        proofOfPossession: true,
-        generatorKey: true,
       },
+    });
+  }
+
+  public async getValidators(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.ValidatorWhereUniqueInput;
+    where?: Prisma.ValidatorWhereInput;
+    orderBy?: Prisma.ValidatorOrderByWithRelationInput;
+  }): Promise<
+    Prisma.ValidatorGetPayload<{
+      include: {
+        account: true;
+      };
+    }>[]
+  > {
+    const { skip, take, cursor, where, orderBy } = params;
+    return await this.prisma.validator.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+      include: {
+        account: true,
+      },
+    });
+  }
+
+  public async countValidators(params: { where?: Prisma.ValidatorWhereInput }): Promise<number> {
+    const { where } = params;
+    return this.prisma.validator.count({
+      where,
     });
   }
 
@@ -26,6 +55,30 @@ export class ValidatorRepoService {
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.validator.createMany({
       data: validators,
+    });
+  }
+
+  public async createValidator(validator: Prisma.ValidatorCreateInput): Promise<Validator> {
+    return this.prisma.validator.create({
+      data: validator,
+    });
+  }
+
+  public async updateValidator(
+    validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
+    validatorUpdateInput: Prisma.ValidatorUpdateInput,
+  ): Promise<Validator | null> {
+    return this.prisma.validator.update({
+      where: validatorWhereUniqueInput,
+      data: validatorUpdateInput,
+    });
+  }
+
+  public async getAllValidators(): Promise<Validator[]> {
+    return this.prisma.validator.findMany({
+      orderBy: {
+        validatorWeight: 'desc',
+      },
     });
   }
 }

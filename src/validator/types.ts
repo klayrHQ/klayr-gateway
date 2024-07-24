@@ -3,6 +3,13 @@ export interface ValidatorRegisteredData {
   address: string;
 }
 
+export interface ValidatorStakedData {
+  senderAddress: string;
+  validatorAddress: string;
+  amount: string;
+  result: number;
+}
+
 export interface BlsKeyRegistrationData {
   proofOfPossession: string;
   blsKey: string;
