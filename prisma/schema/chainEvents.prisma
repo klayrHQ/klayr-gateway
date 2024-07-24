@@ -6,5 +6,6 @@ model ChainEvents {
   data   String?
   topics String?
   index  Int?
+  transactionID String?
   block  Block  @relation(fields: [height], references: [height])
 }

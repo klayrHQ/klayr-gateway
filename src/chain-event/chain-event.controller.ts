@@ -17,12 +17,13 @@ export class ChainEventController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   async getEvents(@Query() query: GetEventsDto): Promise<GatewayResponse<any[]>> {
-    const { height, sort, limit, offset } = query;
+    const { height, transactionID, sort, limit, offset } = query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_EVENTS_TO_FETCH);
 
     const where: Prisma.ChainEventsWhereInput = {
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(transactionID && { transactionID }),
     };
 
     const [events, total] = await Promise.all([

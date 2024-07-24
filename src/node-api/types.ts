@@ -81,4 +81,5 @@ export type ChainEvent = {
   name: string;
   topics: string[] | string;
   height: number;
+  transactionID?: string;
 };
