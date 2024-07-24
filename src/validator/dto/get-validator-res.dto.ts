@@ -9,9 +9,20 @@ class Account {
 
 export class GetValidatorResponseDto {
   account: Account;
+  totalStake: string;
+  selfStake: string;
+  validatorWeight: string;
+  rank?: number;
   blsKey?: string;
   proofOfPossession?: string;
   generatorKey?: string;
+  lastGeneratedHeight?: number;
+  isBanned?: boolean;
+  lastCommissionIncreaseHeight?: number;
+  commission?: number;
+  consecutiveMissedBlocks?: number;
+  reportMisbehaviorHeights?: string;
+  sharingCoefficients?: string;
 }
 
 export const getValidatorResponse: ApiResponseOptions = {

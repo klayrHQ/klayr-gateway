@@ -69,8 +69,8 @@ export class ValidatorService {
       await this.validatorRepoService.updateValidator(
         { address: validatorAddress },
         {
-          totalStake: validatorInfo.totalStake,
-          selfStake: validatorInfo.selfStake,
+          totalStake: BigInt(validatorInfo.totalStake),
+          selfStake: BigInt(validatorInfo.selfStake),
           validatorWeight: this.calcValidatorWeight(
             validatorInfo.totalStake,
             validatorInfo.selfStake,
@@ -132,8 +132,8 @@ export class ValidatorService {
     await this.validatorRepoService.createValidatorsBulk([
       {
         address: val.address,
-        totalStake: val.totalStake,
-        selfStake: val.selfStake,
+        totalStake: BigInt(val.totalStake),
+        selfStake: BigInt(val.selfStake),
         validatorWeight: this.calcValidatorWeight(val.totalStake, val.selfStake),
         lastCommissionIncreaseHeight: val.lastCommissionIncreaseHeight,
         commission: val.commission,
@@ -148,10 +148,14 @@ export class ValidatorService {
     ]);
   }
 
-  private calcValidatorWeight(totalStake: string, selfStake: string): string {
-    return Number(totalStake) < Number(selfStake) * 10
-      ? totalStake
-      : (Number(selfStake) * 10).toString();
+  private calcValidatorWeight(totalStake: string, selfStake: string): bigint {
+    const totalStakeBigInt = BigInt(totalStake);
+    const selfStakeBigInt = BigInt(selfStake);
+    const tenBigInt = BigInt(10);
+
+    return totalStakeBigInt < selfStakeBigInt * tenBigInt
+      ? totalStakeBigInt
+      : selfStakeBigInt * tenBigInt;
   }
 
   private acquireLock(key: string): boolean {
