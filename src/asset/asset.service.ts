@@ -3,6 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { AssetRepoService } from './asset-repo.service';
 import { Asset } from 'src/node-api/types';
 import { Events, Payload } from 'src/event/types';
+import { AssetTypes } from './types';
 
 @Injectable()
 export class AssetService {
@@ -19,10 +20,21 @@ export class AssetService {
       data.map((asset) => ({
         height,
         module: asset.module,
-        data: asset.data,
+        data: this.createAssetData(asset),
       })),
     );
 
     await this.assetRepo.createAssetsBulk(assetsInput);
+  }
+
+  private createAssetData(asset: Asset) {
+    switch (asset.module) {
+      case AssetTypes.RANDOM:
+        return JSON.stringify({
+          seedReveal: asset.data.substring(4),
+        });
+      default:
+        return asset.data;
+    }
   }
 }
