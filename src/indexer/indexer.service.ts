@@ -6,8 +6,10 @@ import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from './indexer-repo.service';
 import { BlockEvent, Events, GatewayEvents } from 'src/event/types';
 import { waitTimeout } from 'src/utils/helpers';
+import { IndexerGenesisService } from './indexer-genesis.service';
 
 export enum IndexerState {
+  START_UP,
   SYNCING,
   INDEXING,
 }
@@ -24,17 +26,18 @@ export class IndexerService {
 
   constructor(
     private readonly indexerRepoService: IndexerRepoService,
+    private readonly indexerGenesisService: IndexerGenesisService,
     private readonly nodeApiService: NodeApiService,
     private readonly eventService: EventService,
   ) {
-    this.state = IndexerState.SYNCING;
+    this.state = IndexerState.START_UP;
   }
 
   async onApplicationBootstrap() {
     await this.setNextBlockToSync();
 
     // Errors will be unhandled
-    setImmediate(() => this.syncWithNode());
+    setImmediate(() => this.indexerGenesisService.processGenesisBlock());
     this.subscribeToNewBlock();
   }
 

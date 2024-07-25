@@ -18,18 +18,14 @@ export class IndexerGenesisService {
 
   async onModuleInit() {
     this.logger.debug(`Genesis block event`);
-    const nodeInfo: NodeInfo = await this.nodeApiService.getAndSetNodeInfo();
-    const genesisBlock = await this.nodeApiService.invokeApi<Block>(
-      NodeApi.CHAIN_GET_BLOCK_BY_HEIGHT,
-      {
-        height: nodeInfo.genesisHeight,
-      },
-    );
-
-    await this.processGenesisBlock(genesisBlock);
+    await this.nodeApiService.getAndSetNodeInfo();
   }
 
-  private async processGenesisBlock(block: Block) {
+  public async processGenesisBlock() {
+    const block = await this.nodeApiService.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_HEIGHT, {
+      height: this.nodeApiService.nodeInfo.genesisHeight,
+    });
+
     const decodedAssets = block.assets.map((asset) => {
       const decoded = this.nodeApiService.decodeAssetData(asset.module, asset.data);
       return {
@@ -56,13 +52,11 @@ export class IndexerGenesisService {
         break;
       case AssetTypes.POS:
         this.logger.debug('Genesis POS asset');
-        // TODO: Abit hacky because of the call in the onModuleInit
-        setTimeout(async () => {
-          await this.eventService.pushToGeneralEventQ({
-            event: GatewayEvents.PROCESS_POS_ASSET,
-            payload: decodedAsset.message.validators,
-          });
-        }, 1000);
+        await this.eventService.pushToGeneralEventQ({
+          event: GatewayEvents.PROCESS_POS_ASSET,
+          payload: decodedAsset.message.validators,
+        });
+
         break;
 
       default:

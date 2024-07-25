@@ -26,6 +26,7 @@ export class ValidatorService {
 
   @OnEvent(GatewayEvents.PROCESS_POS_ASSET)
   public async processPosAsset(validators: Validator[]) {
+    this.logger.log('Processing POS asset');
     const accountsInput = validators.map(({ address, name }) => ({
       address,
       name,
@@ -80,7 +81,7 @@ export class ValidatorService {
     }
 
     if (this.indexerService.state === IndexerState.INDEXING) {
-      // await this.updateValidatorRanks();
+      await this.updateValidatorRanks();
     }
 
     this.releaseLock(validatorAddress);

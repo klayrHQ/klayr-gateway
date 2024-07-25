@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { ChainEvent } from 'src/node-api/types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
