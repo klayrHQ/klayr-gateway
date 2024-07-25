@@ -60,7 +60,6 @@ export class TransactionService {
     totalBurntPerBlock: Map<number, UpdateBlockFee>;
   }): Promise<Prisma.TransactionCreateManyInput> {
     const { tx, height, index, totalBurntPerBlock } = params;
-
     const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
 
     return {

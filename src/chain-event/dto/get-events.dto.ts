@@ -1,15 +1,25 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 import { DEFAULT_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
 
 export class GetEventsDto {
   /**
-   * Get events by height.
+   * Filter blocks by height. Format: "height", "start:end", "start:" or ":end".
    */
   @IsString()
   @IsOptional()
+  @Matches(/^[0-9]+:([0-9]*)?$|^:[0-9]+$/, {
+    message: 'height must be a number in a range like "1:20", "1:", or ":20"',
+  })
   height?: string;
+
+  /**
+   * Get events by transactionID
+   */
+  @IsString()
+  @IsOptional()
+  transactionID?: string;
 
   /**
    * Sort events.

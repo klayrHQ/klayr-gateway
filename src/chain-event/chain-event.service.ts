@@ -7,7 +7,6 @@ import { AccountService } from 'src/account/account.service';
 
 @Injectable()
 export class ChainEventService {
-  private events = [];
   private chainEvents = [];
 
   constructor(
@@ -33,6 +32,7 @@ export class ChainEventService {
           const data = this.nodeApiService.decodeEventData(e.module, e.name, e.data as string);
           e.data = JSON.stringify(data);
           e.topics = JSON.stringify(e.topics);
+          e.transactionID = this.getTransactionId(e.topics);
           return e;
         });
       await this.handleAccounts(decodedChainEvents);
@@ -65,5 +65,15 @@ export class ChainEventService {
         return { address: JSON.parse(e.data as string)['address'] };
       });
     if (accounts.length > 0) await this.accountService.createAccountsBulk(accounts);
+  }
+
+  private getTransactionId(topics: string): string | null {
+    const parsedTopics = JSON.parse(topics);
+    const firstTopic = parsedTopics[0];
+    if (firstTopic && firstTopic.startsWith('04')) {
+      return firstTopic.substring(2);
+    }
+
+    return null;
   }
 }
