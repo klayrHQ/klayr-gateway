@@ -62,7 +62,7 @@ export class IndexerGenesisService {
             event: GatewayEvents.PROCESS_POS_ASSET,
             payload: decodedAsset.message.validators,
           });
-        }, 2000);
+        }, 1000);
         break;
 
       default:
