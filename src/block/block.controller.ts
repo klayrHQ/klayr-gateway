@@ -59,6 +59,11 @@ export class BlockController {
     };
     if (!generator.publicKey) delete generator.publicKey;
     if (!generator.name) delete generator.name;
+    if (newBlock.assets) {
+      newBlock.assets.forEach((asset) => {
+        asset.data = JSON.parse(asset.data);
+      });
+    }
     return newBlock;
   }
 }
