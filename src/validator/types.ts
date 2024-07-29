@@ -10,6 +10,16 @@ export interface ValidatorStakedData {
   result: number;
 }
 
+export interface ValidatorBannedData {
+  address: string;
+  height: number;
+}
+
+export interface ValidatorPunishedData {
+  address: string;
+  height: number;
+}
+
 export interface BlsKeyRegistrationData {
   proofOfPossession: string;
   blsKey: string;
@@ -17,4 +27,17 @@ export interface BlsKeyRegistrationData {
 
 export interface GeneratorKeyRegistration {
   generatorKey: string;
+}
+
+export enum ValidatorStatus {
+  ACTIVE = 'active',
+  INELIGIBLE = 'ineligible',
+  STANDBY = 'standby',
+  PUNISHED = 'punished',
+  BANNED = 'banned',
+}
+
+export enum ValidatorServiceStatus {
+  SYNCING = 'syncing',
+  UPDATED = 'updated',
 }

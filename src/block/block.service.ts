@@ -39,11 +39,7 @@ export class BlockService {
       });
     }
 
-    await this.eventService.pushToTxAndAssetsEventQ({
-      event: Events.NEW_ASSETS_EVENT,
-      payload: this.processAssets(payload),
-    });
-
+    await this.emitNewBlockEvents(payload);
     await this.checkForBlockFinality();
     await this.chainEventService.writeAndEmitChainEvents();
     // TODO: emit event events (chain event)
@@ -134,5 +130,18 @@ export class BlockService {
         isFinal: true,
       },
     });
+  }
+
+  private async emitNewBlockEvents(blocks: Block[]) {
+    await this.eventService.pushToTxAndAssetsEventQ({
+      event: Events.NEW_ASSETS_EVENT,
+      payload: this.processAssets(blocks),
+    });
+    if (blocks.length === 1) {
+      await this.eventService.pushToGeneralEventQ({
+        event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
+        payload: blocks[0],
+      });
+    }
   }
 }

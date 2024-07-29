@@ -50,6 +50,13 @@ export class ValidatorRepoService {
     });
   }
 
+  public async countBlocks(params: { where?: Prisma.BlockWhereInput }): Promise<number> {
+    const { where } = params;
+    return this.prisma.block.count({
+      where,
+    });
+  }
+
   public async createValidatorsBulk(
     validators: Prisma.ValidatorCreateManyInput[],
   ): Promise<Prisma.BatchPayload> {

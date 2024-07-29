@@ -79,7 +79,7 @@ export class IndexerService {
       if (this.nextBlockToSync > nodeInfo.height) {
         this.state = IndexerState.INDEXING;
         await this.eventService.pushToGeneralEventQ({
-          event: GatewayEvents.INDEXER_STATE_INDEXING,
+          event: GatewayEvents.INDEXER_STATE_CHANGE_INDEXING,
           payload: {},
         });
       }
