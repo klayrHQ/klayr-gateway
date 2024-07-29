@@ -170,6 +170,10 @@ export class ValidatorService {
   }
 
   private async updateValidatorBlocksGenerated() {
+    if (this.status !== ValidatorServiceStatus.SYNCING) return;
+    this.status = ValidatorServiceStatus.UPDATING;
+    this.logger.log('Updating validator blocks generated');
+
     const { validators } = await this.getValidatorsPosInfo();
 
     for await (const validator of validators) {
@@ -201,6 +205,7 @@ export class ValidatorService {
     }
 
     this.status = ValidatorServiceStatus.UPDATED;
+    this.logger.log('Validator service updated');
   }
 
   // TODO: not sure if punishment period is correct. Should maybe iterate through all periods?

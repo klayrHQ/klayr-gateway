@@ -39,5 +39,6 @@ export enum ValidatorStatus {
 
 export enum ValidatorServiceStatus {
   SYNCING = 'syncing',
+  UPDATING = 'updating',
   UPDATED = 'updated',
 }
