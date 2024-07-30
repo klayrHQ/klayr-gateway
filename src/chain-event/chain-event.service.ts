@@ -45,9 +45,10 @@ export class ChainEventService {
   }
 
   public async writeAndEmitChainEvents(events: ChainEvent[][]) {
-    await this.repoService.createEventsBulk(events.flat() as Prisma.ChainEventsCreateManyInput[]);
+    const flattenedEvents = events.flat();
+    await this.repoService.createEventsBulk(flattenedEvents as Prisma.ChainEventsCreateManyInput[]);
 
-    this.chainEvents.forEach((e) => {
+    flattenedEvents.forEach((e) => {
       this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
         event: `${e.module}:${e.name}` as any,
