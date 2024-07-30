@@ -26,7 +26,7 @@ export class BlockService {
   public async handleNewBlockEvent(payload: Block[]) {
     this.logger.debug(`Block module: New block event ${payload.at(-1).header.height}`);
 
-    await this.chainEventService.checkUserAccountsAndSaveEvents(payload);
+    const chainEvents = await this.chainEventService.checkUserAccountsAndSaveEvents(payload);
 
     const blocks = await this.processBlocks(payload);
     await this.blockRepo.createBlocksBulk(blocks);
@@ -45,8 +45,7 @@ export class BlockService {
     });
 
     await this.checkForBlockFinality();
-    await this.chainEventService.writeAndEmitChainEvents();
-    // TODO: emit event events (chain event)
+    await this.chainEventService.writeAndEmitChainEvents(chainEvents);
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
