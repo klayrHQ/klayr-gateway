@@ -4,7 +4,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
-import { AccountService } from 'src/account/account.service';
 import { Prisma } from '@prisma/client';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
@@ -21,7 +20,6 @@ export class TransactionService {
   constructor(
     private nodeApiService: NodeApiService,
     private transactionRepoService: TransactionRepoService,
-    private accountService: AccountService,
     private eventService: EventService,
   ) {}
 
@@ -30,20 +28,11 @@ export class TransactionService {
     this.logger.debug('New TX event');
     let totalBurntPerBlock = new Map<number, UpdateBlockFee>();
 
-    // const txInput = await Promise.all(
-    //   payload.flatMap(({ height, data: txs }) =>
-    //     txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
-    //   ),
-    // );
-    // TODO: The map above is causing race conditions in the `updateOrCreateAccount` method.
-    // TODO: Not too happy with this solution yet.
-    const txInput = [];
-    for (const { height, data: txs } of payload) {
-      for (const [index, tx] of txs.entries()) {
-        const result = await this.createTransaction({ tx, height, index, totalBurntPerBlock });
-        txInput.push(result);
-      }
-    }
+    const txInput = await Promise.all(
+      payload.flatMap(({ height, data: txs }) =>
+        txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
+      ),
+    );
 
     await this.transactionRepoService.createTransactionsBulk(txInput);
 
