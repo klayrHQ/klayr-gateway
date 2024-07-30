@@ -20,6 +20,8 @@ export enum ChainEvents {
   POS_VALIDATOR_STAKED = 'pos:validatorStaked',
   POS_COMMISION_CHANGE = 'pos:commissionChange',
   POS_REWARDS_ASSIGNED = 'pos:rewardsAssigned',
+  POS_COMMAND_EXECUTION_RESULT = 'pos:commandExecutionResult',
+  TOKEN_COMMAND_EXECUTION_RESULT = 'token:commandExecutionResult',
   FEE_INSUFFICIENT_FEE = 'fee:insufficientFee',
   FEE_GENERATOR_FEE_PROCESSED = 'fee:generatorFeeProcessed',
 }

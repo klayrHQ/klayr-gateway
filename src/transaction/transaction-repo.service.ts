@@ -67,4 +67,14 @@ export class TransactionRepoService {
       where,
     });
   }
+
+  public async updateTransaction(
+    transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
+    transactionUpdateInput: Prisma.TransactionUpdateInput,
+  ): Promise<Transaction | null> {
+    return this.prisma.transaction.update({
+      where: transactionWhereUniqueInput,
+      data: transactionUpdateInput,
+    });
+  }
 }

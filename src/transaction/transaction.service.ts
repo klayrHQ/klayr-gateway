@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TransactionRepoService } from './transaction-repo.service';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Events, GatewayEvents, Payload } from 'src/event/types';
-import { Transaction } from 'src/node-api/types';
+import { ChainEvents, Events, GatewayEvents, Payload } from 'src/event/types';
+import { ChainEvent, Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { AccountService } from 'src/account/account.service';
 import { Prisma } from '@prisma/client';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
+import { ExecutionEventData, ExecutionStatus } from './types';
 
 export interface UpdateBlockFee {
   totalBurnt: number;
@@ -51,6 +52,20 @@ export class TransactionService {
       event: GatewayEvents.UPDATE_BLOCK_FEE,
       payload: totalBurntPerBlock,
     });
+  }
+
+  // TODO: known issue: errors when token transfer fails because transaction is not found. This is because the account create event is not emitted on a failed tx so the tx is not inserted.
+  @OnEvent(ChainEvents.POS_COMMAND_EXECUTION_RESULT)
+  public async handleExecutionResult(payload: ChainEvent) {
+    const executionStatus =
+      payload.data === ExecutionEventData.SUCCESSFUL
+        ? ExecutionStatus.SUCCESSFUL
+        : ExecutionStatus.FAILED;
+
+    await this.transactionRepoService.updateTransaction(
+      { id: payload.transactionID },
+      { executionStatus },
+    );
   }
 
   private async createTransaction(params: {
