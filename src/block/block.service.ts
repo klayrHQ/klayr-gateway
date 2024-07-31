@@ -39,10 +39,9 @@ export class BlockService {
       });
     }
 
-    await this.emitNewBlockEvents(payload);
     await this.checkForBlockFinality();
     await this.chainEventService.writeAndEmitChainEvents();
-    // TODO: emit event events (chain event)
+    await this.emitNewBlockEvents(payload);
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
@@ -137,11 +136,13 @@ export class BlockService {
       event: Events.NEW_ASSETS_EVENT,
       payload: this.processAssets(blocks),
     });
-    if (blocks.length === 1) {
+
+    // TODO: revisit this. to avoid race conditions we need to wait for validators to be saved in DB first
+    setTimeout(async () => {
       await this.eventService.pushToGeneralEventQ({
         event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
-        payload: blocks[0],
+        payload: blocks,
       });
-    }
+    }, 2000);
   }
 }

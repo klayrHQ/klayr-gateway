@@ -37,8 +37,4 @@ export enum ValidatorStatus {
   BANNED = 'banned',
 }
 
-export enum ValidatorServiceStatus {
-  SYNCING = 'syncing',
-  UPDATING = 'updating',
-  UPDATED = 'updated',
-}
+export type GeneratorInfo = { count: number; lastGeneratedHeight: number };

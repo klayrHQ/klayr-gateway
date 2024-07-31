@@ -11,9 +11,9 @@ import {
   ValidatorInfo,
   ValidatorKeys,
 } from 'src/node-api/types';
-import { ValidatorServiceStatus, ValidatorStakedData, ValidatorStatus } from './types';
+import { GeneratorInfo, ValidatorStakedData, ValidatorStatus } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ChainEvents, GatewayEvents, GeneralEvent } from 'src/event/types';
+import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { IndexerService, IndexerState } from 'src/indexer/indexer.service';
 import { getAddressFromKlayr32Address } from 'src/utils/helpers';
@@ -24,7 +24,6 @@ export class ValidatorService {
   // TODO: Locking to avoid race conditions. Might change to seperate service if needed
   private lockStore = new Map<string, boolean>();
   private logger = new Logger(ValidatorService.name);
-  private status = ValidatorServiceStatus.SYNCING;
 
   constructor(
     private readonly validatorRepoService: ValidatorRepoService,
@@ -119,12 +118,7 @@ export class ValidatorService {
   }
 
   @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
-  private async updateValidators() {
-    await this.updateValidatorRanks();
-    await this.updateValidatorBlocksGenerated();
-  }
-
-  private async updateValidatorRanks() {
+  public async updateValidatorRanks() {
     this.logger.log('Updating validator ranks');
     const validators = await this.validatorRepoService.getAllValidators();
 
@@ -152,60 +146,49 @@ export class ValidatorService {
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
-  private async updateBlockGenerator(block: Block) {
-    if (this.status !== ValidatorServiceStatus.UPDATED) return;
+  public async updateBlockGenerator(blocks: Block[]) {
+    const generatorMap = new Map<string, GeneratorInfo>();
 
-    const validatorAddress = block.header.generatorAddress;
-    const validator = await this.validatorRepoService.getValidator({
-      address: validatorAddress,
-    });
-
-    const updated = await this.validatorRepoService.updateValidator(
-      { address: validatorAddress },
-      {
-        lastGeneratedHeight: block.header.height,
-        generatedBlocks: validator.generatedBlocks + 1,
-      },
-    );
+    this.populateGeneratorMap(blocks, generatorMap);
+    await this.updateValidators(generatorMap);
   }
 
-  private async updateValidatorBlocksGenerated() {
-    if (this.status !== ValidatorServiceStatus.SYNCING) return;
-    this.status = ValidatorServiceStatus.UPDATING;
-    this.logger.log('Updating validator blocks generated');
+  private populateGeneratorMap(blocks: Block[], generatorMap: Map<string, GeneratorInfo>) {
+    blocks.forEach((block) => {
+      const validatorAddress = block.header.generatorAddress;
+      if (block.header.height === 0) return; // Skip genesis block
 
-    const { validators } = await this.getValidatorsPosInfo();
-
-    for await (const validator of validators) {
-      // TODO: ugly function but createValidator does not return the validator for now cause of bulk insert
-      let validatorExists = await this.validatorRepoService.getValidator({
-        address: validator.address,
-      });
-
-      if (!validatorExists) {
-        await this.createValidator(validator);
-        validatorExists = await this.validatorRepoService.getValidator({
-          address: validator.address,
+      if (generatorMap.has(validatorAddress)) {
+        const entry = generatorMap.get(validatorAddress)!;
+        entry.count++;
+        entry.lastGeneratedHeight = block.header.height;
+      } else {
+        generatorMap.set(validatorAddress, {
+          count: 1,
+          lastGeneratedHeight: block.header.height,
         });
       }
+    });
+  }
 
-      const numberOfBlocksGenerated = await this.validatorRepoService.countBlocks({
-        where: {
-          generatorAddress: validator.address,
-        },
+  private async updateValidators(generatorMap: Map<string, GeneratorInfo>) {
+    for (const [validatorAddress, { count, lastGeneratedHeight }] of generatorMap.entries()) {
+      const validator = await this.validatorRepoService.getValidator({
+        address: validatorAddress,
       });
+      if (!validator) {
+        this.logger.error(`Validator ${validatorAddress} not found when updating generator`);
+        continue;
+      }
 
       await this.validatorRepoService.updateValidator(
-        { address: validator.address },
+        { address: validatorAddress },
         {
-          lastGeneratedHeight: validator.lastGeneratedHeight,
-          generatedBlocks: validatorExists.generatedBlocks + numberOfBlocksGenerated,
+          lastGeneratedHeight,
+          generatedBlocks: validator.generatedBlocks + count,
         },
       );
     }
-
-    this.status = ValidatorServiceStatus.UPDATED;
-    this.logger.log('Validator service updated');
   }
 
   // TODO: not sure if punishment period is correct. Should maybe iterate through all periods?
