@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - db-q
 
 env:
   REGISTRY: ghcr.io

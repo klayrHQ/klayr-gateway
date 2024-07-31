@@ -57,7 +57,7 @@ export class ValidatorService {
       lastCommissionIncreaseHeight: asset.lastCommissionIncreaseHeight,
       sharingCoefficients: JSON.stringify(asset.sharingCoefficients),
     }));
-    return this.validatorRepoService.createValidatorsBulk(validatorsInput);
+    await this.validatorRepoService.createValidatorsBulk(validatorsInput);
   }
 
   @OnEvent(ChainEvents.POS_VALIDATOR_STAKED)

@@ -57,27 +57,26 @@ export class ValidatorRepoService {
     });
   }
 
-  public async createValidatorsBulk(
-    validators: Prisma.ValidatorCreateManyInput[],
-  ): Promise<Prisma.BatchPayload> {
-    return this.prisma.validator.createMany({
-      data: validators,
-    });
-  }
-
   public async createValidator(validator: Prisma.ValidatorCreateInput): Promise<Validator> {
     return this.prisma.validator.create({
       data: validator,
     });
   }
 
+  public async createValidatorsBulk(validators: Prisma.ValidatorCreateManyInput[]): Promise<void> {
+    await this.prisma.pushToDbQ({
+      method: 'executeCreateValidatorsBulk',
+      params: [validators],
+    });
+  }
+
   public async updateValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
     validatorUpdateInput: Prisma.ValidatorUpdateInput,
-  ): Promise<Validator | null> {
-    return this.prisma.validator.update({
-      where: validatorWhereUniqueInput,
-      data: validatorUpdateInput,
+  ): Promise<void> {
+    await this.prisma.pushToDbQ({
+      method: 'executeUpdateValidator',
+      params: [validatorWhereUniqueInput, validatorUpdateInput],
     });
   }
 

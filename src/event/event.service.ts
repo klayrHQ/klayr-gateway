@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
-import { BlockEvent, ChainEvents, GeneralEvent, TxOrAssetEvent } from './types';
+import { BlockEvent, GeneralEvent, TxOrAssetEvent } from './types';
 
 // Will push all events to the an event queue
 // Worker will emit the events in order through the eventEmitter
@@ -31,6 +31,10 @@ export class EventService {
     this.txAndAssetEventQ.push(event).catch((err) => this.logger.error(err));
   }
 
+  async pushToGeneralEventQ(event: GeneralEvent) {
+    this.generalQ.push(event).catch((err) => this.logger.error(err));
+  }
+
   // No need for a try-catch block, fastq handles errors automatically
   private async blockEventWorker(blockEvent: BlockEvent): Promise<void> {
     const { event, blocks } = blockEvent;
@@ -40,10 +44,6 @@ export class EventService {
   private async txAndAssetEventWorker(args: TxOrAssetEvent): Promise<void> {
     const { event, payload } = args;
     this.eventEmitter.emit(event, payload);
-  }
-
-  async pushToGeneralEventQ(event: GeneralEvent) {
-    this.generalQ.push(event).catch((err) => this.logger.error(err));
   }
 
   private async generalEventWorker(args: GeneralEvent): Promise<void> {
