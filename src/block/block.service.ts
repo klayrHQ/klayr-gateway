@@ -124,6 +124,6 @@ export class BlockService {
         event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
         payload: blocks,
       });
-    }, 2000);
+    }, 4000);
   }
 }

@@ -53,14 +53,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  public async executeCreateValidatorsBulk(
-    validators: Prisma.ValidatorCreateManyInput[],
-  ): Promise<void> {
-    await this.validator.createMany({
-      data: validators,
-    });
-  }
-
   public async executeUpdateTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
     transactionUpdateInput: Prisma.TransactionUpdateInput,

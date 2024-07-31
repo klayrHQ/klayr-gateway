@@ -64,9 +64,8 @@ export class ValidatorRepoService {
   }
 
   public async createValidatorsBulk(validators: Prisma.ValidatorCreateManyInput[]): Promise<void> {
-    await this.prisma.pushToDbQ({
-      method: 'executeCreateValidatorsBulk',
-      params: [validators],
+    await this.prisma.validator.createMany({
+      data: validators,
     });
   }
 
