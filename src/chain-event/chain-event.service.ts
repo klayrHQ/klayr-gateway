@@ -5,6 +5,7 @@ import { ChainEventRepoService } from './chain-event-repo.service';
 import { EventService } from 'src/event/event.service';
 import { AccountService } from 'src/account/account.service';
 import { Prisma } from '@prisma/client';
+import { TransactionEvents } from 'src/transaction/types';
 
 @Injectable()
 export class ChainEventService {
@@ -26,16 +27,12 @@ export class ChainEventService {
         },
       );
 
-      const decodedChainEvents = chainEvents
-        // TODO: Fix this, cannot decode commandExecutionResult, not found in module error
-        .filter((e) => e.name !== 'commandExecutionResult')
-        .map((e) => {
-          const data = this.nodeApiService.decodeEventData(e.module, e.name, e.data as string);
-          e.data = JSON.stringify(data);
-          e.topics = JSON.stringify(e.topics);
-          e.transactionID = this.getTransactionId(e.topics);
-          return e;
-        });
+      const decodedChainEvents = chainEvents.map((e) => {
+        e.data = this.decodeData(e);
+        e.topics = JSON.stringify(e.topics);
+        e.transactionID = this.getTransactionId(e.topics);
+        return e;
+      });
       await this.handleAccounts(decodedChainEvents);
 
       return decodedChainEvents;
@@ -48,8 +45,9 @@ export class ChainEventService {
     const flattenedEvents = events.flat();
     await this.repoService.createEventsBulk(flattenedEvents as Prisma.ChainEventsCreateManyInput[]);
 
-    flattenedEvents.forEach((e) => {
-      this.eventService.pushToGeneralEventQ({
+
+    flattenedEvents.forEach(async (e) => {
+      await this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
         event: `${e.module}:${e.name}` as any,
         payload: e,
@@ -75,5 +73,17 @@ export class ChainEventService {
     }
 
     return null;
+  }
+
+  private decodeData(event: ChainEvent) {
+    if (event.name === TransactionEvents.COMMAND_EXECUTION_RESULT) {
+      return event.data;
+    }
+    const data = this.nodeApiService.decodeEventData(
+      event.module,
+      event.name,
+      event.data as string,
+    );
+    return JSON.stringify(data);
   }
 }
