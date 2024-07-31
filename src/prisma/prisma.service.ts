@@ -43,6 +43,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     }
   }
 
+  // TODO: same format as executeUpdateBlock
   public async executeUpdateValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
     validatorUpdateInput: Prisma.ValidatorUpdateInput,
@@ -60,6 +61,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.transaction.update({
       where: transactionWhereUniqueInput,
       data: transactionUpdateInput,
+    });
+  }
+
+  public async executeUpdateBlock(params: {
+    where: Prisma.BlockWhereUniqueInput;
+    data: Prisma.BlockUpdateInput;
+  }): Promise<void> {
+    const { data, where } = params;
+    await this.block.update({
+      data,
+      where,
     });
   }
 

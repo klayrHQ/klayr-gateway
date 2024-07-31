@@ -69,14 +69,13 @@ export class BlockRepoService {
     return this.prisma.block.create({ data: createBlockInput });
   }
 
-  public updateBlock(params: {
+  public async updateBlock(params: {
     where: Prisma.BlockWhereUniqueInput;
     data: Prisma.BlockUpdateInput;
-  }): PrismaPromise<Block> {
-    const { data, where } = params;
-    return this.prisma.block.update({
-      data,
-      where,
+  }): Promise<void> {
+    await this.prisma.pushToDbQ({
+      method: 'executeUpdateBlock',
+      params: [params],
     });
   }
 
