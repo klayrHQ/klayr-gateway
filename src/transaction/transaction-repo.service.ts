@@ -71,10 +71,10 @@ export class TransactionRepoService {
   public async updateTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
     transactionUpdateInput: Prisma.TransactionUpdateInput,
-  ): Promise<Transaction | null> {
-    return this.prisma.transaction.update({
-      where: transactionWhereUniqueInput,
-      data: transactionUpdateInput,
+  ): Promise<void> {
+    await this.prisma.pushToDbQ({
+      method: 'executeUpdateTransaction',
+      params: [transactionWhereUniqueInput, transactionUpdateInput],
     });
   }
 }
