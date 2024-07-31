@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, Transaction } from 'src/node-api/types';
+import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
-import { NodeApiService } from 'src/node-api/node-api.service';
+import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
@@ -39,13 +39,9 @@ export class BlockService {
       });
     }
 
-    await this.eventService.pushToTxAndAssetsEventQ({
-      event: Events.NEW_ASSETS_EVENT,
-      payload: this.processAssets(payload),
-    });
-
     await this.checkForBlockFinality();
     await this.chainEventService.writeAndEmitChainEvents(chainEvents);
+    await this.emitNewBlockEvents(payload);
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
@@ -70,12 +66,10 @@ export class BlockService {
 
   private async processBlocks(blocks: Block[]): Promise<any[]> {
     const promises = blocks.map(async (block) => {
-      // TODO: temporarly set reward to 0 to fix invokeApi overload
-      // const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
-      //   NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
-      //   { height: block.header.height },
-      // );
-      const reward = '0';
+      const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
+        NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
+        { height: block.header.height },
+      );
 
       return {
         ...block.header,
@@ -133,5 +127,20 @@ export class BlockService {
         isFinal: true,
       },
     });
+  }
+
+  private async emitNewBlockEvents(blocks: Block[]) {
+    await this.eventService.pushToTxAndAssetsEventQ({
+      event: Events.NEW_ASSETS_EVENT,
+      payload: this.processAssets(blocks),
+    });
+
+    // TODO: revisit this. to avoid race conditions we need to wait for validators to be saved in DB first
+    setTimeout(async () => {
+      await this.eventService.pushToGeneralEventQ({
+        event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
+        payload: blocks,
+      });
+    }, 2000);
   }
 }

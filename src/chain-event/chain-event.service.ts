@@ -45,6 +45,7 @@ export class ChainEventService {
     const flattenedEvents = events.flat();
     await this.repoService.createEventsBulk(flattenedEvents as Prisma.ChainEventsCreateManyInput[]);
 
+
     flattenedEvents.forEach(async (e) => {
       await this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
