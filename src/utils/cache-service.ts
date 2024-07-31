@@ -16,7 +16,7 @@ export class CacheService<T> {
     }
   }
 
-  private async flush(): Promise<void> {
+  public async flush(): Promise<void> {
     const items = this.cache.splice(0, this.batchSize);
     await this.onBatchFull(items);
   }

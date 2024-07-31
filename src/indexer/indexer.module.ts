@@ -6,9 +6,10 @@ import { IndexerRepoService } from './indexer-repo.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { IndexerGenesisService } from './indexer-genesis.service';
 import { AccountModule } from 'src/account/account.module';
+import { StateModule } from 'src/state/state.module';
 
 @Module({
-  imports: [NodeApiModule, EventModule, AccountModule],
+  imports: [StateModule, NodeApiModule, EventModule, AccountModule],
   controllers: [],
   providers: [PrismaService, IndexerRepoService, IndexerService, IndexerGenesisService],
   exports: [IndexerService],

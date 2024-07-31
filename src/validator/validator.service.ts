@@ -15,9 +15,10 @@ import { GeneratorInfo, ValidatorStakedData, ValidatorStatus } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { IndexerService, IndexerState } from 'src/indexer/indexer.service';
 import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants';
+import { IndexerState, Modules } from 'src/state/types';
+import { StateService } from 'src/state/state.service';
 
 @Injectable()
 export class ValidatorService {
@@ -26,10 +27,10 @@ export class ValidatorService {
   private logger = new Logger(ValidatorService.name);
 
   constructor(
+    private readonly state: StateService,
     private readonly validatorRepoService: ValidatorRepoService,
     private readonly accountService: AccountService,
     private readonly nodeApiService: NodeApiService,
-    private readonly indexerService: IndexerService,
   ) {}
 
   @OnEvent(GatewayEvents.PROCESS_POS_ASSET)
@@ -110,7 +111,7 @@ export class ValidatorService {
       );
     }
 
-    if (this.indexerService.state === IndexerState.INDEXING) {
+    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
       await this.updateValidatorRanks();
     }
 
@@ -118,6 +119,11 @@ export class ValidatorService {
   }
 
   @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
+  public async handleStateChange() {
+    await this.updateValidatorRanks();
+    await this.validatorRepoService.updateCache.flush();
+  }
+
   public async updateValidatorRanks() {
     this.logger.log('Updating validator ranks');
     const validators = await this.validatorRepoService.getAllValidators();
