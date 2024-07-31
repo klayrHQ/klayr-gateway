@@ -96,7 +96,16 @@ export type ValidatorInfo = {
   lastCommissionIncreaseHeight: number;
   sharingCoefficients: SharingCoefficient[];
   address: string;
-  punishmentPeriods: any[];
+  punishmentPeriods: PunishmentPeriod[];
+};
+
+export type AllValidators = {
+  validators: ValidatorInfo[];
+};
+
+export type PunishmentPeriod = {
+  start: number;
+  end: number;
 };
 
 export type SharingCoefficient = {
