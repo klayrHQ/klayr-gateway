@@ -1,11 +1,5 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
-
-// TODO: Move probably
-class Account {
-  address: string;
-  publicKey?: string;
-  name?: string;
-}
+import { Account } from '@prisma/client';
 
 export class GetValidatorResponseDto {
   account: Account;

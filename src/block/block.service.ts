@@ -6,8 +6,6 @@ import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { UpdateBlockFee } from 'src/transaction/transaction.service';
-import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
-import { AccountService } from 'src/account/account.service';
 import { ChainEventService } from 'src/chain-event/chain-event.service';
 
 @Injectable()
@@ -18,7 +16,6 @@ export class BlockService {
     private blockRepo: BlockRepoService,
     private eventService: EventService,
     private nodeApiService: NodeApiService,
-    private accountService: AccountService,
     private chainEventService: ChainEventService,
   ) {}
 
@@ -82,20 +79,6 @@ export class BlockService {
     });
 
     return Promise.all(promises);
-  }
-
-  // TODO: can this be a prisma.transaction or bulk?
-  private async addSenderAccountsToDB(txs: Transaction[]) {
-    await Promise.all(
-      txs
-        .filter(({ nonce }) => nonce === '0')
-        .map(({ senderPublicKey }) => {
-          return this.accountService.updateOrCreateAccount({
-            address: getKlayr32AddressFromPublicKey(senderPublicKey),
-            publicKey: senderPublicKey,
-          });
-        }),
-    );
   }
 
   private processTransactions(blocks: Block[]): Payload<Transaction>[] {

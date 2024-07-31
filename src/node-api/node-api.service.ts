@@ -100,12 +100,8 @@ export class NodeApiService {
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
   }
 
-  // TODO: Combine these 3 decode functions into one?
   public decodeTxData(mod: string, command: string, data: string): unknown {
-    const schema = this.schemaMap.get(mod);
-    if (!schema) {
-      throw new BadRequestException(`Schema for module ${mod} not found`);
-    }
+    const schema = this.getSchemaModule(mod);
 
     const commandSchema = schema.commands.find((c) => c.name === command);
     if (!commandSchema) {
@@ -116,10 +112,7 @@ export class NodeApiService {
   }
 
   public decodeEventData(mod: string, event: string, data: string): unknown {
-    const schema = this.schemaMap.get(mod);
-    if (!schema) {
-      throw new BadRequestException(`Schema for module ${mod} not found`);
-    }
+    const schema = this.getSchemaModule(mod);
 
     const eventSchema = schema.events.find((e) => e.name === event);
     if (!eventSchema) {
@@ -130,10 +123,7 @@ export class NodeApiService {
   }
 
   public decodeAssetData(mod: string, data: string): unknown {
-    const schema = this.schemaMap.get(mod);
-    if (!schema) {
-      throw new BadRequestException(`Schema for module ${mod} not found`);
-    }
+    const schema = this.getSchemaModule(mod);
 
     return codec.decodeJSON(schema.assets[0].data, Buffer.from(data, 'hex'));
   }
@@ -141,5 +131,14 @@ export class NodeApiService {
   // TODO: Cant import type
   public calcMinFee(tx: any) {
     return this.client.transaction.computeMinFee(tx).toString();
+  }
+
+  private getSchemaModule(mod: string): SchemaModule {
+    const schema = this.schemaMap.get(mod);
+    if (!schema) {
+      throw new BadRequestException(`Schema for module ${mod} not found`);
+    }
+
+    return schema;
   }
 }

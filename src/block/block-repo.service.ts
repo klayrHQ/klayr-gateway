@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Block, Prisma, PrismaPromise } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-// TODO: Error handling in here or at calls
 @Injectable()
 export class BlockRepoService {
   constructor(private prisma: PrismaService) {}
