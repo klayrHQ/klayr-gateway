@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Transaction } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CacheService } from 'src/utils/cache-service';
+import { TX_UPDATE_CACHE } from 'src/utils/constants';
 
 @Injectable()
 export class TransactionRepoService {
-  private updateCache: {
+  private updateCache: CacheService<{
     where: Prisma.TransactionWhereUniqueInput;
     data: Prisma.TransactionUpdateInput;
-  }[] = [];
-  private BATCH_SIZE = 50;
+  }>;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {
+    this.updateCache = new CacheService(TX_UPDATE_CACHE, this.executeBatchUpdate.bind(this));
+  }
 
   public async getTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
@@ -78,15 +81,16 @@ export class TransactionRepoService {
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
     transactionUpdateInput: Prisma.TransactionUpdateInput,
   ): Promise<void> {
-    this.updateCache.push({ where: transactionWhereUniqueInput, data: transactionUpdateInput });
-    if (this.updateCache.length >= this.BATCH_SIZE) {
-      await this.executeBatchUpdate();
-    }
+    await this.updateCache.add({
+      where: transactionWhereUniqueInput,
+      data: transactionUpdateInput,
+    });
   }
 
-  private async executeBatchUpdate(): Promise<void> {
-    console.log('Executing batch validator update');
-    const updates = this.updateCache.splice(0, this.BATCH_SIZE);
+  private async executeBatchUpdate(
+    updates: { where: Prisma.TransactionWhereUniqueInput; data: Prisma.TransactionUpdateInput }[],
+  ): Promise<void> {
+    console.log('Executing batch tx update');
 
     await this.prisma.$transaction(
       updates.map((update) =>

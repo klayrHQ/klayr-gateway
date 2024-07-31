@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Validator } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CacheService } from 'src/utils/cache-service';
+import { VALIDATOR_UDPATE_CACHE } from 'src/utils/constants';
 
 @Injectable()
 export class ValidatorRepoService {
-  private updateCache: {
+  private updateCache: CacheService<{
     where: Prisma.ValidatorWhereUniqueInput;
     data: Prisma.ValidatorUpdateInput;
-  }[] = [];
-  private BATCH_SIZE = 50;
-  constructor(private prisma: PrismaService) {}
+  }>;
+
+  constructor(private prisma: PrismaService) {
+    this.updateCache = new CacheService(VALIDATOR_UDPATE_CACHE, this.executeBatchUpdate.bind(this));
+  }
 
   public async getValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
@@ -80,16 +84,13 @@ export class ValidatorRepoService {
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
     validatorUpdateInput: Prisma.ValidatorUpdateInput,
   ): Promise<void> {
-    this.updateCache.push({ where: validatorWhereUniqueInput, data: validatorUpdateInput });
-
-    if (this.updateCache.length >= this.BATCH_SIZE) {
-      await this.executeBatchUpdate();
-    }
+    await this.updateCache.add({ where: validatorWhereUniqueInput, data: validatorUpdateInput });
   }
 
-  private async executeBatchUpdate(): Promise<void> {
+  private async executeBatchUpdate(
+    updates: { where: Prisma.ValidatorWhereUniqueInput; data: Prisma.ValidatorUpdateInput }[],
+  ): Promise<void> {
     console.log('Executing batch validator update');
-    const updates = this.updateCache.splice(0, this.BATCH_SIZE);
 
     await this.prisma.$transaction(
       updates.map((update) =>

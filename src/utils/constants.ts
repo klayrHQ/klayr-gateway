@@ -38,6 +38,7 @@ export const MAX_BLOCKS_TO_FETCH = 100;
 
 export const DEFAULT_TX_TO_FETCH = 10;
 export const MAX_TXS_TO_FETCH = 100;
+export const TX_UPDATE_CACHE = 50;
 
 ////////////////////////////
 ///       Events    ///
@@ -54,3 +55,4 @@ export const DEFAULT_VALIDATORS_TO_FETCH = 20;
 export const MAX_VALIDATORS_TO_FETCH = 100;
 export const MINIMUM_VALIDATOR_WEIGHT = BigInt(1_000e8);
 export const ACTIVE_VALIDATORS = 51;
+export const VALIDATOR_UDPATE_CACHE = 50;
