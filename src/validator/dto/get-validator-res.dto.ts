@@ -1,5 +1,5 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
-import { Account } from '@prisma/client';
+import { Account } from 'src/account/types';
 
 export class GetValidatorResponseDto {
   account: Account;

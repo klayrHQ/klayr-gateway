@@ -4,6 +4,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TransactionRepoService {
+  private updateCache: {
+    where: Prisma.TransactionWhereUniqueInput;
+    data: Prisma.TransactionUpdateInput;
+  }[] = [];
+  private BATCH_SIZE = 50;
+
   constructor(private prisma: PrismaService) {}
 
   public async getTransaction(
@@ -71,10 +77,34 @@ export class TransactionRepoService {
   public async updateTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
     transactionUpdateInput: Prisma.TransactionUpdateInput,
-  ): Promise<Transaction | null> {
-    return this.prisma.transaction.update({
-      where: transactionWhereUniqueInput,
-      data: transactionUpdateInput,
-    });
+  ): Promise<void> {
+    this.updateCache.push({ where: transactionWhereUniqueInput, data: transactionUpdateInput });
+    if (this.updateCache.length >= this.BATCH_SIZE) {
+      await this.executeBatchUpdate();
+    }
   }
+
+  private async executeBatchUpdate(): Promise<void> {
+    console.log('Executing batch validator update');
+    const updates = this.updateCache.splice(0, this.BATCH_SIZE);
+
+    await this.prisma.$transaction(
+      updates.map((update) =>
+        this.prisma.transaction.update({
+          where: update.where,
+          data: update.data,
+        }),
+      ),
+    );
+  }
+
+  // public async updateTransaction(
+  //   transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
+  //   transactionUpdateInput: Prisma.TransactionUpdateInput,
+  // ): Promise<Transaction | null> {
+  //   return this.prisma.transaction.update({
+  //     where: transactionWhereUniqueInput,
+  //     data: transactionUpdateInput,
+  //   });
+  // }
 }

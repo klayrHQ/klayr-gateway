@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix-q-2
 
 env:
   REGISTRY: ghcr.io

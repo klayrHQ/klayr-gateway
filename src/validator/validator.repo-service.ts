@@ -4,6 +4,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ValidatorRepoService {
+  private updateCache: {
+    where: Prisma.ValidatorWhereUniqueInput;
+    data: Prisma.ValidatorUpdateInput;
+  }[] = [];
+  private BATCH_SIZE = 50;
   constructor(private prisma: PrismaService) {}
 
   public async getValidator(
@@ -74,12 +79,37 @@ export class ValidatorRepoService {
   public async updateValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
     validatorUpdateInput: Prisma.ValidatorUpdateInput,
-  ): Promise<Validator | null> {
-    return this.prisma.validator.update({
-      where: validatorWhereUniqueInput,
-      data: validatorUpdateInput,
-    });
+  ): Promise<void> {
+    this.updateCache.push({ where: validatorWhereUniqueInput, data: validatorUpdateInput });
+
+    if (this.updateCache.length >= this.BATCH_SIZE) {
+      await this.executeBatchUpdate();
+    }
   }
+
+  private async executeBatchUpdate(): Promise<void> {
+    console.log('Executing batch validator update');
+    const updates = this.updateCache.splice(0, this.BATCH_SIZE);
+
+    await this.prisma.$transaction(
+      updates.map((update) =>
+        this.prisma.validator.update({
+          where: update.where,
+          data: update.data,
+        }),
+      ),
+    );
+  }
+
+  // public async updateValidator(
+  //   validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
+  //   validatorUpdateInput: Prisma.ValidatorUpdateInput,
+  // ): Promise<Validator | null> {
+  //   return this.prisma.validator.update({
+  //     where: validatorWhereUniqueInput,
+  //     data: validatorUpdateInput,
+  //   });
+  // }
 
   public async getAllValidators(): Promise<Validator[]> {
     return this.prisma.validator.findMany({
