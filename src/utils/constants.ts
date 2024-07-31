@@ -52,3 +52,5 @@ export const MAX_EVENTS_TO_FETCH = 100;
 
 export const DEFAULT_VALIDATORS_TO_FETCH = 20;
 export const MAX_VALIDATORS_TO_FETCH = 100;
+export const MINIMUM_VALIDATOR_WEIGHT = BigInt(1_000e8);
+export const ACTIVE_VALIDATORS = 51;
