@@ -4,6 +4,7 @@ import { Block, ChainEvent } from 'src/node-api/types';
 import { ChainEventRepoService } from './chain-event-repo.service';
 import { EventService } from 'src/event/event.service';
 import { AccountService } from 'src/account/account.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ChainEventService {
@@ -16,7 +17,7 @@ export class ChainEventService {
     private readonly accountService: AccountService,
   ) {}
 
-  public async checkUserAccountsAndSaveEvents(blocks: Block[]) {
+  public async checkUserAccountsAndSaveEvents(blocks: Block[]): Promise<ChainEvent[][]> {
     const promises = blocks.map(async (block) => {
       const chainEvents = await this.nodeApiService.invokeApi<ChainEvent[]>(
         NodeApi.CHAIN_GET_EVENTS,
@@ -40,21 +41,20 @@ export class ChainEventService {
       return decodedChainEvents;
     });
 
-    const events = await Promise.all(promises);
-    this.chainEvents.push(...events.flat());
+    return Promise.all(promises);
   }
 
-  public async writeAndEmitChainEvents() {
-    await this.repoService.createEventsBulk(this.chainEvents);
+  public async writeAndEmitChainEvents(events: ChainEvent[][]) {
+    const flattenedEvents = events.flat();
+    await this.repoService.createEventsBulk(flattenedEvents as Prisma.ChainEventsCreateManyInput[]);
 
-    this.chainEvents.forEach((e) => {
+    flattenedEvents.forEach((e) => {
       this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
         event: `${e.module}:${e.name}` as any,
         payload: e,
       });
     });
-    this.chainEvents = [];
   }
 
   // TODO: handle accounts for block batch instead of every block itself
