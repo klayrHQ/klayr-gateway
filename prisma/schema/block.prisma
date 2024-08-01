@@ -18,6 +18,7 @@ model Block {
   aggregateCommit      String
   numberOfTransactions Int
   numberOfAssets       Int
+  numberOfEvents       Int
   isFinal              Boolean       @default(false)
   reward               String
   totalBurnt           BigInt        @default(0) // sum(txs.minFee)

@@ -18,7 +18,7 @@ export class ChainEventService {
     private readonly accountService: AccountService,
   ) {}
 
-  public async checkUserAccountsAndSaveEvents(blocks: Block[]): Promise<ChainEvent[][]> {
+  public async checkUserAccountsAndSaveEvents(blocks: Block[]): Promise<ChainEvent[]> {
     const promises = blocks.map(async (block) => {
       const chainEvents = await this.nodeApiService.invokeApi<ChainEvent[]>(
         NodeApi.CHAIN_GET_EVENTS,
@@ -37,16 +37,14 @@ export class ChainEventService {
 
       return decodedChainEvents;
     });
-
-    return Promise.all(promises);
+    const chainEvents = await Promise.all(promises);
+    return chainEvents.flat();
   }
 
-  public async writeAndEmitChainEvents(events: ChainEvent[][]) {
-    const flattenedEvents = events.flat();
-    await this.repoService.createEventsBulk(flattenedEvents as Prisma.ChainEventsCreateManyInput[]);
+  public async writeAndEmitChainEvents(events: ChainEvent[]) {
+    await this.repoService.createEventsBulk(events as Prisma.ChainEventsCreateManyInput[]);
 
-
-    flattenedEvents.forEach(async (e) => {
+    events.forEach(async (e) => {
       await this.eventService.pushToGeneralEventQ({
         //TODO: Fix this type, dont know a clean solution yet
         event: `${e.module}:${e.name}` as any,
