@@ -102,8 +102,6 @@ export class TransactionRepoService {
   private async executeBatchUpdate(
     updates: { where: Prisma.TransactionWhereUniqueInput; data: Prisma.TransactionUpdateInput }[],
   ): Promise<void> {
-    console.log('Executing batch tx update');
-
     await this.prisma.$transaction(
       updates.map((update) =>
         this.prisma.transaction.update({

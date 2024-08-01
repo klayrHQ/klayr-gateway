@@ -102,8 +102,6 @@ export class ValidatorRepoService {
   private async executeBatchUpdate(
     updates: { where: Prisma.ValidatorWhereUniqueInput; data: Prisma.ValidatorUpdateInput }[],
   ): Promise<void> {
-    console.log('Executing batch validator update');
-
     await this.prisma.$transaction(
       updates.map((update) =>
         this.prisma.validator.update({

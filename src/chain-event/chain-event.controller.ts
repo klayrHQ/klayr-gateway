@@ -5,6 +5,7 @@ import { GetEventsDto } from './dto/get-events.dto';
 import { Prisma } from '@prisma/client';
 import { MAX_EVENTS_TO_FETCH } from 'src/utils/constants';
 import { ApiTags } from '@nestjs/swagger';
+import { TransactionEvents } from 'src/transaction/types';
 
 @ApiTags('Events')
 @Controller('events')
@@ -50,7 +51,10 @@ export class ChainEventController {
   ): any {
     const eventRes = {
       ...event,
-      data: JSON.parse(event.data),
+      data:
+        event.name === TransactionEvents.COMMAND_EXECUTION_RESULT
+          ? event.data
+          : JSON.parse(event.data),
       topics: JSON.parse(event.topics),
     };
     return eventRes;
