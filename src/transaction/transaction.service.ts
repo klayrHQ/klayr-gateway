@@ -57,6 +57,11 @@ export class TransactionService {
     );
   }
 
+  @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
+  public async handleStateChange() {
+    await this.transactionRepoService.updateCache.flush();
+  }
+
   private async createTransaction(params: {
     tx: Transaction;
     height: number;

@@ -7,12 +7,8 @@ import { IndexerRepoService } from './indexer-repo.service';
 import { BlockEvent, Events, GatewayEvents } from 'src/event/types';
 import { waitTimeout } from 'src/utils/helpers';
 import { IndexerGenesisService } from './indexer-genesis.service';
-
-export enum IndexerState {
-  START_UP,
-  SYNCING,
-  INDEXING,
-}
+import { StateService } from 'src/state/state.service';
+import { IndexerState, Modules } from 'src/state/types';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -21,16 +17,16 @@ export enum IndexerState {
 @Injectable()
 export class IndexerService {
   private readonly logger = new Logger(IndexerService.name);
-  public state: IndexerState;
   public nextBlockToSync: number;
 
   constructor(
+    private readonly state: StateService,
     private readonly indexerRepoService: IndexerRepoService,
     private readonly indexerGenesisService: IndexerGenesisService,
     private readonly nodeApiService: NodeApiService,
     private readonly eventService: EventService,
   ) {
-    this.state = IndexerState.START_UP;
+    this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
 
   async onApplicationBootstrap() {
@@ -55,7 +51,7 @@ export class IndexerService {
   }
 
   private async syncWithNode(): Promise<void> {
-    while (this.state === IndexerState.SYNCING) {
+    while (this.state.get(Modules.INDEXER) === IndexerState.SYNCING) {
       const [blocks, nodeInfo] = await Promise.all([
         this.getBlocks(),
         this.nodeApiService.getAndSetNodeInfo(),
@@ -77,7 +73,8 @@ export class IndexerService {
       await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
       if (this.nextBlockToSync > nodeInfo.height) {
-        this.state = IndexerState.INDEXING;
+        this.state.set(Modules.INDEXER, IndexerState.INDEXING);
+        //TODO: state changes to state module?
         await this.eventService.pushToGeneralEventQ({
           event: GatewayEvents.INDEXER_STATE_CHANGE_INDEXING,
           payload: {},
@@ -89,12 +86,12 @@ export class IndexerService {
   private async subscribeToNewBlock(): Promise<void> {
     this.nodeApiService.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
       const newBlockHeight = newBlockData.blockHeader.height;
-      if (this.state === IndexerState.SYNCING)
+      if (this.state.get(Modules.INDEXER) === IndexerState.SYNCING)
         return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`
       if (newBlockHeight > this.nextBlockToSync) {
-        this.state = IndexerState.SYNCING;
+        this.state.set(Modules.INDEXER, IndexerState.SYNCING);
         // Errors will be unhandled
         setImmediate(() => this.syncWithNode());
         return;

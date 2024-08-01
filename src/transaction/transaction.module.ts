@@ -5,9 +5,10 @@ import { NodeApiModule } from 'src/node-api/node-api.module';
 import { TransactionService } from './transaction.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EventModule } from 'src/event/event.module';
+import { StateModule } from 'src/state/state.module';
 
 @Module({
-  imports: [NodeApiModule, EventModule],
+  imports: [StateModule, NodeApiModule, EventModule],
   providers: [PrismaService, TransactionRepoService, TransactionService],
   controllers: [TransactionController],
 })

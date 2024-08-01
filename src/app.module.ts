@@ -11,12 +11,14 @@ import { TransactionModule } from './transaction/transaction.module';
 import { AccountModule } from './account/account.module';
 import { ChainEventModule } from './chain-event/chain-event.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { StateModule } from './state/state.module';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    StateModule,
     NodeApiModule,
     EventModule,
     BlockModule,

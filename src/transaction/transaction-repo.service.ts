@@ -1,10 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Transaction } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { StateService } from 'src/state/state.service';
+import { IndexerState, Modules } from 'src/state/types';
+import { CacheService } from 'src/utils/cache-service';
+import { TX_UPDATE_CACHE } from 'src/utils/constants';
 
 @Injectable()
 export class TransactionRepoService {
-  constructor(private prisma: PrismaService) {}
+  public updateCache: CacheService<{
+    where: Prisma.TransactionWhereUniqueInput;
+    data: Prisma.TransactionUpdateInput;
+  }>;
+
+  constructor(
+    private state: StateService,
+    private prisma: PrismaService,
+  ) {
+    this.updateCache = new CacheService(TX_UPDATE_CACHE, this.executeBatchUpdate.bind(this));
+  }
 
   public async getTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
@@ -71,10 +85,30 @@ export class TransactionRepoService {
   public async updateTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
     transactionUpdateInput: Prisma.TransactionUpdateInput,
-  ): Promise<Transaction | null> {
-    return this.prisma.transaction.update({
-      where: transactionWhereUniqueInput,
-      data: transactionUpdateInput,
-    });
+  ): Promise<void> {
+    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
+      this.prisma.transaction.update({
+        where: transactionWhereUniqueInput,
+        data: transactionUpdateInput,
+      });
+    } else {
+      await this.updateCache.add({
+        where: transactionWhereUniqueInput,
+        data: transactionUpdateInput,
+      });
+    }
+  }
+
+  private async executeBatchUpdate(
+    updates: { where: Prisma.TransactionWhereUniqueInput; data: Prisma.TransactionUpdateInput }[],
+  ): Promise<void> {
+    await this.prisma.$transaction(
+      updates.map((update) =>
+        this.prisma.transaction.update({
+          where: update.where,
+          data: update.data,
+        }),
+      ),
+    );
   }
 }
