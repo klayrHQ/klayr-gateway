@@ -1,4 +1,4 @@
-import { ApiProperty, ApiResponseOptions } from '@nestjs/swagger';
+import { ApiResponseOptions } from '@nestjs/swagger';
 
 export class AggregateCommit {
   height: number;
@@ -38,6 +38,7 @@ export class GetBlockResDto {
   aggregateCommit: string | AggregateCommit; // to satisfy the JSON.parse() in the controller
   numberOfTransactions: number;
   numberOfAssets: number;
+  numberOfEvents: number;
   reward: string;
   isFinal: boolean;
   totalBurnt: string;

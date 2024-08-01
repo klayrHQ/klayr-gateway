@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, RewardAtHeight, Transaction } from 'src/node-api/types';
+import { Asset, Block, ChainEvent, RewardAtHeight, Transaction } from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
@@ -25,7 +25,7 @@ export class BlockService {
 
     const chainEvents = await this.chainEventService.checkUserAccountsAndSaveEvents(payload);
 
-    const blocks = await this.processBlocks(payload);
+    const blocks = await this.processBlocks(payload, chainEvents);
     await this.blockRepo.createBlocksBulk(blocks);
 
     const transactions = this.processTransactions(payload);
@@ -61,7 +61,9 @@ export class BlockService {
     }
   }
 
-  private async processBlocks(blocks: Block[]): Promise<any[]> {
+  private async processBlocks(blocks: Block[], chainEvents: ChainEvent[]): Promise<any[]> {
+    const eventCountMap = this.createEventCountMap(chainEvents);
+
     const promises = blocks.map(async (block) => {
       const { reward } = await this.nodeApiService.invokeApi<RewardAtHeight>(
         NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
@@ -73,6 +75,7 @@ export class BlockService {
         reward,
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
+        numberOfEvents: eventCountMap.get(block.header.height) || 0,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),
         totalForged: Number(reward),
       };
@@ -125,5 +128,18 @@ export class BlockService {
         payload: blocks,
       });
     }, 2000);
+  }
+
+  private createEventCountMap(chainEvents: ChainEvent[]): Map<number, number> {
+    const eventCountMap = new Map<number, number>();
+    chainEvents.forEach((event) => {
+      const height = event.height;
+      if (eventCountMap.has(height)) {
+        eventCountMap.set(height, eventCountMap.get(height)! + 1);
+      } else {
+        eventCountMap.set(height, 1);
+      }
+    });
+    return eventCountMap;
   }
 }
