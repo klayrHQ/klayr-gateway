@@ -9,8 +9,6 @@ import { TransactionEvents } from 'src/transaction/types';
 
 @Injectable()
 export class ChainEventService {
-  private chainEvents = [];
-
   constructor(
     private readonly repoService: ChainEventRepoService,
     private readonly nodeApiService: NodeApiService,
