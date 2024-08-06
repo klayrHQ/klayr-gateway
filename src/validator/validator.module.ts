@@ -11,7 +11,7 @@ import { DbCacheModule } from 'src/db-cache/db-cache.module';
 @Module({
   imports: [StateModule, AccountModule, NodeApiModule, DbCacheModule],
   providers: [ValidatorRepoService, ValidatorService, PrismaService],
-  exports: [ValidatorService],
+  exports: [ValidatorService, ValidatorRepoService],
   controllers: [ValidatorController],
 })
 export class ValidatorModule {}

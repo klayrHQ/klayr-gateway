@@ -20,13 +20,14 @@ export enum NodeApi {
   CHAIN_GET_BLOCK_BY_HEIGHT = 'chain_getBlockByHeight',
   CHAIN_GET_BLOCKS_BY_HEIGHT = 'chain_getBlocksByHeightBetween',
   CHAIN_GET_EVENTS = 'chain_getEvents',
+  CHAIN_VALIDATORS_CHANGED = 'chain_validatorsChanged',
+  CHAIN_GET_GENERATOR_LIST = 'chain_getGeneratorList',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
-  CHAIN_VALIDATORS_CHANGED = 'chain_validatorsChanged',
 }
 
 // Functions to interact with the Node API

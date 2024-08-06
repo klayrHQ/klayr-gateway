@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Account, Prisma } from '@prisma/client';
+import { Account, Prisma, Validator } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -38,5 +38,45 @@ export class AccountRepoService {
     accounts: Prisma.AccountUpdateManyArgs,
   ): Promise<Prisma.BatchPayload> {
     return this.prisma.account.updateMany(accounts);
+  }
+
+  public async searchAccount(
+    search: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ name: string; address: string; publicKey: string; validator: Validator }[]> {
+    const accounts = await this.prisma.account.findMany({
+      where: {
+        OR: [
+          { name: { contains: search } },
+          { address: { contains: search } },
+          { publicKey: { contains: search } },
+        ],
+      },
+      select: {
+        name: true,
+        address: true,
+        publicKey: true,
+        validator: true,
+      },
+      take: limit,
+      skip: offset,
+    });
+
+    return accounts;
+  }
+
+  public async countAccounts(search: string): Promise<number> {
+    const count = await this.prisma.account.count({
+      where: {
+        OR: [
+          { name: { contains: search } },
+          { address: { contains: search } },
+          { publicKey: { contains: search } },
+        ],
+      },
+    });
+
+    return count;
   }
 }
