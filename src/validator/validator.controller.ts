@@ -18,11 +18,15 @@ export class ValidatorController {
   async getValidator(
     @Query() query: ValidatorQueryDto,
   ): Promise<GatewayResponse<GetValidatorResponseDto[]>> {
-    const { address, limit, offset } = query;
+    const { address, publicKey, name, status, limit, offset, sort } = query;
+    const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
     const where: Prisma.ValidatorWhereInput = {
       ...(address && { address }),
+      ...(publicKey && { account: { publicKey } }),
+      ...(name && { account: { name } }),
+      ...(status && { status }),
     };
 
     const [validators, total] = await Promise.all([
@@ -30,7 +34,7 @@ export class ValidatorController {
         where,
         take,
         orderBy: {
-          ['rank']: 'asc', // probably will change
+          [field]: direction,
         },
         skip: offset,
       }),
