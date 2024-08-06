@@ -1,6 +1,7 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { DEFAULT_VALIDATORS_TO_FETCH } from 'src/utils/constants';
+import { ValidatorSortTypes } from 'src/utils/controller-helpers';
 
 export class ValidatorQueryDto {
   /**
@@ -9,6 +10,27 @@ export class ValidatorQueryDto {
   @IsString()
   @IsOptional()
   address?: string;
+
+  /**
+   * The public key of the validator
+   */
+  @IsString()
+  @IsOptional()
+  publicKey?: string;
+
+  /**
+   * The name of the validator
+   */
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  /**
+   * The status of the validator
+   */
+  @IsString()
+  @IsOptional()
+  status?: string;
 
   /**
    * Limit the number of validators fetched.
@@ -23,4 +45,14 @@ export class ValidatorQueryDto {
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
+
+  /**
+   * Sort Validators.
+   */
+  @IsString()
+  @IsEnum(ValidatorSortTypes, {
+    message:
+      'sort must be one of the following values: ' + Object.values(ValidatorSortTypes).join(', '),
+  })
+  sort?: ValidatorSortTypes = ValidatorSortTypes.COMMISSION_ASC;
 }

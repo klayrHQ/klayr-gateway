@@ -56,3 +56,14 @@ export enum SortTypes {
   TIMESTAMP_ASC = 'timestamp:asc',
   TIMESTAMP_DESC = 'timestamp:desc',
 }
+
+export enum ValidatorSortTypes {
+  COMMISSION_ASC = 'commission:asc',
+  COMMISSION_DESC = 'commission:desc',
+  VALIDATOR_WEIGHT_DESC = 'validatorWeight:desc',
+  VALIDATOR_WEIGHT_ASC = 'validatorWeight:asc',
+  RANK_ASC = 'rank:asc',
+  RANK_DESC = 'rank:desc',
+  NAME_ASC = 'name:asc',
+  NAME_DESC = 'name:desc',
+}
