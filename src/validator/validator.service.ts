@@ -92,9 +92,9 @@ export class ValidatorService {
     }
 
     if (validatorExists) {
-      await this.validatorRepoService.updateValidator(
-        { address: validatorAddress },
-        {
+      await this.validatorRepoService.updateValidator({
+        where: { address: validatorAddress },
+        data: {
           totalStake: BigInt(validatorInfo.totalStake),
           selfStake: BigInt(validatorInfo.selfStake),
           validatorWeight: this.calcValidatorWeight(
@@ -108,7 +108,7 @@ export class ValidatorService {
           reportMisbehaviorHeights: JSON.stringify(validatorInfo.reportMisbehaviorHeights),
           punishmentPeriods: JSON.stringify(validatorInfo.punishmentPeriods),
         },
-      );
+      });
     }
 
     if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
@@ -121,7 +121,6 @@ export class ValidatorService {
   @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
   public async handleStateChange() {
     await this.updateValidatorRanks();
-    await this.validatorRepoService.updateCache.flush();
   }
 
   public async updateValidatorRanks() {
@@ -143,11 +142,10 @@ export class ValidatorService {
       ) {
         numberOfActiveValidators++;
       }
-
-      await this.validatorRepoService.updateValidator(
-        { address: validator.address },
-        { rank: validator.rank, status: validatorStatus },
-      );
+      await this.validatorRepoService.updateValidator({
+        where: { address: validator.address },
+        data: { rank: validator.rank, status: validatorStatus },
+      });
     }
   }
 
@@ -187,13 +185,13 @@ export class ValidatorService {
         continue;
       }
 
-      await this.validatorRepoService.updateValidator(
-        { address: validatorAddress },
-        {
+      await this.validatorRepoService.updateValidator({
+        where: { address: validatorAddress },
+        data: {
           lastGeneratedHeight,
           generatedBlocks: validator.generatedBlocks + count,
         },
-      );
+      });
     }
   }
 
