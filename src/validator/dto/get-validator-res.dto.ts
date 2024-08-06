@@ -6,6 +6,7 @@ export class GetValidatorResponseDto {
   totalStake: string;
   selfStake: string;
   validatorWeight: string;
+  nextAllocatedTime?: string;
   rank?: number;
   blsKey?: string;
   proofOfPossession?: string;
