@@ -10,7 +10,7 @@ import { StateModule } from 'src/state/state.module';
 @Module({
   imports: [StateModule, AccountModule, NodeApiModule],
   providers: [ValidatorRepoService, ValidatorService, PrismaService],
-  exports: [ValidatorService],
+  exports: [ValidatorService, ValidatorRepoService],
   controllers: [ValidatorController],
 })
 export class ValidatorModule {}

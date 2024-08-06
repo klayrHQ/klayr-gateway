@@ -12,6 +12,7 @@ import { AccountModule } from './account/account.module';
 import { ChainEventModule } from './chain-event/chain-event.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StateModule } from './state/state.module';
+import { GeneratorModule } from './generator/generator.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { StateModule } from './state/state.module';
     AccountModule,
     IndexerModule,
     ChainEventModule,
+    GeneratorModule,
   ],
   controllers: [],
   providers: [],

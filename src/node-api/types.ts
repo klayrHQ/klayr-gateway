@@ -117,3 +117,12 @@ export type ValidatorKeys = {
   generatorKey: string;
   blsKey: string;
 };
+
+export type Generator = {
+  address: string;
+  nextAllocatedTime: string;
+};
+
+export type GeneratorList = {
+  list: Generator[];
+};
