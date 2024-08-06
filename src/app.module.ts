@@ -12,6 +12,7 @@ import { AccountModule } from './account/account.module';
 import { ChainEventModule } from './chain-event/chain-event.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StateModule } from './state/state.module';
+import { DbCacheModule } from './db-cache/db-cache.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StateModule } from './state/state.module';
     StateModule,
     NodeApiModule,
     EventModule,
+    DbCacheModule,
     BlockModule,
     TransactionModule,
     AssetModule,

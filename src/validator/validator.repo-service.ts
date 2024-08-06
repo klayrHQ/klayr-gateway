@@ -1,24 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Validator } from '@prisma/client';
+import { DbCacheService } from 'src/db-cache/db-cache.service';
+import { Models } from 'src/db-cache/types';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StateService } from 'src/state/state.service';
 import { IndexerState, Modules } from 'src/state/types';
-import { CacheService } from 'src/utils/cache-service';
-import { VALIDATOR_UPDATE_CACHE } from 'src/utils/constants';
 
 @Injectable()
 export class ValidatorRepoService {
-  public updateCache: CacheService<{
-    where: Prisma.ValidatorWhereUniqueInput;
-    data: Prisma.ValidatorUpdateInput;
-  }>;
-
   constructor(
     private prisma: PrismaService,
     private state: StateService,
-  ) {
-    this.updateCache = new CacheService(VALIDATOR_UPDATE_CACHE, this.executeBatchUpdate.bind(this));
-  }
+    private dbCache: DbCacheService,
+  ) {}
 
   public async getValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
@@ -85,31 +79,23 @@ export class ValidatorRepoService {
     });
   }
 
-  public async updateValidator(
-    validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
-    validatorUpdateInput: Prisma.ValidatorUpdateInput,
-  ): Promise<void> {
+  public async updateValidator(params: {
+    where: Prisma.ValidatorWhereUniqueInput;
+    data: Prisma.ValidatorUpdateInput;
+  }): Promise<void> {
+    const { where, data } = params;
     if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
       await this.prisma.validator.update({
-        where: validatorWhereUniqueInput,
-        data: validatorUpdateInput,
+        where,
+        data,
       });
     } else {
-      await this.updateCache.add({ where: validatorWhereUniqueInput, data: validatorUpdateInput });
+      await this.dbCache.add({
+        where,
+        data,
+        model: Models.VALIDATOR,
+      });
     }
-  }
-
-  private async executeBatchUpdate(
-    updates: { where: Prisma.ValidatorWhereUniqueInput; data: Prisma.ValidatorUpdateInput }[],
-  ): Promise<void> {
-    await this.prisma.$transaction(
-      updates.map((update) =>
-        this.prisma.validator.update({
-          where: update.where,
-          data: update.data,
-        }),
-      ),
-    );
   }
 
   public async getAllValidators(): Promise<Validator[]> {

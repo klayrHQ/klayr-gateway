@@ -51,15 +51,10 @@ export class TransactionService {
         ? ExecutionStatus.SUCCESSFUL
         : ExecutionStatus.FAILED;
 
-    await this.transactionRepoService.updateTransaction(
-      { id: payload.transactionID },
-      { executionStatus },
-    );
-  }
-
-  @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
-  public async handleStateChange() {
-    await this.transactionRepoService.updateCache.flush();
+    await this.transactionRepoService.updateTransaction({
+      where: { id: payload.transactionID },
+      data: { executionStatus },
+    });
   }
 
   private async createTransaction(params: {
