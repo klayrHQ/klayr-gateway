@@ -2,7 +2,7 @@ import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
 import { GetValidatorResponseDto, getValidatorResponse } from './dto/get-validator-res.dto';
-import { GatewayResponse } from 'src/utils/controller-helpers';
+import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH, NEXT_VALIDATORS_META } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
@@ -27,6 +27,8 @@ export class ValidatorController {
     const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
+    const [list, nextValidators] = await this.getGeneratorList();
+
     const where: Prisma.ValidatorWhereInput = {
       ...(address && { address }),
       ...(publicKey && { account: { publicKey } }),
@@ -34,20 +36,24 @@ export class ValidatorController {
       ...(status && { status }),
     };
 
+    let queryOptions = {
+      where,
+      take,
+      skip: offset,
+      orderBy: {
+        [field]: direction,
+      },
+    };
+    // TODO: Revisit this logic of fetching and sorting generator list / nextAllocatedTime. Can get slow now
+    this.checkForNextAllocatedTimeSort(queryOptions, list, sort);
+
     const [validators, total] = await Promise.all([
-      this.validatorRepoService.getValidators({
-        where,
-        take,
-        orderBy: {
-          [field]: direction,
-        },
-        skip: offset,
-      }),
+      this.validatorRepoService.getValidators(queryOptions),
       this.validatorRepoService.countValidators({ where }),
     ]);
 
-    const [list, nextValidators] = await this.getGeneratorList();
     const response = validators.map((validator) => this.getValidatorResponse(validator, list));
+    this.applyNextAllocatedTimeSort(response, sort, take, offset);
 
     return new GatewayResponse(response, {
       nextValidators,
@@ -88,9 +94,7 @@ export class ValidatorController {
     if (!list) throw new Error('Failed to fetch generator list');
 
     const nextValidators = list
-      .sort(
-        (a, b) => new Date(a.nextAllocatedTime).getTime() - new Date(b.nextAllocatedTime).getTime(),
-      )
+      .sort((a, b) => Number(a.nextAllocatedTime) - Number(b.nextAllocatedTime))
       .slice(0, NEXT_VALIDATORS_META);
 
     await Promise.all(
@@ -106,5 +110,50 @@ export class ValidatorController {
     );
 
     return [list, nextValidators];
+  }
+
+  private checkForNextAllocatedTimeSort(
+    query: Prisma.ValidatorFindManyArgs,
+    list: Generator[],
+    sort: string,
+  ) {
+    if (
+      sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_ASC ||
+      sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_DESC
+    ) {
+      query.where = {
+        address: {
+          in: list.map((generator) => generator.address),
+        },
+      };
+      delete query.orderBy;
+      delete query.skip;
+      delete query.take;
+    }
+  }
+
+  private applyNextAllocatedTimeSort(
+    response: GetValidatorResponseDto[],
+    sort: string,
+    take: number,
+    offset: number,
+  ) {
+    if (
+      sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_ASC ||
+      sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_DESC
+    ) {
+      response
+        .sort((a, b) => {
+          const timeA = a.nextAllocatedTime ? Number(a.nextAllocatedTime) : 0;
+          const timeB = b.nextAllocatedTime ? Number(b.nextAllocatedTime) : 0;
+
+          if (sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_ASC) {
+            return timeA - timeB;
+          } else {
+            return timeB - timeA;
+          }
+        })
+        .slice(offset, offset + take);
+    }
   }
 }

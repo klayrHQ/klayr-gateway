@@ -70,4 +70,6 @@ export enum ValidatorSortTypes {
   GENERATED_BLOCKS_DESC = 'generatedBlocks:desc',
   SELF_STAKE_ASC = 'selfStake:asc',
   SELF_STAKE_DESC = 'selfStake:desc',
+  NEXT_ALLOCATED_TIME_ASC = 'nextAllocatedTime:asc',
+  NEXT_ALLOCATED_TIME_DESC = 'nextAllocatedTime:desc',
 }
