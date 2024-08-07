@@ -8,9 +8,17 @@ import { NodeApiModule } from 'src/node-api/node-api.module';
 import { ChainEventModule } from 'src/chain-event/chain-event.module';
 import { StateModule } from 'src/state/state.module';
 import { DbCacheModule } from 'src/db-cache/db-cache.module';
+import { TransactionModule } from 'src/transaction/transaction.module';
 
 @Module({
-  imports: [StateModule, EventModule, NodeApiModule, ChainEventModule, DbCacheModule],
+  imports: [
+    StateModule,
+    EventModule,
+    TransactionModule,
+    NodeApiModule,
+    ChainEventModule,
+    DbCacheModule,
+  ],
   providers: [PrismaService, BlockService, BlockRepoService],
   controllers: [BlockController],
   exports: [BlockService],

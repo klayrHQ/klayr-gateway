@@ -22,6 +22,12 @@ export class AccountService {
     return this.accountRepoService.updateAccount(accountData);
   }
 
+  public async createAccount(accountData: Prisma.AccountCreateInput) {
+    const account = await this.getAccount({ address: accountData.address });
+    if (account) return;
+    return this.accountRepoService.createAccount(accountData);
+  }
+
   // ! Upserting gives prisma problems
   public async updateOrCreateAccount(params: {
     address: string;
