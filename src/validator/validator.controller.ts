@@ -4,10 +4,10 @@ import { ValidatorRepoService } from './validator.repo-service';
 import { GetValidatorResponseDto, getValidatorResponse } from './dto/get-validator-res.dto';
 import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
-import { MAX_VALIDATORS_TO_FETCH, NEXT_VALIDATORS_META } from 'src/utils/constants';
+import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
-import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Generator, GeneratorList, ValidatorInfo } from 'src/node-api/types';
+import { NodeApiService } from 'src/node-api/node-api.service';
+import { Generator } from 'src/node-api/types';
 
 @ApiTags('Validators')
 @Controller('pos')
@@ -27,7 +27,7 @@ export class ValidatorController {
     const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
-    const [list, nextValidators] = await this.getGeneratorList();
+    const { list } = this.nodeApiService.generatorList;
 
     const where: Prisma.ValidatorWhereInput = {
       ...(address && { address }),
@@ -44,7 +44,7 @@ export class ValidatorController {
         [field]: direction,
       },
     };
-    // TODO: Revisit this logic of fetching and sorting generator list / nextAllocatedTime. Can get slow now
+
     this.checkForNextAllocatedTimeSort(queryOptions, list, sort);
 
     const [validators, total] = await Promise.all([
@@ -56,7 +56,6 @@ export class ValidatorController {
     this.applyNextAllocatedTimeSort(response, sort, take, offset);
 
     return new GatewayResponse(response, {
-      nextValidators,
       count: validators.length,
       offset,
       total,
@@ -84,32 +83,6 @@ export class ValidatorController {
 
     if (!account.publicKey) delete account.publicKey;
     return newValidator;
-  }
-
-  private async getGeneratorList() {
-    const { list } = await this.nodeApiService.invokeApi<GeneratorList>(
-      NodeApi.CHAIN_GET_GENERATOR_LIST,
-      {},
-    );
-    if (!list) throw new Error('Failed to fetch generator list');
-
-    const nextValidators = list
-      .sort((a, b) => Number(a.nextAllocatedTime) - Number(b.nextAllocatedTime))
-      .slice(0, NEXT_VALIDATORS_META);
-
-    await Promise.all(
-      nextValidators.map(async (validator) => {
-        const response = await this.nodeApiService.invokeApi<ValidatorInfo>(
-          NodeApi.POS_GET_VALIDATOR,
-          {
-            address: validator.address,
-          },
-        );
-        validator.name = response.name;
-      }),
-    );
-
-    return [list, nextValidators];
   }
 
   private checkForNextAllocatedTimeSort(
