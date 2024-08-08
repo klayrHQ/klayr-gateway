@@ -22,6 +22,14 @@ export class AccountRepoService {
     });
   }
 
+  public async createAccount(
+    accountData: Prisma.AccountCreateInput,
+  ): Promise<Prisma.AccountCreateInput> {
+    return this.prisma.account.create({
+      data: accountData,
+    });
+  }
+
   public async upsertAccount(
     accountData: Prisma.AccountUpsertArgs,
   ): Promise<Prisma.AccountUpdateInput> {

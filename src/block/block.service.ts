@@ -5,7 +5,7 @@ import { Asset, Block, ChainEvent, RewardAtHeight, Transaction } from 'src/node-
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
-import { UpdateBlockFee } from 'src/transaction/transaction.service';
+import { TransactionService, UpdateBlockFee } from 'src/transaction/transaction.service';
 import { ChainEventService } from 'src/chain-event/chain-event.service';
 
 @Injectable()
@@ -15,6 +15,7 @@ export class BlockService {
   constructor(
     private blockRepo: BlockRepoService,
     private eventService: EventService,
+    private transactionService: TransactionService,
     private nodeApiService: NodeApiService,
     private chainEventService: ChainEventService,
   ) {}
@@ -30,15 +31,13 @@ export class BlockService {
 
     const transactions = this.processTransactions(payload);
     if (transactions && transactions.length > 0) {
-      await this.eventService.pushToTxAndAssetsEventQ({
-        event: Events.NEW_TX_EVENT,
-        payload: transactions,
-      });
+      await this.transactionService.handleTransactions(transactions);
     }
 
     await this.checkForBlockFinality();
     await this.chainEventService.writeAndEmitChainEvents(chainEvents);
     await this.emitNewBlockEvents(payload);
+    //TODO: maybe emit tx event for modular use
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_FEE)
@@ -127,7 +126,7 @@ export class BlockService {
         event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
         payload: blocks,
       });
-    }, 2000);
+    }, 2500);
   }
 
   private createEventCountMap(chainEvents: ChainEvent[]): Map<number, number> {

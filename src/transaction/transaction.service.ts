@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
 import { ExecutionEventData, ExecutionStatus } from './types';
+import { AccountService } from 'src/account/account.service';
 
 export interface UpdateBlockFee {
   totalBurnt: number;
@@ -19,19 +20,22 @@ export class TransactionService {
   private readonly logger = new Logger(TransactionService.name);
 
   constructor(
-    private nodeApiService: NodeApiService,
-    private transactionRepoService: TransactionRepoService,
-    private eventService: EventService,
+    private readonly nodeApiService: NodeApiService,
+    private readonly transactionRepoService: TransactionRepoService,
+    private readonly eventService: EventService,
+    private readonly accountService: AccountService,
   ) {}
 
-  @OnEvent(Events.NEW_TX_EVENT)
-  public async handleTransactionEvent(payload: Payload<Transaction>[]) {
+  public async handleTransactions(payload: Payload<Transaction>[]) {
     this.logger.debug('New TX event');
     let totalBurntPerBlock = new Map<number, UpdateBlockFee>();
 
     const txInput = await Promise.all(
       payload.flatMap(({ height, data: txs }) =>
-        txs.map((tx, i) => this.createTransaction({ tx, height, index: i, totalBurntPerBlock })),
+        txs.map(
+          async (tx, i) =>
+            await this.createTransaction({ tx, height, index: i, totalBurntPerBlock }),
+        ),
       ),
     );
 
@@ -43,9 +47,17 @@ export class TransactionService {
     });
   }
 
-  // TODO: known issue: errors when token transfer fails because transaction is not found. This is because the account create event is not emitted on a failed tx so the tx is not inserted.
   @OnEvent(ChainEvents.POS_COMMAND_EXECUTION_RESULT)
-  public async handleExecutionResult(payload: ChainEvent) {
+  public async handlePosCommandExecutionResult(payload: ChainEvent) {
+    await this.handleExecutionResult(payload);
+  }
+
+  @OnEvent(ChainEvents.TOKEN_COMMAND_EXECUTION_RESULT)
+  public async handleTokenCommandExecutionResult(payload: ChainEvent) {
+    await this.handleExecutionResult(payload);
+  }
+
+  private async handleExecutionResult(payload: ChainEvent) {
     const executionStatus =
       payload.data === ExecutionEventData.SUCCESSFUL
         ? ExecutionStatus.SUCCESSFUL
@@ -66,6 +78,11 @@ export class TransactionService {
     const { tx, height, index, totalBurntPerBlock } = params;
     const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
 
+    const recipientAddress = txParams['recipientAddress'] || null;
+    const senderAddress = getKlayr32AddressFromPublicKey(tx.senderPublicKey);
+
+    await this.handleAccounts(tx, senderAddress, recipientAddress);
+
     return {
       id: tx.id,
       height,
@@ -75,11 +92,31 @@ export class TransactionService {
       nonce: tx.nonce,
       fee: tx.fee,
       minFee: this.calcFeePerBlock(totalBurntPerBlock, height, tx),
-      senderAddress: getKlayr32AddressFromPublicKey(tx.senderPublicKey),
-      recipientAddress: txParams['recipientAddress'] || null,
+      senderAddress: senderAddress,
+      recipientAddress,
       index,
       params: JSON.stringify(txParams),
     };
+  }
+
+  private async handleAccounts(
+    tx: Transaction,
+    senderAddress: string,
+    recipientAddress: string | null,
+  ): Promise<void> {
+    if (tx.nonce === '0') {
+      await this.accountService.updateOrCreateAccount({
+        address: senderAddress,
+        publicKey: tx.senderPublicKey,
+      });
+    }
+
+    // When a tx fails the recipient account is not created / registered. This is to cover that
+    if (recipientAddress) {
+      await this.accountService.createAccount({
+        address: recipientAddress,
+      });
+    }
   }
 
   private calcFeePerBlock(
