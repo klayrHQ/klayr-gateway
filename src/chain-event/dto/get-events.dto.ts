@@ -40,7 +40,7 @@ export class GetEventsDto {
   blockID?: string;
 
   /**
-   * Filter blocks by height. Format: "height", "start:end", "start:" or ":end".
+   * Filter events by height. Format: "height", "start:end", "start:" or ":end".
    */
   @IsString()
   @IsOptional()
@@ -50,7 +50,7 @@ export class GetEventsDto {
   height?: string;
 
   /**
-   * Filter blocks by timestamp. Format: "timestamp", "start:end", "start:" or ":end".
+   * Filter events by timestamp. Format: "timestamp", "start:end", "start:" or ":end".
    */
   @IsString()
   @IsOptional()
