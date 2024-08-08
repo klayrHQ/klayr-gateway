@@ -1,11 +1,12 @@
 model ChainEvents {
-  id     Int    @id @default(autoincrement())
-  height Int
-  module String
-  name   String
-  data   String?
-  topics String?
-  index  Int?
+  id            Int          @id @default(autoincrement())
+  height        Int
+  module        String
+  name          String
+  data          String?
+  topics        String?
+  index         Int?
   transactionID String?
-  block  Block  @relation(fields: [height], references: [height])
+  block         Block        @relation(fields: [height], references: [height])
+  transaction   Transaction? @relation(fields: [transactionID], references: [id])
 }
