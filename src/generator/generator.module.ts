@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { GeneratorController } from './generator.controller';
-import { AccountModule } from 'src/account/account.module';
 import { NodeApiModule } from 'src/node-api/node-api.module';
+import { ValidatorModule } from 'src/validator/validator.module';
 
 @Module({
-  imports: [AccountModule, NodeApiModule],
+  imports: [ValidatorModule, NodeApiModule],
   controllers: [GeneratorController],
 })
 export class GeneratorModule {}

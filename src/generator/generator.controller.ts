@@ -1,17 +1,19 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GeneratorQueryDto } from './dto/get-generators.dto';
-import { AccountRepoService } from 'src/account/account-repo.service';
 import { getGeneratorResponse, GetGeneratorResponseDto } from './dto/get-generators-res.dto';
-import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { GeneratorList } from 'src/node-api/types';
+import { NodeApiService } from 'src/node-api/node-api.service';
 import { GatewayResponse } from 'src/utils/controller-helpers';
+import { ValidatorRepoService } from 'src/validator/validator.repo-service';
+import { Prisma } from '@prisma/client';
+import { Generator } from 'src/node-api/types';
+import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 
 @ApiTags('Generators')
 @Controller('generators')
 export class GeneratorController {
   constructor(
-    private readonly accountRepoService: AccountRepoService,
+    private readonly validatorRepoService: ValidatorRepoService,
     private readonly nodeApiService: NodeApiService,
   ) {}
 
@@ -22,33 +24,66 @@ export class GeneratorController {
     @Query() query: GeneratorQueryDto,
   ): Promise<GatewayResponse<GetGeneratorResponseDto[]>> {
     const { search, limit, offset } = query;
+    const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
-    const [accounts, count] = await Promise.all([
-      this.accountRepoService.searchAccount(search, limit, offset),
-      this.accountRepoService.countAccounts(search),
-    ]);
+    const { list } = this.nodeApiService.generatorList;
 
-    const { list } = await this.nodeApiService.invokeApi<GeneratorList>(
-      NodeApi.CHAIN_GET_GENERATOR_LIST,
-      {},
-    );
-    if (!list) throw new Error('Failed to fetch generator list');
+    let where: Prisma.ValidatorWhereInput = {
+      address: {
+        in: list.map((generator) => generator.address),
+      },
+    };
 
-    const accountResponse: GetGeneratorResponseDto[] = accounts.map((account) => {
-      const { validator, ...rest } = account;
-      const generator = list.find((gen) => gen.address === account.address);
-      const newAccount = {
-        ...rest,
-        status: validator?.status,
-        nextAllocatedTime: generator ? generator.nextAllocatedTime : undefined,
+    if (search) {
+      where = {
+        ...where,
+        OR: [
+          { account: { name: { contains: search } } },
+          { account: { address: { contains: search } } },
+          { account: { publicKey: { contains: search } } },
+        ],
       };
-      return newAccount;
-    });
+    }
 
-    return new GatewayResponse(accountResponse, {
-      count: accountResponse.length,
+    const generators = await this.validatorRepoService.getValidators({ where });
+
+    const response = generators.map((validator) => this.getValidatorResponse(validator, list));
+    const sortedRes = this.sortResponse(response, take, offset);
+
+    return new GatewayResponse(sortedRes, {
+      count: sortedRes.length,
       offset,
-      total: count,
+      total: list.length,
     });
+  }
+
+  private getValidatorResponse(
+    validator: Prisma.ValidatorGetPayload<{ include: { account: true } }>,
+    list: Generator[],
+  ): GetGeneratorResponseDto {
+    const {
+      account: { address, publicKey, name },
+      status,
+    } = validator;
+    const newValidator: GetGeneratorResponseDto = {
+      address,
+      name,
+      publicKey,
+      nextAllocatedTime: Number(list.find((gen) => gen.address === address)?.nextAllocatedTime),
+      status,
+    };
+
+    return newValidator;
+  }
+
+  private sortResponse(response: GetGeneratorResponseDto[], take: number, offset: number) {
+    return response
+      .sort((a, b) => {
+        const timeA = a.nextAllocatedTime ? Number(a.nextAllocatedTime) : 0;
+        const timeB = b.nextAllocatedTime ? Number(b.nextAllocatedTime) : 0;
+
+        return timeA - timeB;
+      })
+      .slice(offset, offset + take);
   }
 }

@@ -4,6 +4,7 @@ export class GetGeneratorResponseDto {
   name: string;
   address: string;
   publicKey: string;
+  nextAllocatedTime: number;
   status: string;
 }
 
