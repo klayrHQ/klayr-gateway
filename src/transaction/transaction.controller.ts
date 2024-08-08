@@ -38,7 +38,6 @@ export class TransactionController {
     @Query() query: GetTransactionDto,
   ): Promise<GatewayResponse<GetTransactionsResDto[]>> {
     // TODO: receivingChainID query and implementation
-    // TODO: executionStatus query and implementation
     const {
       transactionID,
       blockID,
@@ -50,6 +49,7 @@ export class TransactionController {
       moduleCommand,
       limit,
       height,
+      executionStatus,
       sort,
       offset,
     } = query;
@@ -73,6 +73,7 @@ export class TransactionController {
       ...(nonce && { nonce }),
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
       ...(timestamp && { block: { timestamp: ControllerHelpers.buildRangeCondition(timestamp) } }),
+      ...(executionStatus && { executionStatus }),
       ...(address && {
         OR: [{ senderAddress: address }, { recipientAddress: address }],
       }),
