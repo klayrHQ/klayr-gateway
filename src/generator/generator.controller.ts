@@ -46,8 +46,7 @@ export class GeneratorController {
     }
 
     const generators = await this.validatorRepoService.getValidators({ where });
-
-    const response = generators.map((validator) => this.getValidatorResponse(validator, list));
+    const response = generators.map((validator) => this.getGeneratorResponse(validator, list));
     const sortedRes = this.sortResponse(response, take, offset);
 
     return new GatewayResponse(sortedRes, {
@@ -57,7 +56,7 @@ export class GeneratorController {
     });
   }
 
-  private getValidatorResponse(
+  private getGeneratorResponse(
     validator: Prisma.ValidatorGetPayload<{ include: { account: true } }>,
     list: Generator[],
   ): GetGeneratorResponseDto {
@@ -65,15 +64,14 @@ export class GeneratorController {
       account: { address, publicKey, name },
       status,
     } = validator;
-    const newValidator: GetGeneratorResponseDto = {
+
+    return {
       address,
       name,
       publicKey,
       nextAllocatedTime: Number(list.find((gen) => gen.address === address)?.nextAllocatedTime),
       status,
     };
-
-    return newValidator;
   }
 
   private sortResponse(response: GetGeneratorResponseDto[], take: number, offset: number) {
