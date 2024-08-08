@@ -22,10 +22,11 @@ export class GetTransactionsResDto {
   fee: string;
   minFee: string;
   index: number;
+  executionStatus: string;
   params: string | Params;
   signatures: string[];
   sender: Account;
-  recipient: Account;
+  recipient?: Account;
   block: Block;
 }
 

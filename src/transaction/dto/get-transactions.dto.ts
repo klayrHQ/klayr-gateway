@@ -2,6 +2,7 @@ import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator
 import { Transform } from 'class-transformer';
 import { DEFAULT_TX_TO_FETCH } from 'src/utils/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
+import { ExecutionStatus } from '../types';
 
 export class GetTransactionDto {
   /**
@@ -82,6 +83,17 @@ export class GetTransactionDto {
     message: 'timestamp must be a unix in a range like "1000:2000", "1000:", or ":2000"',
   })
   timestamp?: string;
+
+  /**
+   * Query transactions by their executionStatus.
+   */
+  @IsString()
+  @IsEnum(ExecutionStatus, {
+    message:
+      'executionStatus must be one of the following values: ' +
+      Object.values(ExecutionStatus).join(', '),
+  })
+  executionStatus?: ExecutionStatus;
 
   /**
    * Sort transactions.
