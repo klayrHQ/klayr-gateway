@@ -4,27 +4,46 @@ import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers
 import { GetEventsDto } from './dto/get-events.dto';
 import { Prisma } from '@prisma/client';
 import { MAX_EVENTS_TO_FETCH } from 'src/utils/constants';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionEvents } from 'src/transaction/types';
+import { GetEventsResDto, getEventsResponse } from './dto/get-events-res.dto';
 
 @ApiTags('Events')
 @Controller('events')
 export class ChainEventController {
   constructor(private readonly repoService: ChainEventRepoService) {}
 
-  // TODO: Link to transaction
-  // TODO: Response dto
-  // TODO: Queries
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  async getEvents(@Query() query: GetEventsDto): Promise<GatewayResponse<any[]>> {
-    const { height, transactionID, sort, limit, offset } = query;
+  @ApiResponse(getEventsResponse)
+  async getEvents(@Query() query: GetEventsDto): Promise<GatewayResponse<GetEventsResDto[]>> {
+    const {
+      transactionID,
+      senderAddress,
+      module,
+      name,
+      blockID,
+      height,
+      timestamp,
+      sort,
+      limit,
+      offset,
+    } = query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_EVENTS_TO_FETCH);
 
     const where: Prisma.ChainEventsWhereInput = {
-      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(module && { module }),
+      ...(name && { name }),
       ...(transactionID && { transactionID }),
+      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(timestamp && { block: { timestamp: ControllerHelpers.buildRangeCondition(timestamp) } }),
+      ...(blockID && { block: { id: blockID } }),
+      ...(senderAddress && {
+        transaction: {
+          senderAddress: senderAddress,
+        },
+      }),
     };
 
     const [events, total] = await Promise.all([
@@ -39,7 +58,7 @@ export class ChainEventController {
       this.repoService.countChainEvents({ where }),
     ]);
 
-    const eventResponse: any[] = events.map((event) => this.toGetEventsResponse(event));
+    const eventResponse: GetEventsResDto[] = events.map((event) => this.toGetEventsResponse(event));
 
     return new GatewayResponse(eventResponse, { count: events.length, offset, total });
   }
@@ -48,7 +67,7 @@ export class ChainEventController {
     event: Prisma.ChainEventsGetPayload<{
       include: { block: { select: { id: true; height: true; timestamp: true } } };
     }>,
-  ): any {
+  ): GetEventsResDto {
     const eventRes = {
       ...event,
       data:
