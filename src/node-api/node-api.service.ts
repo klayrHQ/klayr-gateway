@@ -7,9 +7,11 @@ import {
 } from '@nestjs/common';
 import { RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
-import { NewBlockEvent, NodeInfo, SchemaModule } from './types';
+import { GeneratorList, NewBlockEvent, NodeInfo, SchemaModule } from './types';
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Events } from 'src/event/types';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -38,6 +40,7 @@ export class NodeApiService {
   private schemaMap: Map<string, SchemaModule>;
   private subscription: any;
   public nodeInfo: NodeInfo;
+  public generatorList: GeneratorList;
 
   async onModuleInit() {
     await this.connectToNode();
@@ -67,6 +70,14 @@ export class NodeApiService {
         this.subscribeToNewBlock(this.subscription);
       });
     }
+  }
+
+  @OnEvent(Events.NEW_BLOCKS_EVENT)
+  public async cacheNodeApiOnNewBlock() {
+    const generatorList = await this.invokeApi<GeneratorList>(NodeApi.CHAIN_GET_GENERATOR_LIST, {});
+    if (!generatorList) throw new InternalServerErrorException('Failed to fetch generator list');
+
+    this.generatorList = generatorList;
   }
 
   public async invokeApi<T>(endpoint: string, params: any): Promise<T> {

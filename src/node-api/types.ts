@@ -121,6 +121,7 @@ export type ValidatorKeys = {
 export type Generator = {
   address: string;
   nextAllocatedTime: string;
+  name?: string;
 };
 
 export type GeneratorList = {
