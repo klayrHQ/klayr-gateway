@@ -75,7 +75,7 @@ export class NodeApiService {
   @OnEvent(Events.NEW_BLOCKS_EVENT)
   public async cacheNodeApiOnNewBlock() {
     const generatorList = await this.invokeApi<GeneratorList>(NodeApi.CHAIN_GET_GENERATOR_LIST, {});
-    if (!generatorList) throw new Error('Failed to fetch generator list');
+    if (!generatorList) throw new InternalServerErrorException('Failed to fetch generator list');
 
     this.generatorList = generatorList;
   }
