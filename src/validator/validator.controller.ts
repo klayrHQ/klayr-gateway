@@ -53,10 +53,10 @@ export class ValidatorController {
     ]);
 
     const response = validators.map((validator) => this.getValidatorResponse(validator, list));
-    const sortedRes = this.applyNextAllocatedTimeSort(response, sort, take, offset);
+    this.applyNextAllocatedTimeSort(response, sort, take, offset);
 
-    return new GatewayResponse(sortedRes, {
-      count: sortedRes.length,
+    return new GatewayResponse(response, {
+      count: validators.length,
       offset,
       total,
     });
@@ -115,7 +115,7 @@ export class ValidatorController {
       sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_ASC ||
       sort === ValidatorSortTypes.NEXT_ALLOCATED_TIME_DESC
     ) {
-      return response
+      response
         .sort((a, b) => {
           const timeA = a.nextAllocatedTime ? Number(a.nextAllocatedTime) : 0;
           const timeB = b.nextAllocatedTime ? Number(b.nextAllocatedTime) : 0;
