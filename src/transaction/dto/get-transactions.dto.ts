@@ -88,6 +88,7 @@ export class GetTransactionDto {
    * Query transactions by their executionStatus.
    */
   @IsString()
+  @IsOptional()
   @IsEnum(ExecutionStatus, {
     message:
       'executionStatus must be one of the following values: ' +
