@@ -16,7 +16,8 @@ export class BlockController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getBlocksResponse)
   async getBlocks(@Query() query: GetBlocksDto): Promise<GatewayResponse<GetBlockResDto[]>> {
-    const { blockID, height, timestamp, sort, limit, offset, includeAssets } = query;
+    const { blockID, height, timestamp, sort, limit, offset, includeAssets, generatorAddress } =
+      query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_BLOCKS_TO_FETCH);
 
@@ -24,6 +25,7 @@ export class BlockController {
       ...(blockID && { id: blockID }),
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
       ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
+      ...(generatorAddress && { generatorAddress }),
     };
 
     const [blocks, total] = await Promise.all([
