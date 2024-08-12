@@ -21,6 +21,6 @@ import { TransactionModule } from 'src/transaction/transaction.module';
   ],
   providers: [PrismaService, BlockService, BlockRepoService],
   controllers: [BlockController],
-  exports: [BlockService],
+  exports: [BlockService, BlockRepoService],
 })
 export class BlockModule {}
