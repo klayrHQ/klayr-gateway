@@ -76,9 +76,10 @@ export class TransactionService {
     totalBurntPerBlock: Map<number, UpdateBlockFee>;
   }): Promise<Prisma.TransactionCreateManyInput> {
     const { tx, height, index, totalBurntPerBlock } = params;
-    const txParams = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
+    const txParams: any = this.nodeApiService.decodeTxData(tx.module, tx.command, tx.params);
 
-    const recipientAddress = txParams['recipientAddress'] || null;
+    const recipientAddress =
+      txParams?.recipientAddress || txParams?.stakes?.[0]?.validatorAddress || null;
     const senderAddress = getKlayr32AddressFromPublicKey(tx.senderPublicKey);
 
     await this.handleAccounts(tx, senderAddress, recipientAddress);
