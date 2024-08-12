@@ -32,6 +32,13 @@ export class GetBlocksDto {
   timestamp?: string;
 
   /**
+   * Get block by Generator address.
+   */
+  @IsString()
+  @IsOptional()
+  generatorAddress?: string;
+
+  /**
    * Sort blocks.
    */
   @IsString()
