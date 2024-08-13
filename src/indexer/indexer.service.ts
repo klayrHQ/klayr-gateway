@@ -69,8 +69,6 @@ export class IndexerService {
 
       // modifying the blocks array here
       await this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
-      // ! TODO: Trying to prevent sqlite overload, testing postgres when data is ready for mvp
-      await waitTimeout(4000);
 
       await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
