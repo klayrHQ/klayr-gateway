@@ -14,7 +14,7 @@ RUN apt update && apt install libssl-dev dumb-init -y --no-install-recommends
 WORKDIR /usr/src/app
 
 # probably move to cluster or github
-ENV DATABASE_URL="file:./db/dev.db"
+ENV DATABASE_URL="postgres://postgres:welcome@localhost/postgres"
 ENV NODE_ENV="dev"
 ENV NODE_URL="wss://testnet.klayr.xyz/rpc-ws"
 ENV PORT=9901
