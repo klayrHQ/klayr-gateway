@@ -124,4 +124,25 @@ export class BlockRepoService {
       });
     }
   }
+
+  public async searchBlocks(search: string): Promise<{ id: string; height: number }[]> {
+    const height = Number(search);
+    const where: Prisma.BlockWhereInput = {
+      OR: [{ id: { equals: search } }],
+    };
+
+    if (!isNaN(height)) {
+      where.OR.push({ height: { equals: height } });
+    }
+
+    const blocks = await this.prisma.block.findMany({
+      where,
+      select: {
+        id: true,
+        height: true,
+      },
+    });
+
+    return blocks;
+  }
 }

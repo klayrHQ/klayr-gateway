@@ -12,7 +12,7 @@ import { AccountModule } from 'src/account/account.module';
 @Module({
   imports: [StateModule, NodeApiModule, EventModule, DbCacheModule, AccountModule],
   providers: [PrismaService, TransactionRepoService, TransactionService],
-  exports: [TransactionService],
+  exports: [TransactionService, TransactionRepoService],
   controllers: [TransactionController],
 })
 export class TransactionModule {}

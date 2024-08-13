@@ -105,4 +105,39 @@ export class ValidatorRepoService {
       },
     });
   }
+
+  public async searchValidators(search: string): Promise<
+    {
+      address: string;
+      rank: number;
+      account: {
+        name: string;
+        publicKey: string;
+      };
+    }[]
+  > {
+    const where: Prisma.ValidatorWhereInput = {
+      OR: [
+        { account: { name: { contains: search } } },
+        { address: { equals: search } },
+        { account: { publicKey: { equals: search } } },
+      ],
+    };
+
+    const validators = await this.prisma.validator.findMany({
+      where,
+      select: {
+        address: true,
+        rank: true,
+        account: {
+          select: {
+            name: true,
+            publicKey: true,
+          },
+        },
+      },
+    });
+
+    return validators;
+  }
 }
