@@ -11,7 +11,7 @@ import {
   ValidatorInfo,
   ValidatorKeys,
 } from 'src/node-api/types';
-import { GeneratorInfo, ValidatorStakedData, ValidatorStatus } from './types';
+import { ValidatorStakedData, ValidatorStatus } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
@@ -19,6 +19,7 @@ import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants';
 import { IndexerState, Modules } from 'src/state/types';
 import { StateService } from 'src/state/state.service';
+import { BlockRepoService } from 'src/block/block-repo.service';
 
 @Injectable()
 export class ValidatorService {
@@ -31,6 +32,7 @@ export class ValidatorService {
     private readonly validatorRepoService: ValidatorRepoService,
     private readonly accountService: AccountService,
     private readonly nodeApiService: NodeApiService,
+    private readonly blockRepoService: BlockRepoService,
   ) {}
 
   @OnEvent(GatewayEvents.PROCESS_POS_ASSET)
@@ -151,45 +153,28 @@ export class ValidatorService {
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
   public async updateBlockGenerator(blocks: Block[]) {
-    const generatorMap = new Map<string, GeneratorInfo>();
+    const validatorData = new Map<string, number>();
 
-    this.populateGeneratorMap(blocks, generatorMap);
-    await this.updateValidators(generatorMap);
-  }
-
-  private populateGeneratorMap(blocks: Block[], generatorMap: Map<string, GeneratorInfo>) {
     blocks.forEach((block) => {
       const validatorAddress = block.header.generatorAddress;
       if (block.header.height === 0) return; // Skip genesis block
-
-      if (generatorMap.has(validatorAddress)) {
-        const entry = generatorMap.get(validatorAddress)!;
-        entry.count++;
-        entry.lastGeneratedHeight = block.header.height;
-      } else {
-        generatorMap.set(validatorAddress, {
-          count: 1,
-          lastGeneratedHeight: block.header.height,
-        });
-      }
+      validatorData.set(validatorAddress, block.header.height);
     });
+
+    await this.updateValidators(validatorData);
   }
 
-  private async updateValidators(generatorMap: Map<string, GeneratorInfo>) {
-    for (const [validatorAddress, { count, lastGeneratedHeight }] of generatorMap.entries()) {
-      const validator = await this.validatorRepoService.getValidator({
-        address: validatorAddress,
+  private async updateValidators(validatorAddresses: Map<string, number>) {
+    for (const [validatorAddress, lastGeneratedHeight] of validatorAddresses) {
+      const blockCount = await this.blockRepoService.countBlocks({
+        where: { generatorAddress: validatorAddress },
       });
-      if (!validator) {
-        this.logger.error(`Validator ${validatorAddress} not found when updating generator`);
-        continue;
-      }
 
       await this.validatorRepoService.updateValidator({
         where: { address: validatorAddress },
         data: {
           lastGeneratedHeight,
-          generatedBlocks: validator.generatedBlocks + count,
+          generatedBlocks: blockCount,
         },
       });
     }

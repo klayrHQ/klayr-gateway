@@ -68,7 +68,7 @@ export class IndexerService {
       }
 
       // modifying the blocks array here
-      this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
+      await this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
 
       await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
@@ -110,8 +110,8 @@ export class IndexerService {
     this.nextBlockToSync = (await this.indexerRepoService.updateNextBlockToSync({ height })).height;
   }
 
-  private newBlock(blockEvent: BlockEvent): void {
-    this.eventService.pushToBlockEventQ(blockEvent);
+  private async newBlock(blockEvent: BlockEvent): Promise<void> {
+    await this.eventService.pushToBlockEventQ(blockEvent);
   }
 
   private async getBlocks(): Promise<Block[]> {
