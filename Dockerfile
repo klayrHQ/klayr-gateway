@@ -13,7 +13,7 @@ RUN apt update && apt install libssl-dev dumb-init -y --no-install-recommends
 WORKDIR /usr/src/app
 
 # probably move to cluster
-ENV NODE_ENV="dev"
+ENV NODE_ENV="prod"
 ENV NODE_URL="wss://testnet.klayr.xyz/rpc-ws"
 
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
