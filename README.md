@@ -63,3 +63,9 @@ sunset arctic describe battle negative grace fame pottery spin warm wasp arctic 
 ```bash
 ./bin/run transaction:create token transfer 20000000 --params='{"tokenID": "0400000000000000", "recipientAddress": "klys9u6yy466q2mpbj92cmbp64eg7gvpuz7v4efm8", "amount": "1000000", "data": ""}' --json --pretty
 ```
+
+# Start postgresql dev server docker image:
+
+docker run --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=welcome postgres:16
+
+docker run -d -p 9901:9901 -e DATABASE_URL="postgres://postgres:welcome@host.docker.internal/postgres" gateway-test

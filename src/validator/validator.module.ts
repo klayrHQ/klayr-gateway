@@ -7,9 +7,10 @@ import { AccountModule } from 'src/account/account.module';
 import { NodeApiModule } from 'src/node-api/node-api.module';
 import { StateModule } from 'src/state/state.module';
 import { DbCacheModule } from 'src/db-cache/db-cache.module';
+import { BlockModule } from 'src/block/block.module';
 
 @Module({
-  imports: [StateModule, AccountModule, NodeApiModule, DbCacheModule],
+  imports: [StateModule, AccountModule, NodeApiModule, DbCacheModule, BlockModule],
   providers: [ValidatorRepoService, ValidatorService, PrismaService],
   exports: [ValidatorService, ValidatorRepoService],
   controllers: [ValidatorController],

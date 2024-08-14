@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     if (process.env.NODE_ENV === 'dev') {
       this.logger.warn('DEV mode: clearing DB');
-      await this.DEVonlyClearDB();
+      // await this.DEVonlyClearDB();
     }
 
     PrismaService.hasBeenInitialized = true;
@@ -29,14 +29,5 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.nextBlockToSync.deleteMany({});
     await this.validator.deleteMany({});
     await this.account.deleteMany({});
-
-    // reset autoincrement
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='ChainEvents'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Transaction'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Asset'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Validator'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Account'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Block'`;
-    await this.$executeRaw`DELETE FROM sqlite_sequence WHERE name='NextBlockToSync'`;
   }
 }
