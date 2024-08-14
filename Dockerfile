@@ -24,4 +24,5 @@ COPY --chown=node:node --from=build /usr/src/app/prisma ./prisma
 RUN npm install --omit=dev
 COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client  ./node_modules/.prisma/client
 
-CMD ["dumb-init", "npm", "run", "start:migrate:prod"]
+## TODO: hacky way to make sure the db is up before running the migration
+CMD ["sh", "-c", "sleep 60; exec dumb-init npm run start:migrate:prod"]
