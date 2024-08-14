@@ -94,4 +94,25 @@ export class TransactionRepoService {
       });
     }
   }
+
+  public async searchTransactions(search: string): Promise<
+    Prisma.TransactionGetPayload<{
+      include: {
+        sender: true;
+      };
+    }>[]
+  > {
+    const where: Prisma.TransactionWhereInput = {
+      id: { contains: search },
+    };
+
+    const transactions = await this.prisma.transaction.findMany({
+      where,
+      include: {
+        sender: true,
+      },
+    });
+
+    return transactions;
+  }
 }
