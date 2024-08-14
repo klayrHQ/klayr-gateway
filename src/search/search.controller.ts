@@ -5,6 +5,8 @@ import { ValidatorRepoService } from 'src/validator/validator.repo-service';
 import { SearchQueryDto } from './dto/get-search.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { GetSearchResponse, getSearchResponse } from './dto/get-search-res.dto';
+import { getKlayr32AddressFromAddress } from 'src/utils/helpers';
+import { HEX_ADDRESS_LENGTH } from 'src/utils/constants';
 
 @Controller('search')
 export class SearchController {
@@ -17,8 +19,13 @@ export class SearchController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getSearchResponse)
-  async searchBlocks(@Query() query: SearchQueryDto): Promise<GetSearchResponse> {
-    const { search } = query;
+  async getSearchResults(@Query() query: SearchQueryDto): Promise<GetSearchResponse> {
+    let { search } = query;
+
+    if (search.length === HEX_ADDRESS_LENGTH) {
+      search = getKlayr32AddressFromAddress(search);
+    }
+
     const [blocks, validators, transactions] = await Promise.all([
       this.blockRepoService.searchBlocks(search),
       this.validatorRepoService.searchValidators(search),
