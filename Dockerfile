@@ -5,7 +5,6 @@ COPY package.json .
 COPY package-lock.json .
 RUN npm install
 COPY . .
-RUN npx prisma generate
 RUN npm run build
 
 FROM node:18-slim
@@ -25,4 +24,4 @@ RUN npm install --omit=dev
 COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client  ./node_modules/.prisma/client
 
 ## TODO: hacky way to make sure the db is up before running the migration
-CMD ["sh", "-c", "sleep 10; exec dumb-init npm run start:migrate:prod"]
+CMD ["sh", "-c", "sleep 10; exec npm run start:migrate:prod"]
