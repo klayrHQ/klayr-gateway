@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     if (process.env.NODE_ENV === 'dev') {
       this.logger.warn('DEV mode: clearing DB');
-      await this.DEVonlyClearDB();
+      // await this.DEVonlyClearDB();
     }
 
     PrismaService.hasBeenInitialized = true;
