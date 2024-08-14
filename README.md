@@ -68,4 +68,4 @@ sunset arctic describe battle negative grace fame pottery spin warm wasp arctic 
 
 docker run --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=welcome postgres:16
 
-docker run -d -p 9901:9901 -e -e DATABASE_URL="postgres://postgres:welcome@host.docker.internal/postgres" gateway-test
+docker run -d -p 9901:9901 -e DATABASE_URL="postgres://postgres:welcome@host.docker.internal/postgres" gateway-test
