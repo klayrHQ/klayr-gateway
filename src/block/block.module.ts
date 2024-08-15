@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { BlockService } from './block.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { BlockRepoService } from './block-repo.service';
 import { BlockController } from './block.controller';
 import { EventModule } from 'src/event/event.module';
@@ -19,7 +18,7 @@ import { TransactionModule } from 'src/transaction/transaction.module';
     ChainEventModule,
     DbCacheModule,
   ],
-  providers: [PrismaService, BlockService, BlockRepoService],
+  providers: [BlockService, BlockRepoService],
   controllers: [BlockController],
   exports: [BlockService, BlockRepoService],
 })

@@ -14,12 +14,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { StateModule } from './state/state.module';
 import { GeneratorModule } from './generator/generator.module';
 import { DbCacheModule } from './db-cache/db-cache.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    PrismaModule,
     StateModule,
     NodeApiModule,
     EventModule,

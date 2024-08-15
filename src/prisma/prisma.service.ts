@@ -4,21 +4,21 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name);
-  private static hasBeenInitialized = false;
+
+  constructor() {
+    super({
+      log: ['info'],
+    });
+  }
 
   // for DEV, should be fixed later
   async onModuleInit() {
-    if (PrismaService.hasBeenInitialized) {
-      return;
-    }
     await this.$connect();
 
     if (process.env.NODE_ENV === 'dev') {
       this.logger.warn('DEV mode: clearing DB');
       await this.DEVonlyClearDB();
     }
-
-    PrismaService.hasBeenInitialized = true;
   }
 
   async DEVonlyClearDB() {
