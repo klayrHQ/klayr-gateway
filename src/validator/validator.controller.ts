@@ -1,7 +1,12 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
-import { GetValidatorResponseDto, getValidatorResponse } from './dto/get-validator-res.dto';
+import {
+  GetValidatorCountsResponseDto,
+  GetValidatorResponseDto,
+  getValidatorCountsResponse,
+  getValidatorResponse,
+} from './dto/get-validator-res.dto';
 import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
@@ -64,7 +69,8 @@ export class ValidatorController {
   }
 
   @Get('validators/status-count')
-  async countValidatorsByStatus(): Promise<object> {
+  @ApiResponse(getValidatorCountsResponse)
+  async countValidatorsByStatus(): Promise<GatewayResponse<{ [key: string]: number }>> {
     const statuses = Object.values(ValidatorStatus);
     const counts = await Promise.all(
       statuses.map(async (status) => ({
@@ -75,6 +81,7 @@ export class ValidatorController {
     const formattedCounts = counts.reduce((acc, countObj) => ({ ...acc, ...countObj }));
     return {
       data: formattedCounts,
+      meta: {},
     };
   }
 

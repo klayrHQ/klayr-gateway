@@ -27,3 +27,17 @@ export const getValidatorResponse: ApiResponseOptions = {
   type: GetValidatorResponseDto,
   isArray: true,
 };
+
+export class GetValidatorCountsResponseDto {
+  active: number;
+  ineligible: number;
+  standby: number;
+  punished: number;
+  banned: number;
+}
+
+export const getValidatorCountsResponse: ApiResponseOptions = {
+  status: 200,
+  description: 'The validator counts have been successfully fetched.',
+  type: GetValidatorCountsResponseDto,
+};
