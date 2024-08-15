@@ -15,6 +15,7 @@ import { StateModule } from './state/state.module';
 import { GeneratorModule } from './generator/generator.module';
 import { DbCacheModule } from './db-cache/db-cache.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PrismaModule } from './prisma/prisma.module';
     IndexerModule,
     ChainEventModule,
     GeneratorModule,
+    SearchModule,
   ],
   controllers: [],
   providers: [],
