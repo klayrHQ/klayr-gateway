@@ -1,18 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Transaction } from '@prisma/client';
-import { DbCacheService } from 'src/db-cache/db-cache.service';
-import { Models } from 'src/db-cache/types';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StateService } from 'src/state/state.service';
-import { IndexerState, Modules } from 'src/state/types';
 
 @Injectable()
 export class TransactionRepoService {
-  constructor(
-    private state: StateService,
-    private prisma: PrismaService,
-    private dbCache: DbCacheService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   public async getTransaction(
     transactionWhereUniqueInput: Prisma.TransactionWhereUniqueInput,
@@ -81,18 +73,11 @@ export class TransactionRepoService {
     data: Prisma.TransactionUpdateInput;
   }): Promise<void> {
     const { where, data } = params;
-    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
-      await this.prisma.transaction.update({
-        where,
-        data,
-      });
-    } else {
-      await this.dbCache.add({
-        where,
-        data,
-        model: Models.TRANSACTION,
-      });
-    }
+
+    await this.prisma.transaction.update({
+      where,
+      data,
+    });
   }
 
   public async searchTransactions(search: string): Promise<

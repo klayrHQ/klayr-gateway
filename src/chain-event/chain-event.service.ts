@@ -17,6 +17,8 @@ export class ChainEventService {
   ) {}
 
   public async checkUserAccountsAndSaveEvents(blocks: Block[]): Promise<ChainEvent[]> {
+    const newAccounts = [];
+
     const promises = blocks.map(async (block) => {
       const chainEvents = await this.nodeApiService.invokeApi<ChainEvent[]>(
         NodeApi.CHAIN_GET_EVENTS,
@@ -31,11 +33,17 @@ export class ChainEventService {
         e.transactionID = this.getTransactionId(e.topics);
         return e;
       });
-      await this.handleAccounts(decodedChainEvents);
+
+      const accounts = await this.handleAccounts(decodedChainEvents);
+      if (accounts.length > 0) newAccounts.push(...accounts);
 
       return decodedChainEvents;
     });
+
     const chainEvents = await Promise.all(promises);
+
+    if (newAccounts.length > 0) await this.accountService.createAccountsBulk(newAccounts);
+
     return chainEvents.flat();
   }
 
@@ -51,14 +59,14 @@ export class ChainEventService {
     });
   }
 
-  // TODO: handle accounts for block batch instead of every block itself
   private async handleAccounts(chainEvents: ChainEvent[]) {
     const accounts = chainEvents
       .filter((e) => e.name === 'initializeUserAccount')
       .map((e) => {
         return { address: JSON.parse(e.data as string)['address'] };
       });
-    if (accounts.length > 0) await this.accountService.createAccountsBulk(accounts);
+
+    return accounts;
   }
 
   private getTransactionId(topics: string): string | null {
