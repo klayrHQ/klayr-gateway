@@ -1,18 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Block, Prisma, PrismaPromise } from '@prisma/client';
-import { DbCacheService } from 'src/db-cache/db-cache.service';
-import { Models } from 'src/db-cache/types';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StateService } from 'src/state/state.service';
-import { IndexerState, Modules } from 'src/state/types';
 
 @Injectable()
 export class BlockRepoService {
-  constructor(
-    private state: StateService,
-    private prisma: PrismaService,
-    private dbCache: DbCacheService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   public async getBlock(
     blockWhereUniqueInput: Prisma.BlockWhereUniqueInput,
@@ -111,18 +103,10 @@ export class BlockRepoService {
     data: Prisma.BlockUpdateInput;
   }): Promise<void> {
     const { where, data } = params;
-    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
-      await this.prisma.block.update({
-        where,
-        data,
-      });
-    } else {
-      await this.dbCache.add({
-        where,
-        data,
-        model: Models.BLOCK,
-      });
-    }
+    await this.prisma.block.update({
+      where,
+      data,
+    });
   }
 
   public async searchBlocks(search: string): Promise<{ id: string; height: number }[]> {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TransactionRepoService } from './transaction-repo.service';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ChainEvents, Events, GatewayEvents, Payload } from 'src/event/types';
+import { ChainEvents, GatewayEvents, Payload } from 'src/event/types';
 import { ChainEvent, Transaction } from 'src/node-api/types';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Prisma } from '@prisma/client';
@@ -113,8 +113,9 @@ export class TransactionService {
     }
 
     // When a tx fails the recipient account is not created / registered. This is to cover that
+    // TODO: inefficient because it will call the db for all recipients
     if (recipientAddress) {
-      await this.accountService.createAccount({
+      await this.accountService.updateOrCreateAccount({
         address: recipientAddress,
       });
     }

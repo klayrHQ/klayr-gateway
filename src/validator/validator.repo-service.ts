@@ -1,18 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Validator } from '@prisma/client';
-import { DbCacheService } from 'src/db-cache/db-cache.service';
-import { Models } from 'src/db-cache/types';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StateService } from 'src/state/state.service';
-import { IndexerState, Modules } from 'src/state/types';
 
 @Injectable()
 export class ValidatorRepoService {
-  constructor(
-    private prisma: PrismaService,
-    private state: StateService,
-    private dbCache: DbCacheService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   public async getValidator(
     validatorWhereUniqueInput: Prisma.ValidatorWhereUniqueInput,
@@ -84,18 +76,11 @@ export class ValidatorRepoService {
     data: Prisma.ValidatorUpdateInput;
   }): Promise<void> {
     const { where, data } = params;
-    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
-      await this.prisma.validator.update({
-        where,
-        data,
-      });
-    } else {
-      await this.dbCache.add({
-        where,
-        data,
-        model: Models.VALIDATOR,
-      });
-    }
+
+    await this.prisma.validator.update({
+      where,
+      data,
+    });
   }
 
   public async getAllValidators(): Promise<Validator[]> {

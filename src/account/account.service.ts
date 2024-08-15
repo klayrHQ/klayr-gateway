@@ -14,21 +14,10 @@ export class AccountService {
     return this.accountRepoService.createAccountsBulk(accounts);
   }
 
-  public async upsertAccount(accountData: Prisma.AccountUpsertArgs) {
-    return this.accountRepoService.upsertAccount(accountData);
-  }
-
   public async updateAccount(accountData: Prisma.AccountUpdateArgs) {
     return this.accountRepoService.updateAccount(accountData);
   }
 
-  public async createAccount(accountData: Prisma.AccountCreateInput) {
-    const account = await this.getAccount({ address: accountData.address });
-    if (account) return;
-    return this.accountRepoService.createAccount(accountData);
-  }
-
-  // ! Upserting gives prisma problems
   public async updateOrCreateAccount(params: {
     address: string;
     name?: string;
@@ -36,15 +25,10 @@ export class AccountService {
   }) {
     const { address, name, publicKey } = params;
 
-    const updateResult = await this.accountRepoService.updateAccounts({
+    await this.accountRepoService.upsertAccount({
       where: { address },
-      data: { publicKey, name },
+      update: { publicKey, name },
+      create: { address, publicKey, name },
     });
-
-    if (updateResult.count === 0) {
-      const account = await this.getAccount({ address });
-      if (account) return;
-      await this.createAccountsBulk([{ address, name, publicKey }]);
-    }
   }
 }
