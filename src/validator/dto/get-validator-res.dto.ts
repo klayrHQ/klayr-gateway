@@ -18,11 +18,12 @@ export class GetValidatorResponseDto {
   consecutiveMissedBlocks?: number;
   reportMisbehaviorHeights?: string;
   sharingCoefficients?: string;
+  status?: string;
 }
 
 export const getValidatorResponse: ApiResponseOptions = {
   status: 200,
   description: 'The validator have been successfully fetched.',
   type: GetValidatorResponseDto,
-  isArray: false,
+  isArray: true,
 };

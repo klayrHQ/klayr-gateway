@@ -8,6 +8,7 @@ import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Generator } from 'src/node-api/types';
+import { ValidatorStatus } from './types';
 
 @ApiTags('Validators')
 @Controller('pos')
@@ -60,6 +61,21 @@ export class ValidatorController {
       offset,
       total,
     });
+  }
+
+  @Get('validators/status-count')
+  async countValidatorsByStatus(): Promise<object> {
+    const statuses = Object.values(ValidatorStatus);
+    const counts = await Promise.all(
+      statuses.map(async (status) => ({
+        [status]: await this.validatorRepoService.countValidators({ where: { status } }),
+      })),
+    );
+
+    const formattedCounts = counts.reduce((acc, countObj) => ({ ...acc, ...countObj }));
+    return {
+      data: formattedCounts,
+    };
   }
 
   private getValidatorResponse(
