@@ -1,13 +1,19 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
-import { GetValidatorResponseDto, getValidatorResponse } from './dto/get-validator-res.dto';
+import {
+  GetValidatorCountsResponseDto,
+  GetValidatorResponseDto,
+  getValidatorCountsResponse,
+  getValidatorResponse,
+} from './dto/get-validator-res.dto';
 import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Generator } from 'src/node-api/types';
+import { ValidatorStatus } from './types';
 
 @ApiTags('Validators')
 @Controller('pos')
@@ -60,6 +66,23 @@ export class ValidatorController {
       offset,
       total,
     });
+  }
+
+  @Get('validators/status-count')
+  @ApiResponse(getValidatorCountsResponse)
+  async countValidatorsByStatus(): Promise<GatewayResponse<{ [key: string]: number }>> {
+    const statuses = Object.values(ValidatorStatus);
+    const counts = await Promise.all(
+      statuses.map(async (status) => ({
+        [status]: await this.validatorRepoService.countValidators({ where: { status } }),
+      })),
+    );
+
+    const formattedCounts = counts.reduce((acc, countObj) => ({ ...acc, ...countObj }));
+    return {
+      data: formattedCounts,
+      meta: {},
+    };
   }
 
   private getValidatorResponse(
