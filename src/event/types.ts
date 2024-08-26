@@ -29,13 +29,6 @@ export enum ChainEvents {
   FEE_GENERATOR_FEE_PROCESSED = 'fee:generatorFeeProcessed',
 }
 
-// export enum TxEvents {
-//   POS_STAKE = 'pos:stake',
-//   POS_REGISTER_VALIDATOR = 'pos:registerValidator',
-//   POS_CHANGE_COMMISSION = 'pos:changeCommission',
-//   TOKEN_TRANSFER = 'token:transfer',
-// }
-
 export interface GeneralEvent {
   event: ChainEvents | GatewayEvents;
   payload: any;

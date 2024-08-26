@@ -7,7 +7,7 @@ import { NodeApiService } from 'src/node-api/node-api.service';
 import { Prisma } from '@prisma/client';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
-import { ExecutionEventData, ExecutionStatus } from './types';
+import { ExecutionEventData, ExecutionStatus, TxEvents } from './types';
 import { AccountService } from 'src/account/account.service';
 
 export interface UpdateBlockFee {
@@ -84,6 +84,11 @@ export class TransactionService {
 
     await this.handleAccounts(tx, senderAddress, recipientAddress);
 
+    // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
+    if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
+      await this.handlePosStake(txParams);
+    }
+
     return {
       id: tx.id,
       height,
@@ -119,6 +124,19 @@ export class TransactionService {
         address: recipientAddress,
       });
     }
+  }
+
+  private async handlePosStake(txParams: any): Promise<void> {
+    await Promise.all(
+      txParams.stakes.map(
+        async (stake: { validatorAddress: string; amount: string; name?: string }) => {
+          const account = await this.accountService.getAccount({
+            address: stake.validatorAddress,
+          });
+          if (account.name) stake.name = account.name;
+        },
+      ),
+    );
   }
 
   private calcFeePerBlock(
