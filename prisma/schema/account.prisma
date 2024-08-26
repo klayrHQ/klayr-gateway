@@ -2,7 +2,7 @@ model Account {
   address              String        @id @unique
   publicKey            String?       @unique
   name                 String?
-  // nonce                Int           @default(0) // implement later
+  nonce                String        @default("0") 
   block                Block[]
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")

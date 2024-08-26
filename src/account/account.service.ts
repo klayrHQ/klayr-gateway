@@ -20,15 +20,16 @@ export class AccountService {
 
   public async updateOrCreateAccount(params: {
     address: string;
+    nonce?: string;
     name?: string;
     publicKey?: string;
   }) {
-    const { address, name, publicKey } = params;
+    const { address, nonce, name, publicKey } = params;
 
     await this.accountRepoService.upsertAccount({
       where: { address },
-      update: { publicKey, name },
-      create: { address, publicKey, name },
+      update: { publicKey, name, nonce },
+      create: { address, publicKey, name, nonce },
     });
   }
 }
