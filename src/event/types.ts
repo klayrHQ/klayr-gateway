@@ -25,6 +25,7 @@ export enum ChainEvents {
   POS_REWARDS_ASSIGNED = 'pos:rewardsAssigned',
   POS_COMMAND_EXECUTION_RESULT = 'pos:commandExecutionResult',
   TOKEN_COMMAND_EXECUTION_RESULT = 'token:commandExecutionResult',
+  INTEROPERABILITY_COMMAND_EXECUTION_RESULT = 'interoperability:commandExecutionResult',
   FEE_INSUFFICIENT_FEE = 'fee:insufficientFee',
   FEE_GENERATOR_FEE_PROCESSED = 'fee:generatorFeeProcessed',
 }

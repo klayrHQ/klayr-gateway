@@ -57,6 +57,11 @@ export class TransactionService {
     await this.handleExecutionResult(payload);
   }
 
+  @OnEvent(ChainEvents.INTEROPERABILITY_COMMAND_EXECUTION_RESULT)
+  public async handleInteroperabilityCommandExecutionResult(payload: ChainEvent) {
+    await this.handleExecutionResult(payload);
+  }
+
   private async handleExecutionResult(payload: ChainEvent) {
     const executionStatus =
       payload.data === ExecutionEventData.SUCCESSFUL
