@@ -26,6 +26,8 @@ export class ValidatorService {
   // TODO: Locking to avoid race conditions. Might change to seperate service if needed
   private lockStore = new Map<string, boolean>();
   private logger = new Logger(ValidatorService.name);
+  // TODO: Testing if this solves the validator syncing and stil gives correct ranks
+  private isUpdatingValidators = false;
 
   constructor(
     private readonly state: StateService,
@@ -127,6 +129,9 @@ export class ValidatorService {
 
   public async updateValidatorRanks() {
     this.logger.log('Updating validator ranks');
+    if (this.isUpdatingValidators) return this.logger.log('Already updating validators');
+    this.isUpdatingValidators = true;
+
     const validators = await this.validatorRepoService.getAllValidators();
 
     // Sorting validators with the same weight by address(bytes)
@@ -149,6 +154,8 @@ export class ValidatorService {
         data: { rank: validator.rank, status: validatorStatus },
       });
     }
+
+    this.isUpdatingValidators = false;
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
