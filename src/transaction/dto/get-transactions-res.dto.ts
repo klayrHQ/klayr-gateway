@@ -1,5 +1,6 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 import { Params } from './post-transaction-res.dto';
+import { JsonValue } from '@prisma/client/runtime/library';
 
 class Account {
   address: string;
@@ -23,7 +24,7 @@ export class GetTransactionsResDto {
   minFee: string;
   index: number;
   executionStatus: string;
-  params: string | Params;
+  params: JsonValue | Params;
   signatures: string[];
   sender: Account;
   recipient?: Account;

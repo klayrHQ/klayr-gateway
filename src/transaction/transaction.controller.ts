@@ -142,8 +142,8 @@ export class TransactionController {
       ...rest,
       sender,
       recipient,
-      params: JSON.parse(params),
-      signatures: JSON.parse(signatures),
+      params: params,
+      signatures: signatures,
     };
     if (!sender.name) delete sender.name;
     if (recipient && !recipient.publicKey) delete recipient.publicKey;
