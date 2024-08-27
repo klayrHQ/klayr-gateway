@@ -21,7 +21,7 @@ export enum ChainEvents {
   POS_VALIDATOR_STAKED = 'pos:validatorStaked',
   POS_VALIDATOR_BANNED = 'pos:validatorBanned',
   POS_VALIDATOR_PUNISHED = 'pos:validatorPunished',
-  POS_COMMISION_CHANGE = 'pos:commissionChange',
+  POS_COMMISSION_CHANGE = 'pos:commissionChange',
   POS_REWARDS_ASSIGNED = 'pos:rewardsAssigned',
   POS_COMMAND_EXECUTION_RESULT = 'pos:commandExecutionResult',
   TOKEN_COMMAND_EXECUTION_RESULT = 'token:commandExecutionResult',
