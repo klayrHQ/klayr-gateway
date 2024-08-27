@@ -40,7 +40,7 @@ export class IndexerGenesisService {
       await this.handleDecodedAssets(decodedAsset);
     }
 
-    await this.accountService.createAccountsBulk([{ address: block.header.generatorAddress }]);
+    await this.accountService.updateOrCreateAccount({ address: block.header.generatorAddress });
   }
 
   // TODO: handle other genesis assets. Probably in new modules
