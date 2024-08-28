@@ -37,6 +37,11 @@ export class ValidatorService {
     private readonly blockRepoService: BlockRepoService,
   ) {}
 
+  @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
+  public async handleStateChange() {
+    await this.updateValidatorRanks();
+  }
+
   @OnEvent(GatewayEvents.PROCESS_POS_ASSET)
   public async processPosAsset(validators: Validator[]) {
     this.logger.log('Processing POS asset');
@@ -68,19 +73,33 @@ export class ValidatorService {
   @OnEvent(ChainEvents.POS_VALIDATOR_STAKED)
   public async processValidatorStaked(event: ChainEvent) {
     const { validatorAddress } = JSON.parse(event.data as string) as ValidatorStakedData;
-    await this.processValidatorEvent(validatorAddress);
+    await this.handleValidatorEvent(validatorAddress);
   }
 
   @OnEvent(ChainEvents.POS_VALIDATOR_BANNED)
   public async processValidatorBanned(event: ChainEvent) {
     const { address } = JSON.parse(event.data as string);
-    await this.processValidatorEvent(address);
+    await this.handleValidatorEvent(address);
   }
 
   @OnEvent(ChainEvents.POS_VALIDATOR_PUNISHED)
   public async processValidatorPunished(event: ChainEvent) {
     const { address } = JSON.parse(event.data as string);
+    await this.handleValidatorEvent(address);
+  }
+
+  @OnEvent(ChainEvents.POS_COMMISSION_CHANGE)
+  public async processCommissionChange(event: ChainEvent) {
+    const { validatorAddress } = JSON.parse(event.data as string);
+    await this.handleValidatorEvent(validatorAddress);
+  }
+
+  private async handleValidatorEvent(address: string) {
     await this.processValidatorEvent(address);
+
+    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
+      await this.updateValidatorRanks();
+    }
   }
 
   private async processValidatorEvent(validatorAddress: string) {
@@ -115,16 +134,7 @@ export class ValidatorService {
       });
     }
 
-    if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
-      await this.updateValidatorRanks();
-    }
-
     this.releaseLock(validatorAddress);
-  }
-
-  @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
-  public async handleStateChange() {
-    await this.updateValidatorRanks();
   }
 
   public async updateValidatorRanks() {
