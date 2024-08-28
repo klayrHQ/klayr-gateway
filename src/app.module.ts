@@ -16,12 +16,23 @@ import { GeneratorModule } from './generator/generator.module';
 import { DbCacheModule } from './db-cache/db-cache.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
+import { LokiLoggerModule } from 'nestjs-loki-logger';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
+    LokiLoggerModule.forRootAsync({
+      useFactory: () => ({
+        lokiUrl: process.env.LOKI_URL,
+        labels: {
+          job: process.env.LOKI_APP,
+        },
+        logToConsole: true,
+      }),
+    }),
+
     PrismaModule,
     StateModule,
     NodeApiModule,
