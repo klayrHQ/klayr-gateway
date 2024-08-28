@@ -7,10 +7,11 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
 import { TransactionService, UpdateBlockFee } from 'src/transaction/transaction.service';
 import { ChainEventService } from 'src/chain-event/chain-event.service';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 @Injectable()
 export class BlockService {
-  private readonly logger = new Logger(BlockService.name);
+  private readonly logger = new LokiLogger(BlockService.name);
 
   constructor(
     private blockRepo: BlockRepoService,
