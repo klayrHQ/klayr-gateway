@@ -107,7 +107,7 @@ export class TransactionService {
   ): Promise<void> {
     await this.accountService.updateOrCreateAccount({
       address: senderAddress,
-      nonce: tx.nonce,
+      nonce: tx.nonce + 1,
       publicKey: tx.senderPublicKey,
     });
 
