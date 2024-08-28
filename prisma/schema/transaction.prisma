@@ -6,8 +6,8 @@ model Transaction {
   nonce            String
   fee              String
   minFee           String
-  params           String
-  signatures       String
+  params           Json
+  signatures       String[]
   index            Int
   senderAddress    String
   recipientAddress String?

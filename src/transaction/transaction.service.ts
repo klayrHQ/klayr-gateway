@@ -97,7 +97,7 @@ export class TransactionService {
     return {
       id: tx.id,
       height,
-      signatures: JSON.stringify(tx.signatures),
+      signatures: tx.signatures,
       module: tx.module,
       command: tx.command,
       nonce: tx.nonce,
@@ -106,7 +106,7 @@ export class TransactionService {
       senderAddress: senderAddress,
       recipientAddress,
       index,
-      params: JSON.stringify(txParams),
+      params: txParams,
     };
   }
 
