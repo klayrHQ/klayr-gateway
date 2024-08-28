@@ -96,6 +96,7 @@ export class ValidatorController {
         address: account.address,
         publicKey: account.publicKey,
         name: account.name,
+        nonce: account.nonce,
       },
       totalStake: validator.totalStake.toString(),
       selfStake: validator.selfStake.toString(),

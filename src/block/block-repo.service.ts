@@ -49,6 +49,7 @@ export class BlockRepoService {
           select: {
             address: true,
             publicKey: true,
+            nonce: true,
             name: true,
           },
         },

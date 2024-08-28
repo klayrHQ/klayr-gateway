@@ -87,7 +87,7 @@ export class TransactionService {
       txParams?.recipientAddress || txParams?.stakes?.[0]?.validatorAddress || null;
     const senderAddress = getKlayr32AddressFromPublicKey(tx.senderPublicKey);
 
-    await this.handleAccounts(tx, senderAddress, recipientAddress);
+    await this.addAccountOrUpdateNonce(tx, senderAddress, recipientAddress);
 
     // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
     if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
@@ -110,17 +110,16 @@ export class TransactionService {
     };
   }
 
-  private async handleAccounts(
+  private async addAccountOrUpdateNonce(
     tx: Transaction,
     senderAddress: string,
     recipientAddress: string | null,
   ): Promise<void> {
-    if (tx.nonce === '0') {
-      await this.accountService.updateOrCreateAccount({
-        address: senderAddress,
-        publicKey: tx.senderPublicKey,
-      });
-    }
+    await this.accountService.updateOrCreateAccount({
+      address: senderAddress,
+      nonce: tx.nonce + 1,
+      publicKey: tx.senderPublicKey,
+    });
 
     // When a tx fails the recipient account is not created / registered. This is to cover that
     // TODO: inefficient because it will call the db for all recipients
