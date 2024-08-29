@@ -84,7 +84,9 @@ export class TransactionController {
         where,
         take,
         orderBy: {
-          [field]: direction,
+          block: {
+            [field]: direction,
+          },
         },
         skip: offset,
       }),
