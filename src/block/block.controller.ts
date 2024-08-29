@@ -26,6 +26,7 @@ export class BlockController {
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
       ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
       ...(generatorAddress && { generatorAddress }),
+      height: { not: 0 }, // Exclude genesis block be default
     };
 
     const [blocks, total] = await Promise.all([
@@ -63,7 +64,7 @@ export class BlockController {
     if (!generator.name) delete generator.name;
     if (newBlock.assets) {
       newBlock.assets.forEach((asset) => {
-        asset.data = JSON.parse(asset.data);
+        asset.data = JSON.parse(asset.data) ?? asset.data;
       });
     }
     return newBlock;
