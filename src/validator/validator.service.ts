@@ -70,6 +70,18 @@ export class ValidatorService {
     return this.validatorRepoService.createValidatorsBulk(validatorsInput);
   }
 
+  @OnEvent(ChainEvents.POS_VALIDATOR_REGISTERED)
+  public async processValidatorRegistered(event: ChainEvent) {
+    const { address } = JSON.parse(event.data as string);
+    await this.processValidatorEvent(address);
+  }
+
+  @OnEvent(ChainEvents.POS_COMMISSION_CHANGE)
+  public async processCommissionChange(event: ChainEvent) {
+    const { validatorAddress } = JSON.parse(event.data as string);
+    await this.processValidatorEvent(validatorAddress);
+  }
+
   @OnEvent(ChainEvents.POS_VALIDATOR_STAKED)
   public async processValidatorStaked(event: ChainEvent) {
     const { validatorAddress } = JSON.parse(event.data as string) as ValidatorStakedData;
@@ -86,12 +98,6 @@ export class ValidatorService {
   public async processValidatorPunished(event: ChainEvent) {
     const { address } = JSON.parse(event.data as string);
     await this.handleValidatorEvent(address);
-  }
-
-  @OnEvent(ChainEvents.POS_COMMISSION_CHANGE)
-  public async processCommissionChange(event: ChainEvent) {
-    const { validatorAddress } = JSON.parse(event.data as string);
-    await this.handleValidatorEvent(validatorAddress);
   }
 
   private async handleValidatorEvent(address: string) {
@@ -152,11 +158,7 @@ export class ValidatorService {
       validator.rank = index + 1;
       const validatorStatus = this.calcStatus(validator, numberOfActiveValidators);
 
-      if (
-        (validatorStatus === ValidatorStatus.BANNED ||
-          validatorStatus === ValidatorStatus.PUNISHED) &&
-        validator.rank <= numberOfActiveValidators
-      ) {
+      if (this.isBannedOrPunished(validator.status) && validator.rank <= numberOfActiveValidators) {
         numberOfActiveValidators++;
       }
       await this.validatorRepoService.updateValidator({
@@ -166,6 +168,7 @@ export class ValidatorService {
     }
 
     this.isUpdatingValidators = false;
+    this.logger.log('Completed updating validator ranks');
   }
 
   @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
@@ -219,6 +222,9 @@ export class ValidatorService {
 
   private sortValidators(validators: PrismaValidator[]): PrismaValidator[] {
     return validators.sort((validator1, validator2) => {
+      if (this.isBannedOrPunished(validator1.status)) validator1.validatorWeight = BigInt(0);
+      if (this.isBannedOrPunished(validator2.status)) validator2.validatorWeight = BigInt(0);
+
       if (validator1.validatorWeight === validator2.validatorWeight) {
         const bytes1 = getAddressFromKlayr32Address(validator1.address);
         const bytes2 = getAddressFromKlayr32Address(validator2.address);
@@ -291,5 +297,9 @@ export class ValidatorService {
 
   private releaseLock(key: string) {
     this.lockStore.delete(key);
+  }
+
+  private isBannedOrPunished(status: string): boolean {
+    return status === ValidatorStatus.BANNED || status === ValidatorStatus.PUNISHED;
   }
 }
