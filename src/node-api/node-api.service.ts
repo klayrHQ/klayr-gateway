@@ -25,6 +25,7 @@ export enum NodeApi {
   CHAIN_VALIDATORS_CHANGED = 'chain_validatorsChanged',
   CHAIN_GET_GENERATOR_LIST = 'chain_getGeneratorList',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
+  REWARD_GET_EXPECTED_VALIDATOR_REWARDS = 'dynamicReward_getExpectedValidatorRewards',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
   POS_GET_VALIDATOR = 'pos_getValidator',

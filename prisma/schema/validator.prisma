@@ -4,6 +4,8 @@ model Validator {
   totalStake                   BigInt  @default(0)
   selfStake                    BigInt  @default(0)
   validatorWeight              BigInt  @default(0)
+  blockReward                  BigInt  @default(0)
+  totalRewards                 BigInt  @default(0)
   generatedBlocks              Int     @default(0)
   rank                         Int?
   blsKey                       String?

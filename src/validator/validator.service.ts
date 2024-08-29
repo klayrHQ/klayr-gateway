@@ -4,9 +4,9 @@ import { Validator } from 'src/asset/types';
 import { Prisma, Validator as PrismaValidator } from '@prisma/client';
 import { AccountService } from 'src/account/account.service';
 import {
-  AllValidators,
   Block,
   ChainEvent,
+  ExpectedValidatorRewards,
   PunishmentPeriod,
   ValidatorInfo,
   ValidatorKeys,
@@ -111,10 +111,11 @@ export class ValidatorService {
   private async processValidatorEvent(validatorAddress: string) {
     if (!this.acquireLock(validatorAddress)) return;
 
-    const validatorInfo = await this.getValidatorPosInfo(validatorAddress);
-    const validatorExists = await this.validatorRepoService.getValidator({
-      address: validatorAddress,
-    });
+    const [validatorInfo, expectedRewards, validatorExists] = await Promise.all([
+      this.getValidatorPosInfo(validatorAddress),
+      this.getExpectedValidatorRewards(validatorAddress),
+      this.validatorRepoService.getValidator({ address: validatorAddress }),
+    ]);
 
     if (!validatorExists) {
       await this.createValidator(validatorInfo);
@@ -136,6 +137,7 @@ export class ValidatorService {
           consecutiveMissedBlocks: validatorInfo.consecutiveMissedBlocks,
           reportMisbehaviorHeights: JSON.stringify(validatorInfo.reportMisbehaviorHeights),
           punishmentPeriods: JSON.stringify(validatorInfo.punishmentPeriods),
+          blockReward: BigInt(expectedRewards.blockReward),
         },
       });
     }
@@ -240,8 +242,15 @@ export class ValidatorService {
     });
   }
 
-  private async getValidatorsPosInfo(): Promise<AllValidators> {
-    return this.nodeApiService.invokeApi<AllValidators>(NodeApi.POS_GET_ALL_VALIDATORS, {});
+  private async getExpectedValidatorRewards(
+    validatorAddress: string,
+  ): Promise<ExpectedValidatorRewards> {
+    return this.nodeApiService.invokeApi<ExpectedValidatorRewards>(
+      NodeApi.REWARD_GET_EXPECTED_VALIDATOR_REWARDS,
+      {
+        validatorAddress,
+      },
+    );
   }
 
   private async getValidatorKeys(address: string): Promise<ValidatorKeys> {

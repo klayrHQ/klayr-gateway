@@ -14,11 +14,13 @@ export interface BlockHeader {
   eventRoot: string;
   transactionRoot: string;
   validatorsHash: string;
-  aggregateCommit: {
-    height: number;
-    aggregationBits: string;
-    certificateSignature: string;
-  };
+  aggregateCommit:
+    | {
+        height: number;
+        aggregationBits: string;
+        certificateSignature: string;
+      }
+    | string;
   generatorAddress: string;
   maxHeightPrevoted: number;
   maxHeightGenerated: number;
@@ -26,6 +28,15 @@ export interface BlockHeader {
   signature: string;
   id: string;
   isFinal?: boolean;
+}
+
+export interface ProcessedBlockHeader extends BlockHeader {
+  aggregateCommit: string;
+  reward: string;
+  numberOfTransactions: number;
+  numberOfAssets: number;
+  numberOfEvents: number;
+  totalForged: number;
 }
 
 export interface Transaction {
@@ -126,4 +137,11 @@ export type Generator = {
 
 export type GeneratorList = {
   list: Generator[];
+};
+
+export type ExpectedValidatorRewards = {
+  blockReward: string;
+  dailyReward: string;
+  monthlyReward: string;
+  yearlyReward: string;
 };
