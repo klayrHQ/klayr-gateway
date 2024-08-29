@@ -1,7 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EventService } from 'src/event/event.service';
-import { Asset, Block, ChainEvent, RewardAtHeight, Transaction } from 'src/node-api/types';
+import {
+  Asset,
+  Block,
+  ChainEvent,
+  ProcessedBlockHeader,
+  RewardAtHeight,
+  Transaction,
+} from 'src/node-api/types';
 import { BlockRepoService } from './block-repo.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Events, GatewayEvents, Payload } from 'src/event/types';
@@ -61,7 +68,10 @@ export class BlockService {
     }
   }
 
-  private async processBlocks(blocks: Block[], chainEvents: ChainEvent[]): Promise<any[]> {
+  private async processBlocks(
+    blocks: Block[],
+    chainEvents: ChainEvent[],
+  ): Promise<ProcessedBlockHeader[]> {
     const eventCountMap = this.createEventCountMap(chainEvents);
 
     const promises = blocks.map(async (block) => {
