@@ -57,6 +57,7 @@ export class TransactionController {
 
     const take = Math.min(limit, MAX_TXS_TO_FETCH);
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
+    console.log({ field, direction });
     const [module, command] = moduleCommand ? moduleCommand.split(':') : [];
 
     const where: Prisma.TransactionWhereInput & {
@@ -79,12 +80,16 @@ export class TransactionController {
       }),
     };
 
+    console.log(where);
+
     const [transactions, total] = await Promise.all([
       this.transactionRepoService.getTransactions({
         where,
         take,
         orderBy: {
-          [field]: direction,
+          block: {
+            [field]: direction,
+          },
         },
         skip: offset,
       }),
