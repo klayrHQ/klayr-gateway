@@ -34,7 +34,7 @@ export class AssetService {
           seedReveal: asset.data.substring(4),
         });
       default:
-        return asset.data;
+        return JSON.stringify(asset.data);
     }
   }
 }
