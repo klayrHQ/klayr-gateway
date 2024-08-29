@@ -8,6 +8,8 @@ export class GetValidatorResponseDto {
   validatorWeight: string;
   blockReward: string;
   totalRewards: string;
+  totalSharedRewards: string;
+  totalSelfStakeRewards: string;
   nextAllocatedTime?: string;
   rank?: number;
   blsKey?: string;
