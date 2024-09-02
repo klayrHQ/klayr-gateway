@@ -44,7 +44,7 @@ export class BlockService {
 
     await this.checkForBlockFinality();
     await this.chainEventService.writeAndEmitChainEvents(chainEvents);
-    await this.emitNewBlockEvents(payload);
+    await this.emitNewBlockEvents(payload, chainEvents);
     //TODO: maybe emit tx event for modular use
   }
 
@@ -125,7 +125,7 @@ export class BlockService {
     });
   }
 
-  private async emitNewBlockEvents(blocks: Block[]) {
+  private async emitNewBlockEvents(blocks: Block[], chainEvents: ChainEvent[]) {
     await this.eventService.pushToTxAndAssetsEventQ({
       event: Events.NEW_ASSETS_EVENT,
       payload: this.processAssets(blocks),
@@ -135,7 +135,7 @@ export class BlockService {
     setTimeout(async () => {
       await this.eventService.pushToGeneralEventQ({
         event: GatewayEvents.UPDATE_BLOCK_GENERATOR,
-        payload: blocks,
+        payload: { blocks, chainEvents },
       });
     }, 2500);
   }

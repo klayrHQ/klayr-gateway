@@ -7,6 +7,8 @@ export enum AssetTypes {
   RANDOM = 'random',
   TOKEN = 'token',
   VALIDATORS = 'validators',
+  REWARD_MINTED = 'rewardMinted',
+  LOCK = 'lock',
 }
 
 export interface PosAsset {

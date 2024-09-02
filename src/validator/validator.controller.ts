@@ -103,6 +103,8 @@ export class ValidatorController {
       validatorWeight: validator.validatorWeight.toString(),
       blockReward: validator.blockReward.toString(),
       totalRewards: validator.totalRewards.toString(),
+      totalSharedRewards: validator.totalSharedRewards.toString(),
+      totalSelfStakeRewards: validator.totalSelfStakeRewards.toString(),
       nextAllocatedTime: list.find((gen) => gen.address === account.address)?.nextAllocatedTime,
       sharingCoefficients: JSON.parse(validator.sharingCoefficients),
     };

@@ -37,4 +37,10 @@ export enum ValidatorStatus {
   BANNED = 'banned',
 }
 
+export type ValidatorRewardMap = {
+  height: number;
+  totalRewards: bigint;
+  sharedRewards: bigint;
+  selfStakeRewards: bigint;
+};
 export type GeneratorInfo = { count: number; lastGeneratedHeight: number };
