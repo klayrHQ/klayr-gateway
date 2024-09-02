@@ -11,6 +11,6 @@ export class GetTokenSummaryResponseDto {
 
 export const getTokenSummaryResponse: ApiResponseOptions = {
   status: 200,
-  description: 'The validator have been successfully fetched.',
+  description: 'The token summary have been successfully fetched.',
   type: GetTokenSummaryResponseDto,
 };
