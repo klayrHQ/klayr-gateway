@@ -361,7 +361,7 @@ export class ValidatorService {
         event.name === AssetTypes.REWARD_MINTED && event.module === AssetTypes.DYNAMIC_REWARD,
     );
 
-    return rewardEvent ? JSON.parse(rewardEvent.data.toString()).amount : 0;
+    return rewardEvent ? JSON.parse(rewardEvent.data as string).amount : 0;
   }
 
   private getLockedAmountFromEvent(chainEvents: ChainEvent[], validatorAddress: string): number {
@@ -369,10 +369,10 @@ export class ValidatorService {
       (event) =>
         event.name === AssetTypes.LOCK &&
         event.module === AssetTypes.TOKEN &&
-        JSON.parse(event.data.toString()).module === AssetTypes.POS &&
-        JSON.parse(event.data.toString()).address === validatorAddress,
+        JSON.parse(event.data as string).module === AssetTypes.POS &&
+        JSON.parse(event.data as string).address === validatorAddress,
     );
 
-    return lockedEvent ? JSON.parse(lockedEvent.data.toString()).amount : 0;
+    return lockedEvent ? JSON.parse(lockedEvent.data as string).amount : 0;
   }
 }
