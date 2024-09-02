@@ -4,7 +4,7 @@ import { AssetTypes } from 'src/asset/types';
 import { EventService } from 'src/event/event.service';
 import { GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Block, NodeInfo } from 'src/node-api/types';
+import { Block } from 'src/node-api/types';
 
 @Injectable()
 export class IndexerGenesisService {
@@ -66,6 +66,9 @@ export class IndexerGenesisService {
 
   private async handleGenesisTokenAsset(users: { address: string }[]) {
     const addresses = users.map((user) => ({ address: user.address }));
-    await this.accountService.createAccountsBulk(addresses);
+
+    addresses.forEach(async (address) => {
+      await this.accountService.updateOrCreateAccount(address);
+    });
   }
 }
