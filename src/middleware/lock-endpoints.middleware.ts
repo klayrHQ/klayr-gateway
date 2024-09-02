@@ -9,7 +9,7 @@ export class LockEndpointsMiddleware implements NestMiddleware {
 
   use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
     if (
-      process.env.NODE_ENV === 'prod' &&
+      process.env.LOCK_ENDPOINTS_DURING_SYNC === 'true' &&
       this.state.get(Modules.INDEXER) === IndexerState.SYNCING
     ) {
       res.statusCode = 503;
