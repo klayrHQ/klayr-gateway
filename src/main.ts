@@ -13,7 +13,7 @@ async function setupSwagger(app: INestApplication) {
     .setDescription(description)
     .setVersion(version)
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true });
   SwaggerModule.setup(route, app, document);
 }
 

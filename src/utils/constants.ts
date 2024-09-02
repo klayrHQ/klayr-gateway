@@ -10,7 +10,7 @@ export const DB_CACHE_SIZE = 100;
 
 export const SWAGGERCONFIG = {
   title: 'Klayr Gateway API',
-  description: 'The Klayr gateway API description',
+  description: 'The Klayr gateway API description, base path is "api/v1"',
   version: '0.0.1',
   route: 'api/v1/spec',
 };

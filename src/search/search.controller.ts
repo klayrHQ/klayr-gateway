@@ -3,11 +3,12 @@ import { BlockRepoService } from 'src/block/block-repo.service';
 import { TransactionRepoService } from 'src/transaction/transaction-repo.service';
 import { ValidatorRepoService } from 'src/validator/validator.repo-service';
 import { SearchQueryDto } from './dto/get-search.dto';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetSearchResponse, getSearchResponse } from './dto/get-search-res.dto';
 import { getKlayr32AddressFromAddress } from 'src/utils/helpers';
 import { HEX_ADDRESS_LENGTH } from 'src/utils/constants';
 
+@ApiTags('Search')
 @Controller('search')
 export class SearchController {
   constructor(
