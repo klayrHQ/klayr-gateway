@@ -17,6 +17,7 @@ import { DbCacheModule } from './db-cache/db-cache.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
 import { LokiLoggerModule } from 'nestjs-loki-logger';
+import { TokenModule } from './token/token.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { LokiLoggerModule } from 'nestjs-loki-logger';
     ChainEventModule,
     GeneratorModule,
     SearchModule,
+    TokenModule,
   ],
   controllers: [],
   providers: [],
