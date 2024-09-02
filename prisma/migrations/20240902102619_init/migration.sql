@@ -3,6 +3,7 @@ CREATE TABLE "Account" (
     "address" TEXT NOT NULL,
     "publicKey" TEXT,
     "name" TEXT,
+    "nonce" TEXT NOT NULL DEFAULT '0',
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
 );
@@ -94,6 +95,10 @@ CREATE TABLE "Validator" (
     "totalStake" BIGINT NOT NULL DEFAULT 0,
     "selfStake" BIGINT NOT NULL DEFAULT 0,
     "validatorWeight" BIGINT NOT NULL DEFAULT 0,
+    "blockReward" BIGINT NOT NULL DEFAULT 0,
+    "totalRewards" BIGINT NOT NULL DEFAULT 0,
+    "totalSharedRewards" BIGINT NOT NULL DEFAULT 0,
+    "totalSelfStakeRewards" BIGINT NOT NULL DEFAULT 0,
     "generatedBlocks" INTEGER NOT NULL DEFAULT 0,
     "rank" INTEGER,
     "blsKey" TEXT,
