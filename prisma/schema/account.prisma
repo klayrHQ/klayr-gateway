@@ -1,10 +1,11 @@
 model Account {
   address              String        @id @unique
+  nonce                String        @default("0")
   publicKey            String?       @unique
   name                 String?
-  nonce                String        @default("0") 
+  validator            Validator?
+  stakes               Json[]
   block                Block[]
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")
-  validator            Validator?
 }
