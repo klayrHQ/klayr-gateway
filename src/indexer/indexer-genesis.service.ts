@@ -16,11 +16,6 @@ export class IndexerGenesisService {
     private readonly eventService: EventService,
   ) {}
 
-  async onModuleInit() {
-    this.logger.debug(`Genesis block event`);
-    await this.nodeApiService.getAndSetNodeInfo();
-  }
-
   public async processGenesisBlock() {
     const block = await this.nodeApiService.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_HEIGHT, {
       height: this.nodeApiService.nodeInfo.genesisHeight,
@@ -67,8 +62,6 @@ export class IndexerGenesisService {
   private async handleGenesisTokenAsset(users: { address: string }[]) {
     const addresses = users.map((user) => ({ address: user.address }));
 
-    addresses.forEach(async (address) => {
-      await this.accountService.updateOrCreateAccount(address);
-    });
+    await this.accountService.createAccountsBulk(addresses);
   }
 }

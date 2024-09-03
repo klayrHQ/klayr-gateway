@@ -21,7 +21,6 @@ export const GLOBAL_PREFIX = 'api/v1';
 ///       Node API       ///
 ////////////////////////////
 
-// export const NODE_URL = 'wss://testnet.klayr.xyz/rpc-ws'; MOVED TO ENV
 export const RETRY_TIMEOUT = 5000; // 5 sec
 
 ////////////////////////////
@@ -29,7 +28,7 @@ export const RETRY_TIMEOUT = 5000; // 5 sec
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 5000; // Can go to 5k or 10k maybe more?
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 5_000; // Can go to 7.5k give or take
 
 ////////////////////////////
 ///       Block          ///
