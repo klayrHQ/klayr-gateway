@@ -31,6 +31,9 @@ export enum NodeApi {
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
+  TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
+  TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
+  TOKEN_GET_SUPPORTED_TOKENS = 'token_getSupportedTokens',
 }
 
 // Functions to interact with the Node API

@@ -145,3 +145,22 @@ export type ExpectedValidatorRewards = {
   monthlyReward: string;
   yearlyReward: string;
 };
+
+export type TotalSupply = {
+  totalSupply: {
+    tokenID: string;
+    totalSupply: string;
+  }[];
+};
+
+export type EscrowedAmounts = {
+  escrowedAmounts: {
+    escrowChainID: string;
+    tokenID: string;
+    amount: string;
+  }[];
+};
+
+export type SupportedTokens = {
+  supportedTokens: string[];
+};

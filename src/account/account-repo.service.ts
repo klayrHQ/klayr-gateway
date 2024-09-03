@@ -74,7 +74,11 @@ export class AccountRepoService {
     return accounts;
   }
 
-  public async countAccounts(search: string): Promise<number> {
+  public async countAccounts(search?: string): Promise<number> {
+    if (!search) {
+      return this.prisma.account.count();
+    }
+
     const count = await this.prisma.account.count({
       where: {
         OR: [
