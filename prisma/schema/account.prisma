@@ -6,6 +6,8 @@ model Account {
   validator            Validator?
   stakes               Json[]
   block                Block[]
+  stakess              Stake[]
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")
 }
+

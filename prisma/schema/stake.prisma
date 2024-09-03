@@ -1,0 +1,9 @@
+model Stake {
+  validatorAddress String
+  staker           String
+  amount           String
+  account          Account   @relation(fields: [staker], references: [address])
+  validator        Validator @relation(fields: [validatorAddress], references: [address])
+
+  @@id([staker, validatorAddress])
+}

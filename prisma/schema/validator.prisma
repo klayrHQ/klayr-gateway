@@ -22,4 +22,5 @@ model Validator {
   commission                   Int?
   lastCommissionIncreaseHeight Int?
   sharingCoefficients          String?
+  stakes                       Stake[]
 }
