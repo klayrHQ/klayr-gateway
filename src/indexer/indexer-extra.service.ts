@@ -13,8 +13,8 @@ export class IndexerExtraService {
 
   constructor(private readonly accountService: AccountService) {}
 
-  async onApplicationBootstrap() {
-    this.logger.debug(`IndexerExtraService onApplicationBootstrap`);
+  async indexExtraService() {
+    this.logger.debug(`Indexing extra service`);
     if (INSERT_KNOWN_ACCOUNTS) await this.writeKnownAccounts();
   }
 
