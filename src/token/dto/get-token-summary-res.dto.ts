@@ -1,5 +1,17 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
-import { EscrowedAmounts, SupportedTokens, TotalSupply } from 'src/node-api/types';
+
+export type TotalSupply = {
+  tokenID: string;
+  totalSupply: string;
+}[];
+
+export type EscrowedAmounts = {
+  escrowChainID: string;
+  tokenID: string;
+  amount: string;
+}[];
+
+export type SupportedTokens = string[];
 
 export class GetTokenSummaryResponseDto {
   escrowedAmounts: EscrowedAmounts;
