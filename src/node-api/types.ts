@@ -164,3 +164,16 @@ export type EscrowedAmounts = {
 export type SupportedTokens = {
   supportedTokens: string[];
 };
+
+export type Staker = {
+  stakes: {
+    validatorAddress: string;
+    amount: string;
+    sharingCoefficients: SharingCoefficient[];
+  }[];
+  pendingUnlocks: {
+    validatorAddress: string;
+    amount: string;
+    unstakeHeight: number;
+  }[];
+};

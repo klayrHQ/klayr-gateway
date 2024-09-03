@@ -8,6 +8,7 @@ import {
   ChainEvent,
   ExpectedValidatorRewards,
   PunishmentPeriod,
+  Staker,
   ValidatorInfo,
   ValidatorKeys,
 } from 'src/node-api/types';
@@ -31,10 +32,10 @@ export class ValidatorService {
 
   constructor(
     private readonly state: StateService,
-    private readonly validatorRepoService: ValidatorRepoService,
+    private readonly validatorRepo: ValidatorRepoService,
     private readonly accountService: AccountService,
-    private readonly nodeApiService: NodeApiService,
-    private readonly blockRepoService: BlockRepoService,
+    private readonly nodeApi: NodeApiService,
+    private readonly blockRepo: BlockRepoService,
   ) {}
 
   @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
@@ -67,7 +68,7 @@ export class ValidatorService {
       lastCommissionIncreaseHeight: asset.lastCommissionIncreaseHeight,
       sharingCoefficients: JSON.stringify(asset.sharingCoefficients),
     }));
-    return this.validatorRepoService.createValidatorsBulk(validatorsInput);
+    return this.validatorRepo.createValidatorsBulk(validatorsInput);
   }
 
   @OnEvent(ChainEvents.POS_VALIDATOR_REGISTERED)
@@ -84,7 +85,14 @@ export class ValidatorService {
 
   @OnEvent(ChainEvents.POS_VALIDATOR_STAKED)
   public async processValidatorStaked(event: ChainEvent) {
-    const { validatorAddress } = JSON.parse(event.data as string) as ValidatorStakedData;
+    const { validatorAddress, senderAddress } = JSON.parse(
+      event.data as string,
+    ) as ValidatorStakedData;
+    const stakes = await this.nodeApi.invokeApi<Staker>(NodeApi.POS_GET_STAKER, {
+      address: senderAddress,
+    });
+
+    await this.accountService.setStakesForAccount(senderAddress, stakes);
     await this.handleValidatorEvent(validatorAddress);
   }
 
@@ -114,7 +122,7 @@ export class ValidatorService {
     const [validatorInfo, expectedRewards, validatorExists] = await Promise.all([
       this.getValidatorPosInfo(validatorAddress),
       this.getExpectedValidatorRewards(validatorAddress),
-      this.validatorRepoService.getValidator({ address: validatorAddress }),
+      this.validatorRepo.getValidator({ address: validatorAddress }),
     ]);
 
     if (!validatorExists) {
@@ -122,7 +130,7 @@ export class ValidatorService {
     }
 
     if (validatorExists) {
-      await this.validatorRepoService.updateValidator({
+      await this.validatorRepo.updateValidator({
         where: { address: validatorAddress },
         data: {
           totalStake: BigInt(validatorInfo.totalStake),
@@ -150,7 +158,7 @@ export class ValidatorService {
     if (this.isUpdatingValidators) return this.logger.log('Already updating validators');
     this.isUpdatingValidators = true;
 
-    const validators = await this.validatorRepoService.getAllValidators();
+    const validators = await this.validatorRepo.getAllValidators();
 
     // Sorting validators with the same weight by address(bytes)
     const sortedValidators = this.sortValidators(validators);
@@ -163,7 +171,7 @@ export class ValidatorService {
       if (this.isBannedOrPunished(validator.status) && validator.rank <= numberOfActiveValidators) {
         numberOfActiveValidators++;
       }
-      await this.validatorRepoService.updateValidator({
+      await this.validatorRepo.updateValidator({
         where: { address: validator.address },
         data: { rank: validator.rank, status: validatorStatus },
       });
@@ -215,15 +223,15 @@ export class ValidatorService {
       { height, totalRewards, sharedRewards, selfStakeRewards },
     ] of validatorAddresses) {
       const [blockCount, validator] = await Promise.all([
-        this.blockRepoService.countBlocks({
+        this.blockRepo.countBlocks({
           where: { generatorAddress: validatorAddress },
         }),
-        this.validatorRepoService.getValidator({
+        this.validatorRepo.getValidator({
           address: validatorAddress,
         }),
       ]);
 
-      await this.validatorRepoService.updateValidator({
+      await this.validatorRepo.updateValidator({
         where: { address: validatorAddress },
         data: {
           lastGeneratedHeight: height,
@@ -242,7 +250,7 @@ export class ValidatorService {
     if (validator.validatorWeight < MINIMUM_VALIDATOR_WEIGHT) return ValidatorStatus.INELIGIBLE;
 
     const punishmentPeriods = JSON.parse(validator.punishmentPeriods) as PunishmentPeriod[];
-    const height = this.nodeApiService.nodeInfo.height;
+    const height = this.nodeApi.nodeInfo.height;
     if (
       punishmentPeriods.length > 0 &&
       punishmentPeriods[0].start <= height &&
@@ -271,7 +279,7 @@ export class ValidatorService {
   }
 
   private async getValidatorPosInfo(address: string): Promise<ValidatorInfo> {
-    return this.nodeApiService.invokeApi<ValidatorInfo>(NodeApi.POS_GET_VALIDATOR, {
+    return this.nodeApi.invokeApi<ValidatorInfo>(NodeApi.POS_GET_VALIDATOR, {
       address,
     });
   }
@@ -279,7 +287,7 @@ export class ValidatorService {
   private async getExpectedValidatorRewards(
     validatorAddress: string,
   ): Promise<ExpectedValidatorRewards> {
-    return this.nodeApiService.invokeApi<ExpectedValidatorRewards>(
+    return this.nodeApi.invokeApi<ExpectedValidatorRewards>(
       NodeApi.REWARD_GET_EXPECTED_VALIDATOR_REWARDS,
       {
         validatorAddress,
@@ -288,7 +296,7 @@ export class ValidatorService {
   }
 
   private async getValidatorKeys(address: string): Promise<ValidatorKeys> {
-    return this.nodeApiService.invokeApi<ValidatorKeys>(NodeApi.VALIDATORS_GET_VALIDATOR, {
+    return this.nodeApi.invokeApi<ValidatorKeys>(NodeApi.VALIDATORS_GET_VALIDATOR, {
       address,
     });
   }
@@ -301,7 +309,7 @@ export class ValidatorService {
 
     const keys = await this.getValidatorKeys(val.address);
 
-    await this.validatorRepoService.createValidatorsBulk([
+    await this.validatorRepo.createValidatorsBulk([
       {
         address: val.address,
         totalStake: BigInt(val.totalStake),

@@ -48,7 +48,11 @@ export class BlockController {
   }
 
   private toGetBlockResponse(
-    block: Prisma.BlockGetPayload<{ include: { generator: true } }>,
+    block: Prisma.BlockGetPayload<{
+      include: {
+        generator: { select: { address: true; publicKey: true; nonce: true; name: true } };
+      };
+    }>,
   ): GetBlockResDto {
     const { generator, ...rest } = block;
     const newBlock: GetBlockResDto = {

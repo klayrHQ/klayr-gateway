@@ -2,7 +2,6 @@ import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
 import {
-  GetValidatorCountsResponseDto,
   GetValidatorResponseDto,
   getValidatorCountsResponse,
   getValidatorResponse,
@@ -14,13 +13,17 @@ import { Prisma } from '@prisma/client';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Generator } from 'src/node-api/types';
 import { ValidatorStatus } from './types';
+import { getStakesResponse, GetStakesResponseDto, Stake } from './dto/get-stakes-res.dto';
+import { StakesQueryDto } from './dto/get-stakes.dto';
+import { AccountRepoService } from 'src/account/account-repo.service';
 
 @ApiTags('Validators')
 @Controller('pos')
 export class ValidatorController {
   constructor(
-    private readonly validatorRepoService: ValidatorRepoService,
-    private readonly nodeApiService: NodeApiService,
+    private readonly validatorRepoS: ValidatorRepoService,
+    private readonly accountRepo: AccountRepoService,
+    private readonly nodeApi: NodeApiService,
   ) {}
 
   @Get('validators')
@@ -33,7 +36,7 @@ export class ValidatorController {
     const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
-    const { list } = this.nodeApiService.generatorList;
+    const { list } = this.nodeApi.generatorList;
 
     const where: Prisma.ValidatorWhereInput = {
       ...(address && { address }),
@@ -54,8 +57,8 @@ export class ValidatorController {
     this.checkForNextAllocatedTimeSort(queryOptions, list, sort);
 
     const [validators, total] = await Promise.all([
-      this.validatorRepoService.getValidators(queryOptions),
-      this.validatorRepoService.countValidators({ where }),
+      this.validatorRepoS.getValidators(queryOptions),
+      this.validatorRepoS.countValidators({ where }),
     ]);
 
     const response = validators.map((validator) => this.getValidatorResponse(validator, list));
@@ -74,7 +77,7 @@ export class ValidatorController {
     const statuses = Object.values(ValidatorStatus);
     const counts = await Promise.all(
       statuses.map(async (status) => ({
-        [status]: await this.validatorRepoService.countValidators({ where: { status } }),
+        [status]: await this.validatorRepoS.countValidators({ where: { status } }),
       })),
     );
 
@@ -83,6 +86,31 @@ export class ValidatorController {
       data: formattedCounts,
       meta: {},
     };
+  }
+
+  @Get('stakes')
+  @ApiResponse(getStakesResponse)
+  async getStakes(@Query() query: StakesQueryDto): Promise<GatewayResponse<GetStakesResponseDto>> {
+    const { address, publicKey, name } = query;
+
+    const where: Prisma.AccountWhereUniqueInput = {
+      ...(address && { address }),
+      ...(publicKey && { publicKey }),
+      ...(name && { name }),
+    };
+
+    const account = await this.accountRepo.getAccount(where);
+
+    // any type is used here because the account object is JsonValue
+    const stakesAccount: Stake[] = account.stakes.map((stake: any) => ({
+      address: stake.address,
+      amount: stake.amount,
+      name: stake.name,
+    }));
+
+    const { stakes, nonce, ...stakerAccount } = account;
+
+    return new GatewayResponse({ stakes: stakesAccount }, { staker: stakerAccount });
   }
 
   private getValidatorResponse(

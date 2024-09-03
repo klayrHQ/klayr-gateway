@@ -36,7 +36,13 @@ export class BlockRepoService {
     where?: Prisma.BlockWhereInput;
     orderBy?: Prisma.BlockOrderByWithRelationInput;
     includeAssets?: boolean;
-  }): Promise<Prisma.BlockGetPayload<{ include: { generator: true } }>[]> {
+  }): Promise<
+    Prisma.BlockGetPayload<{
+      include: {
+        generator: { select: { address: true; publicKey: true; nonce: true; name: true } };
+      };
+    }>[]
+  > {
     const { skip, take, cursor, where, orderBy, includeAssets } = params;
     return await this.prisma.block.findMany({
       skip,
@@ -53,6 +59,7 @@ export class BlockRepoService {
             name: true,
           },
         },
+
         assets: includeAssets
           ? {
               select: {
