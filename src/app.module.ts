@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { IndexerModule } from './indexer/indexer.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -18,6 +18,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
 import { LokiLoggerModule } from 'nestjs-loki-logger';
 import { TokenModule } from './token/token.module';
+import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware';
 
 @Module({
   imports: [
@@ -53,4 +54,8 @@ import { TokenModule } from './token/token.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LockEndpointsMiddleware).forRoutes('*');
+  }
+}
