@@ -1,9 +1,10 @@
 -- CreateTable
 CREATE TABLE "Account" (
     "address" TEXT NOT NULL,
+    "nonce" TEXT NOT NULL DEFAULT '0',
     "publicKey" TEXT,
     "name" TEXT,
-    "nonce" TEXT NOT NULL DEFAULT '0',
+    "stakes" JSONB[],
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
 );
