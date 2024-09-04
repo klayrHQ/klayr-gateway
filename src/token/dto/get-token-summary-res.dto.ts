@@ -1,22 +1,20 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export type TotalSupply = {
+export class TotalSupply {
   tokenID: string;
   totalSupply: string;
-}[];
+}
 
-export type EscrowedAmounts = {
+export class EscrowedAmounts {
   escrowChainID: string;
   tokenID: string;
   amount: string;
-}[];
-
-export type SupportedTokens = string[];
+}
 
 export class GetTokenSummaryResponseDto {
-  escrowedAmounts: EscrowedAmounts;
-  totalSupply: TotalSupply;
-  supportedTokens: SupportedTokens;
+  escrowedAmounts: EscrowedAmounts[];
+  totalSupply: TotalSupply[];
+  supportedTokens: string[];
   totalAccounts: number;
   totalTransactions: number;
 }
