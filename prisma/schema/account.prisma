@@ -5,7 +5,7 @@ model Account {
   name                 String?
   validator            Validator?
   block                Block[]
-  stakess              Stake[]
+  stakes               Stake[]
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")
 }
