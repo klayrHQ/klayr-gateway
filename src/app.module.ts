@@ -19,6 +19,7 @@ import { SearchModule } from './search/search.module';
 import { LokiLoggerModule } from 'nestjs-loki-logger';
 import { TokenModule } from './token/token.module';
 import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware';
+import { StakeModule } from './stake/stake.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware'
     GeneratorModule,
     SearchModule,
     TokenModule,
+    StakeModule,
   ],
   controllers: [],
   providers: [],

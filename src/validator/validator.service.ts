@@ -21,6 +21,7 @@ import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants
 import { IndexerState, Modules } from 'src/state/types';
 import { StateService } from 'src/state/state.service';
 import { BlockRepoService } from 'src/block/block-repo.service';
+import { StakeService } from 'src/stake/stake.service';
 
 @Injectable()
 export class ValidatorService {
@@ -36,6 +37,7 @@ export class ValidatorService {
     private readonly accountService: AccountService,
     private readonly nodeApi: NodeApiService,
     private readonly blockRepo: BlockRepoService,
+    private readonly stakeService: StakeService,
   ) {}
 
   @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
@@ -85,15 +87,16 @@ export class ValidatorService {
 
   @OnEvent(ChainEvents.POS_VALIDATOR_STAKED)
   public async processValidatorStaked(event: ChainEvent) {
-    const { validatorAddress, senderAddress } = JSON.parse(
-      event.data as string,
-    ) as ValidatorStakedData;
+    const { senderAddress } = JSON.parse(event.data as string) as ValidatorStakedData;
     const stakes = await this.nodeApi.invokeApi<Staker>(NodeApi.POS_GET_STAKER, {
       address: senderAddress,
     });
 
-    await this.accountService.setStakesForAccount(senderAddress, stakes);
-    await this.handleValidatorEvent(validatorAddress);
+    for await (const stake of stakes.stakes) {
+      await this.handleValidatorEvent(stake.validatorAddress);
+    }
+
+    await this.stakeService.addStakesFromStaker(senderAddress);
   }
 
   @OnEvent(ChainEvents.POS_VALIDATOR_BANNED)

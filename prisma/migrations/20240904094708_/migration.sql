@@ -4,7 +4,6 @@ CREATE TABLE "Account" (
     "nonce" TEXT NOT NULL DEFAULT '0',
     "publicKey" TEXT,
     "name" TEXT,
-    "stakes" JSONB[],
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
 );
@@ -69,6 +68,15 @@ CREATE TABLE "NextBlockToSync" (
     "height" INTEGER NOT NULL,
 
     CONSTRAINT "NextBlockToSync_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Stake" (
+    "validatorAddress" TEXT NOT NULL,
+    "staker" TEXT NOT NULL,
+    "amount" TEXT NOT NULL,
+
+    CONSTRAINT "Stake_pkey" PRIMARY KEY ("staker","validatorAddress")
 );
 
 -- CreateTable
@@ -144,6 +152,12 @@ ALTER TABLE "ChainEvents" ADD CONSTRAINT "ChainEvents_height_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "ChainEvents" ADD CONSTRAINT "ChainEvents_transactionID_fkey" FOREIGN KEY ("transactionID") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Stake" ADD CONSTRAINT "Stake_staker_fkey" FOREIGN KEY ("staker") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Stake" ADD CONSTRAINT "Stake_validatorAddress_fkey" FOREIGN KEY ("validatorAddress") REFERENCES "Validator"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_senderAddress_fkey" FOREIGN KEY ("senderAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -4,7 +4,6 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GLOBAL_PREFIX, SWAGGERCONFIG } from './utils/constants';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter } from './utils/loki-exception-filter';
 
 async function setupSwagger(app: INestApplication) {
   const { title, description, version, route } = SWAGGERCONFIG;
@@ -13,14 +12,13 @@ async function setupSwagger(app: INestApplication) {
     .setDescription(description)
     .setVersion(version)
     .build();
-  const document = SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true });
+  const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(route, app, document);
 }
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
-  app.useGlobalFilters(new AllExceptionsFilter());
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors(); // TODO: Settings

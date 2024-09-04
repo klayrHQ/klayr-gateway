@@ -1,4 +1,11 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { ValidatorRepoService } from './validator.repo-service';
 import {
@@ -13,16 +20,23 @@ import { Prisma } from '@prisma/client';
 import { NodeApiService } from 'src/node-api/node-api.service';
 import { Generator } from 'src/node-api/types';
 import { ValidatorStatus } from './types';
-import { getStakesResponse, GetStakesResponseDto, Stake } from './dto/get-stakes-res.dto';
+import {
+  getStakersResponse,
+  GetStakersResponseDto,
+  getStakesResponse,
+  GetStakesResponseDto,
+} from './dto/get-stakes-res.dto';
 import { StakesQueryDto } from './dto/get-stakes.dto';
 import { AccountRepoService } from 'src/account/account-repo.service';
+import { StakeRepoService } from 'src/stake/stake-repo.service';
 
 @ApiTags('Validators')
 @Controller('pos')
 export class ValidatorController {
   constructor(
-    private readonly validatorRepoS: ValidatorRepoService,
+    private readonly validatorRepo: ValidatorRepoService,
     private readonly accountRepo: AccountRepoService,
+    private readonly stakeRepo: StakeRepoService,
     private readonly nodeApi: NodeApiService,
   ) {}
 
@@ -57,8 +71,8 @@ export class ValidatorController {
     this.checkForNextAllocatedTimeSort(queryOptions, list, sort);
 
     const [validators, total] = await Promise.all([
-      this.validatorRepoS.getValidators(queryOptions),
-      this.validatorRepoS.countValidators({ where }),
+      this.validatorRepo.getValidators(queryOptions),
+      this.validatorRepo.countValidators({ where }),
     ]);
 
     const response = validators.map((validator) => this.getValidatorResponse(validator, list));
@@ -77,7 +91,7 @@ export class ValidatorController {
     const statuses = Object.values(ValidatorStatus);
     const counts = await Promise.all(
       statuses.map(async (status) => ({
-        [status]: await this.validatorRepoS.countValidators({ where: { status } }),
+        [status]: await this.validatorRepo.countValidators({ where: { status } }),
       })),
     );
 
@@ -89,9 +103,32 @@ export class ValidatorController {
   }
 
   @Get('stakes')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getStakesResponse)
   async getStakes(@Query() query: StakesQueryDto): Promise<GatewayResponse<GetStakesResponseDto>> {
+    const { account, response } = await this.getAccountAndStakes(query, 'staker');
+    return new GatewayResponse({ stakes: response }, { staker: account });
+  }
+
+  @Get('stakers')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getStakersResponse)
+  async getStakers(
+    @Query() query: StakesQueryDto,
+  ): Promise<GatewayResponse<GetStakersResponseDto>> {
+    const { account, response } = await this.getAccountAndStakes(query, 'validatorAddress');
+    return new GatewayResponse({ stakers: response }, { validator: account });
+  }
+
+  private async getAccountAndStakes(
+    query: StakesQueryDto,
+    stakeKey: 'staker' | 'validatorAddress',
+  ) {
     const { address, publicKey, name } = query;
+
+    if (!address && !publicKey && !name) {
+      throw new BadRequestException('At least one of address, publicKey, or name must be provided');
+    }
 
     const where: Prisma.AccountWhereUniqueInput = {
       ...(address && { address }),
@@ -101,16 +138,22 @@ export class ValidatorController {
 
     const account = await this.accountRepo.getAccount(where);
 
-    // any type is used here because the account object is JsonValue
-    const stakesAccount: Stake[] = account.stakes.map((stake: any) => ({
-      address: stake.address,
-      amount: stake.amount,
-      name: stake.name,
-    }));
+    if (!account) {
+      return { account: null, response: [] };
+    }
+    const stakes = await this.stakeRepo.getStakes({
+      where: { [stakeKey]: account.address },
+    });
 
-    const { stakes, nonce, ...stakerAccount } = account;
+    const response = stakes.map((stake) => {
+      return {
+        address: stake.staker,
+        amount: stake.amount,
+        ...(stake.account.name ? { name: stake.account.name } : {}),
+      };
+    });
 
-    return new GatewayResponse({ stakes: stakesAccount }, { staker: stakerAccount });
+    return { account, response };
   }
 
   private getValidatorResponse(
