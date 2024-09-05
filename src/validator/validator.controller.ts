@@ -148,7 +148,7 @@ export class ValidatorController {
     const response = stakes.map((stake) => {
       return {
         address: stake.staker,
-        amount: stake.amount,
+        amount: stake.amount.toString(),
         ...(stake.account.name ? { name: stake.account.name } : {}),
       };
     });

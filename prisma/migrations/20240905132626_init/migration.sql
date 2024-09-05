@@ -74,7 +74,7 @@ CREATE TABLE "NextBlockToSync" (
 CREATE TABLE "Stake" (
     "validatorAddress" TEXT NOT NULL,
     "staker" TEXT NOT NULL,
-    "amount" TEXT NOT NULL,
+    "amount" BIGINT NOT NULL,
 
     CONSTRAINT "Stake_pkey" PRIMARY KEY ("staker","validatorAddress")
 );

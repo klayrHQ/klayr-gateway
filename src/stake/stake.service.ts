@@ -27,7 +27,7 @@ export class StakeService {
     const stakesWithStaker = stakes.stakes.map((stake) => ({
       staker,
       validatorAddress: stake.validatorAddress,
-      amount: stake.amount,
+      amount: BigInt(stake.amount),
     }));
 
     await this.stakeRepo.createStakesBulk(stakesWithStaker);

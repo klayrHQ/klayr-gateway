@@ -1,7 +1,7 @@
 model Stake {
   validatorAddress String
   staker           String
-  amount           String
+  amount           BigInt
   account          Account   @relation(fields: [staker], references: [address])
   validator        Validator @relation(fields: [validatorAddress], references: [address])
 
