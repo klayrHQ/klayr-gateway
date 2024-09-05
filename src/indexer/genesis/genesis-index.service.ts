@@ -4,11 +4,11 @@ import { AssetTypes } from 'src/asset/types';
 import { EventService } from 'src/event/event.service';
 import { GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
-import { Block } from 'src/node-api/types';
+import { Block } from '../interfaces/block.interface';
 
 @Injectable()
-export class IndexerGenesisService {
-  private readonly logger = new Logger(IndexerGenesisService.name);
+export class GenesisIndexService {
+  private readonly logger = new Logger(GenesisIndexService.name);
 
   constructor(
     private readonly nodeApiService: NodeApiService,
@@ -47,6 +47,7 @@ export class IndexerGenesisService {
         break;
       case AssetTypes.POS:
         this.logger.debug('Genesis POS asset');
+        // ! for volidator-index module
         await this.eventService.pushToGeneralEventQ({
           event: GatewayEvents.PROCESS_POS_ASSET,
           payload: decodedAsset.message.validators,

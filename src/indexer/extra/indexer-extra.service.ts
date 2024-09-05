@@ -1,15 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountService } from 'src/account/account.service';
-import { KnownAccounts } from './types';
+
 import {
   INSERT_KNOWN_ACCOUNTS,
   KNOWN_ACCOUNTS_MAINNET_URL,
   KNOWN_ACCOUNTS_TESTNET_URL,
 } from 'src/utils/constants';
+import { KnownAccounts } from './known-accounts.interface';
 
 @Injectable()
-export class IndexerExtraService {
-  private readonly logger = new Logger(IndexerExtraService.name);
+export class IndexExtraService {
+  private readonly logger = new Logger(IndexExtraService.name);
 
   constructor(private readonly accountService: AccountService) {}
 

@@ -1,16 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE, RETRY_TIMEOUT } from 'src/utils/constants';
+import { Injectable } from '@nestjs/common';
+import {
+  KEY_NEXT_BLOCK_TO_SYNC,
+  NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
+  RETRY_TIMEOUT,
+} from 'src/utils/constants';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/node-api/types';
 import { EventService } from 'src/event/event.service';
-import { IndexerRepoService } from './indexer-repo.service';
-import { BlockEvent, Events, GatewayEvents } from 'src/event/types';
+import { GatewayEvents } from 'src/event/types';
 import { waitTimeout } from 'src/utils/helpers';
-import { IndexerGenesisService } from './indexer-genesis.service';
+import { GenesisIndexService } from './genesis/genesis-index.service';
 import { StateService } from 'src/state/state.service';
 import { IndexerState, Modules } from 'src/state/types';
-import { IndexerExtraService } from './indexer-extra.service';
 import { LokiLogger } from 'nestjs-loki-logger';
+import { BlockIndexService } from './block/block-index.service';
+import { TransactionIndexService } from './transaction/transaction-index.service';
+import { IndexExtraService } from './extra/indexer-extra.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -22,12 +28,15 @@ export class IndexerService {
   public nextBlockToSync: number;
 
   constructor(
+    private readonly prisma: PrismaService,
     private readonly state: StateService,
-    private readonly indexerRepoService: IndexerRepoService,
-    private readonly indexerGenesisService: IndexerGenesisService,
-    private readonly indexExtraService: IndexerExtraService,
+    private readonly indexerGenesisService: GenesisIndexService,
+    private readonly indexExtraService: IndexExtraService,
     private readonly nodeApiService: NodeApiService,
     private readonly eventService: EventService,
+
+    private readonly blockIndexService: BlockIndexService,
+    private readonly transactionIndexService: TransactionIndexService,
   ) {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
@@ -41,7 +50,8 @@ export class IndexerService {
 
     if (this.state.get(Modules.INDEXER) === IndexerState.START_UP) {
       await this.indexerGenesisService.processGenesisBlock();
-      await this.indexExtraService.indexExtraService();
+      // ! not needed for refactor
+      // await this.indexExtraService.indexExtraService();
     }
 
     setImmediate(() => {
@@ -51,8 +61,20 @@ export class IndexerService {
     });
   }
 
+  public async handleNewBlockEvent(blocks: Block[]): Promise<void> {
+    this.logger.debug(
+      `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
+    );
+    try {
+      await this.blockIndexService.indexBlocks(blocks);
+      await this.transactionIndexService.indexTransactions(blocks);
+    } catch (error) {
+      this.logger.error('Error handling new block event', error);
+    }
+  }
+
   private async setNextBlockandState() {
-    const nextBlockAndState = await this.indexerRepoService.getNextBlockToSync();
+    const nextBlockAndState = await this.prisma.nextBlockToSync.findFirst();
 
     if (nextBlockAndState) {
       this.state.set(Modules.INDEXER, IndexerState.RESTART);
@@ -62,8 +84,11 @@ export class IndexerService {
     }
 
     this.nextBlockToSync = this.nodeApiService.nodeInfo.genesisHeight;
-    await this.indexerRepoService.setNextBlockToSync({
-      height: this.nextBlockToSync,
+    await this.prisma.nextBlockToSync.create({
+      data: {
+        id: KEY_NEXT_BLOCK_TO_SYNC,
+        height: this.nextBlockToSync,
+      },
     });
   }
 
@@ -84,8 +109,9 @@ export class IndexerService {
         if (block.header.height <= nodeHeight) block.header.isFinal = true;
       });
 
+      // await this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
       // modifying the blocks array here
-      await this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: blocks.reverse() });
+      await this.handleNewBlockEvent(blocks.reverse());
 
       await this.updateNextBlockToSync(blocks.at(-1).header.height + 1);
 
@@ -114,7 +140,8 @@ export class IndexerService {
 
         setImmediate(() => {
           this.syncWithNode().catch((error) => {
-            this.state.set(Modules.INDEXER, IndexerState.RESTART);
+            // TODO: Fix restart state, now it goes to restart on prisma errors etc..
+            // this.state.set(Modules.INDEXER, IndexerState.RESTART);
             this.logger.error('Error syncing with node, will retry', error);
           });
         });
@@ -125,22 +152,19 @@ export class IndexerService {
       const block = await this.nodeApiService.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
         id: newBlockData.blockHeader.id,
       });
-      this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
+      // this.newBlock({ event: Events.NEW_BLOCKS_EVENT, blocks: [block] });
+      await this.handleNewBlockEvent([block]);
 
       await this.updateNextBlockToSync(newBlockHeight + 1);
     });
   }
 
   private async updateNextBlockToSync(height: number): Promise<void> {
-    this.nextBlockToSync = (
-      await this.indexerRepoService.updateNextBlockToSync({
-        height,
-      })
-    ).height;
-  }
-
-  private async newBlock(blockEvent: BlockEvent): Promise<void> {
-    await this.eventService.pushToBlockEventQ(blockEvent);
+    const nextBlockToSync = await this.prisma.nextBlockToSync.update({
+      where: { id: KEY_NEXT_BLOCK_TO_SYNC },
+      data: { height },
+    });
+    this.nextBlockToSync = nextBlockToSync.height;
   }
 
   private async getBlocks(): Promise<Block[]> {
