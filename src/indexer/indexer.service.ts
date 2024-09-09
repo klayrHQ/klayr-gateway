@@ -17,6 +17,7 @@ import { BlockIndexService } from './block/block-index.service';
 import { TransactionIndexService } from './transaction/transaction-index.service';
 import { IndexExtraService } from './extra/indexer-extra.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChainEventIndexService } from './chain-event/chain-event-index.service';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -37,6 +38,7 @@ export class IndexerService {
 
     private readonly blockIndexService: BlockIndexService,
     private readonly transactionIndexService: TransactionIndexService,
+    private readonly chainEventIndexService: ChainEventIndexService,
   ) {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
@@ -66,8 +68,10 @@ export class IndexerService {
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
     try {
+      const chainEvents = await this.chainEventIndexService.indexChainEvents(blocks);
       await this.blockIndexService.indexBlocks(blocks);
       await this.transactionIndexService.indexTransactions(blocks);
+      await this.chainEventIndexService.writeChainEventsToDb(chainEvents);
     } catch (error) {
       this.logger.error('Error handling new block event', error);
     }

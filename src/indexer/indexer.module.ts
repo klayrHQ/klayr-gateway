@@ -9,6 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { BlockIndexService } from './block/block-index.service';
 import { TransactionIndexService } from './transaction/transaction-index.service';
 import { IndexExtraService } from './extra/indexer-extra.service';
+import { ChainEventIndexService } from './chain-event/chain-event-index.service';
 
 @Module({
   imports: [StateModule, NodeApiModule, EventModule, AccountModule],
@@ -20,6 +21,7 @@ import { IndexExtraService } from './extra/indexer-extra.service';
     IndexExtraService,
     BlockIndexService,
     TransactionIndexService,
+    ChainEventIndexService,
   ],
   exports: [IndexerService],
 })
