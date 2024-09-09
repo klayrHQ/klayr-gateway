@@ -42,8 +42,11 @@ export class ChainEventService {
 
     const chainEvents = await Promise.all(promises);
 
-    if (newAccounts.length > 0) await this.accountService.createAccountsBulk(newAccounts);
-
+    if (newAccounts.length > 0) {
+      for await (const newAccount of newAccounts) {
+        await this.accountService.updateOrCreateAccount(newAccount);
+      }
+    }
     return chainEvents.flat();
   }
 

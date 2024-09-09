@@ -4,8 +4,9 @@ model Account {
   publicKey            String?       @unique
   name                 String?
   validator            Validator?
-  stakes               Json[]
   block                Block[]
+  stakes               Stake[]
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")
 }
+

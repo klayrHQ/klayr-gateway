@@ -33,26 +33,4 @@ export class AccountService {
       create: { address, publicKey, name, nonce },
     });
   }
-
-  public async setStakesForAccount(address: string, stakes: Staker) {
-    const stakesWithNames = await Promise.all(
-      stakes.stakes.map(async (stake) => {
-        const account = await this.accountRepoService.getAccount({
-          address: stake.validatorAddress,
-        });
-        return {
-          address: stake.validatorAddress,
-          amount: stake.amount,
-          name: account?.name,
-        };
-      }),
-    );
-
-    return this.accountRepoService.updateAccount({
-      where: { address },
-      data: {
-        stakes: stakesWithNames,
-      },
-    });
-  }
 }
