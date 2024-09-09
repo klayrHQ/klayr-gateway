@@ -31,9 +31,14 @@ export class TokenController {
         this.transactionRepo.countTransactions({}),
       ]);
 
-    return new GatewayResponse(
-      { escrowedAmounts, totalSupply, supportedTokens, totalAccounts, totalTransactions },
-      {},
-    );
+    const flattenedResponse = {
+      escrowedAmounts: escrowedAmounts.escrowedAmounts,
+      totalSupply: totalSupply.totalSupply,
+      supportedTokens: supportedTokens.supportedTokens,
+      totalAccounts,
+      totalTransactions,
+    };
+
+    return new GatewayResponse(flattenedResponse, {});
   }
 }
