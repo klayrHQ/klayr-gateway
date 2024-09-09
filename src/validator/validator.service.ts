@@ -184,6 +184,7 @@ export class ValidatorService {
     this.logger.log('Completed updating validator ranks');
   }
 
+  // ! for gateway-index module
   @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
   public async updateBlockGeneratorAndTotalRewards({
     blocks,

@@ -69,9 +69,13 @@ export class IndexerService {
     );
     try {
       const chainEvents = await this.chainEventIndexService.indexChainEvents(blocks);
-      await this.blockIndexService.indexBlocks(blocks);
+      const eventCountMap = this.chainEventIndexService.createEventCountMap(chainEvents);
+      await this.blockIndexService.indexBlocks(blocks, eventCountMap);
       await this.transactionIndexService.indexTransactions(blocks);
       await this.chainEventIndexService.writeChainEventsToDb(chainEvents);
+      await this.chainEventIndexService.processChainEvents(chainEvents);
+
+      // TODO: Emit events for modular use
     } catch (error) {
       this.logger.error('Error handling new block event', error);
     }

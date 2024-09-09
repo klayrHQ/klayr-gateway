@@ -10,6 +10,7 @@ import { BlockIndexService } from './block/block-index.service';
 import { TransactionIndexService } from './transaction/transaction-index.service';
 import { IndexExtraService } from './extra/indexer-extra.service';
 import { ChainEventIndexService } from './chain-event/chain-event-index.service';
+import { ValidatorEventService } from './chain-event/validator/validator-event.service';
 
 @Module({
   imports: [StateModule, NodeApiModule, EventModule, AccountModule],
@@ -22,6 +23,7 @@ import { ChainEventIndexService } from './chain-event/chain-event-index.service'
     BlockIndexService,
     TransactionIndexService,
     ChainEventIndexService,
+    ValidatorEventService,
   ],
   exports: [IndexerService],
 })

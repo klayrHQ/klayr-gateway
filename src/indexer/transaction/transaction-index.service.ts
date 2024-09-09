@@ -61,7 +61,7 @@ export class TransactionIndexService {
 
     return { processedTxs, accounts };
 
-    // ! for event-index module
+    // ! for gateway-index module
     // await this.eventService.pushToGeneralEventQ({
     //   event: GatewayEvents.UPDATE_BLOCK_FEE,
     //   payload: totalBurntPerBlock,
