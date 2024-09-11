@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { Block, Transaction } from '../interfaces/block.interface';
 import { Payload } from 'src/event/types';
-import { UpdateBlockFee } from '../interfaces/transaction.interface';
+import { TxEvents, UpdateBlockFee } from '../interfaces/transaction.interface';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { Prisma } from '@prisma/client';
 
@@ -87,9 +87,9 @@ export class TransactionIndexService {
     if (recipientAddress && !accounts.get(recipientAddress)) accounts.set(recipientAddress, {});
 
     // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
-    // if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
-    //   await this.handlePosStake(txParams);
-    // }
+    if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
+      await this.handlePosStake(txParams);
+    }
 
     return {
       id: tx.id,
@@ -143,5 +143,18 @@ export class TransactionIndexService {
       signatures: tx.signatures,
       params: tx.params,
     });
+  }
+
+  private async handlePosStake(txParams: any): Promise<void> {
+    await Promise.all(
+      txParams.stakes.map(
+        async (stake: { validatorAddress: string; amount: string; name?: string }) => {
+          const account = await this.prisma.account.findUnique({
+            where: { address: stake.validatorAddress },
+          });
+          if (account.name) stake.name = account.name;
+        },
+      ),
+    );
   }
 }
