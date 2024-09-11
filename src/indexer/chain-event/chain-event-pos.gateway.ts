@@ -33,8 +33,14 @@ export class ValidatorRegistered extends ChainEventGateway {
 
 export class ValidatorStaked extends ChainEventGateway {
   async processChainEvent(event: ChainEvent): Promise<void> {
-    const { validatorAddress } = JSON.parse(event.data as string);
-    await this.validatorEventService.handleValidatorEvent(validatorAddress);
+    const { senderAddress } = JSON.parse(event.data as string);
+    const stakes = await this.validatorEventService.getStakes(senderAddress);
+
+    for await (const stake of stakes.stakes) {
+      await this.validatorEventService.handleValidatorEvent(stake.validatorAddress);
+    }
+
+    //TODO addstakes
   }
 }
 

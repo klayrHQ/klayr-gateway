@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountService } from 'src/account/account.service';
-import { AssetTypes } from 'src/asset/types';
 import { EventService } from 'src/event/event.service';
 import { GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { Block } from '../interfaces/block.interface';
+import { AssetTypes } from '../interfaces/asset.interface';
 
 @Injectable()
 export class GenesisIndexService {
@@ -31,7 +31,7 @@ export class GenesisIndexService {
     // Token asset should be processed first
     decodedAssets.sort((a) => (a.name === AssetTypes.TOKEN ? -1 : 0));
 
-    for (const decodedAsset of decodedAssets) {
+    for await (const decodedAsset of decodedAssets) {
       await this.handleDecodedAssets(decodedAsset);
     }
 

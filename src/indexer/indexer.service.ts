@@ -9,15 +9,20 @@ import { Block, NewBlockEvent } from 'src/node-api/types';
 import { EventService } from 'src/event/event.service';
 import { GatewayEvents } from 'src/event/types';
 import { waitTimeout } from 'src/utils/helpers';
-import { GenesisIndexService } from './genesis/genesis-index.service';
+import { GenesisIndexService } from './startup/genesis-index.service';
 import { StateService } from 'src/state/state.service';
 import { IndexerState, Modules } from 'src/state/types';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { BlockIndexService } from './block/block-index.service';
-import { TransactionIndexService } from './transaction/transaction-index.service';
-import { IndexExtraService } from './extra/indexer-extra.service';
+import { TransactionIndexService } from './block/transaction-index.service';
+import { IndexExtraService } from './startup/indexer-extra.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChainEventIndexService } from './chain-event/chain-event-index.service';
+import { AssetIndexService } from './block/asset-index.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { CheckForBlockFinalityCommand } from './after-block/check-block-finality.command';
+import { UpdateBlockGeneratorCommand } from './after-block/update-block-generator.command';
+import { UpdateBlocksFeeCommand } from './after-block/update-block-fee.command';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -36,9 +41,12 @@ export class IndexerService {
     private readonly nodeApiService: NodeApiService,
     private readonly eventService: EventService,
 
-    private readonly blockIndexService: BlockIndexService,
-    private readonly transactionIndexService: TransactionIndexService,
-    private readonly chainEventIndexService: ChainEventIndexService,
+    private commandBus: CommandBus,
+
+    private blockIndexService: BlockIndexService,
+    private transactionIndexService: TransactionIndexService,
+    private chainEventIndexService: ChainEventIndexService,
+    private assetIndexService: AssetIndexService,
   ) {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
@@ -68,12 +76,22 @@ export class IndexerService {
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
     try {
+      // TODO: move index logic to CQRS pattern?
       const chainEvents = await this.chainEventIndexService.indexChainEvents(blocks);
       const eventCountMap = this.chainEventIndexService.createEventCountMap(chainEvents);
+
       await this.blockIndexService.indexBlocks(blocks, eventCountMap);
-      await this.transactionIndexService.indexTransactions(blocks);
+      const totalBurntPerBlockMap = await this.transactionIndexService.indexTransactions(blocks);
       await this.chainEventIndexService.writeChainEventsToDb(chainEvents);
       await this.chainEventIndexService.processChainEvents(chainEvents);
+      await this.assetIndexService.indexAssets(blocks);
+
+      // after block index
+      await Promise.all([
+        this.commandBus.execute(new CheckForBlockFinalityCommand()),
+        this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents)),
+        this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap)),
+      ]);
 
       // TODO: Emit events for modular use
     } catch (error) {

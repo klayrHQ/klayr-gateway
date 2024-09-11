@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ValidatorRepoService } from './validator.repo-service';
-import { AssetTypes, Validator } from 'src/asset/types';
 import { Prisma, Validator as PrismaValidator } from '@prisma/client';
 import { AccountService } from 'src/account/account.service';
 import {
-  Block,
   ChainEvent,
   ExpectedValidatorRewards,
   PunishmentPeriod,
@@ -12,7 +10,7 @@ import {
   ValidatorInfo,
   ValidatorKeys,
 } from 'src/node-api/types';
-import { ValidatorRewardMap, ValidatorStakedData, ValidatorStatus } from './types';
+import { ValidatorStakedData, ValidatorStatus } from './types';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ChainEvents, GatewayEvents } from 'src/event/types';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
@@ -22,6 +20,7 @@ import { IndexerState, Modules } from 'src/state/types';
 import { StateService } from 'src/state/state.service';
 import { BlockRepoService } from 'src/block/block-repo.service';
 import { StakeService } from 'src/stake/stake.service';
+import { Validator } from 'src/indexer/interfaces/asset.interface';
 
 @Injectable()
 export class ValidatorService {
@@ -184,70 +183,6 @@ export class ValidatorService {
     this.logger.log('Completed updating validator ranks');
   }
 
-  // ! for gateway-index module
-  @OnEvent(GatewayEvents.UPDATE_BLOCK_GENERATOR)
-  public async updateBlockGeneratorAndTotalRewards({
-    blocks,
-    chainEvents,
-  }: {
-    blocks: Block[];
-    chainEvents: ChainEvent[];
-  }) {
-    const validatorData = new Map<string, ValidatorRewardMap>();
-    const chainEventsMap = new Map<number, ChainEvent[]>();
-
-    chainEvents.forEach((event) => {
-      if (!chainEventsMap.has(event.height)) chainEventsMap.set(event.height, []);
-      chainEventsMap.get(event.height)!.push(event);
-    });
-
-    blocks.forEach((block) => {
-      const { height, generatorAddress } = block.header;
-      if (height === 0) return; // Skip genesis block
-
-      const chainEvents = chainEventsMap.get(height) ?? [];
-      const reward = this.getRewardFromEvent(chainEvents);
-      const lockedAmount = this.getLockedAmountFromEvent(chainEvents, generatorAddress);
-
-      const mapData = validatorData.get(generatorAddress) ?? this.createDefaultMap(height);
-      validatorData.set(generatorAddress, {
-        height: height,
-        totalRewards: mapData.totalRewards + BigInt(reward),
-        sharedRewards: mapData.sharedRewards + BigInt(lockedAmount),
-        selfStakeRewards: mapData.selfStakeRewards + (BigInt(reward) - BigInt(lockedAmount)),
-      });
-    });
-
-    await this.updateValidators(validatorData);
-  }
-
-  private async updateValidators(validatorAddresses: Map<string, ValidatorRewardMap>) {
-    for (const [
-      validatorAddress,
-      { height, totalRewards, sharedRewards, selfStakeRewards },
-    ] of validatorAddresses) {
-      const [blockCount, validator] = await Promise.all([
-        this.blockRepo.countBlocks({
-          where: { generatorAddress: validatorAddress },
-        }),
-        this.validatorRepo.getValidator({
-          address: validatorAddress,
-        }),
-      ]);
-
-      await this.validatorRepo.updateValidator({
-        where: { address: validatorAddress },
-        data: {
-          lastGeneratedHeight: height,
-          generatedBlocks: blockCount,
-          totalRewards: validator.totalRewards + totalRewards,
-          totalSharedRewards: validator.totalSharedRewards + sharedRewards,
-          totalSelfStakeRewards: validator.totalSelfStakeRewards + selfStakeRewards,
-        },
-      });
-    }
-  }
-
   // TODO: not sure if punishment period is correct. Should maybe iterate through all periods?
   private calcStatus(validator: PrismaValidator, numberOfActiveValidators: number) {
     if (validator.isBanned) return ValidatorStatus.BANNED;
@@ -356,35 +291,5 @@ export class ValidatorService {
 
   private isBannedOrPunished(status: string): boolean {
     return status === ValidatorStatus.BANNED || status === ValidatorStatus.PUNISHED;
-  }
-
-  private createDefaultMap(height: number): ValidatorRewardMap {
-    return {
-      height,
-      totalRewards: BigInt(0),
-      sharedRewards: BigInt(0),
-      selfStakeRewards: BigInt(0),
-    };
-  }
-
-  private getRewardFromEvent(chainEvents: ChainEvent[]): number {
-    const rewardEvent = chainEvents.find(
-      (event) =>
-        event.name === AssetTypes.REWARD_MINTED && event.module === AssetTypes.DYNAMIC_REWARD,
-    );
-
-    return rewardEvent ? JSON.parse(rewardEvent.data as string).amount : 0;
-  }
-
-  private getLockedAmountFromEvent(chainEvents: ChainEvent[], validatorAddress: string): number {
-    const lockedEvent = chainEvents.find(
-      (event) =>
-        event.name === AssetTypes.LOCK &&
-        event.module === AssetTypes.TOKEN &&
-        JSON.parse(event.data as string).module === AssetTypes.POS &&
-        JSON.parse(event.data as string).address === validatorAddress,
-    );
-
-    return lockedEvent ? JSON.parse(lockedEvent.data as string).amount : 0;
   }
 }

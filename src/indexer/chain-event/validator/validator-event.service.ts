@@ -3,6 +3,7 @@ import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import {
   ExpectedValidatorRewards,
   PunishmentPeriod,
+  Staker,
   ValidatorInfo,
   ValidatorKeys,
 } from 'src/node-api/types';
@@ -82,6 +83,12 @@ export class ValidatorEventService {
     }
 
     this.releaseLock(validatorAddress);
+  }
+
+  public async getStakes(address: string) {
+    return this.nodeApi.invokeApi<Staker>(NodeApi.POS_GET_STAKER, {
+      address: address,
+    });
   }
 
   private async createValidator(val: ValidatorInfo) {

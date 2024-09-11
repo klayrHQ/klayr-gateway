@@ -18,6 +18,7 @@ export class BlockIndexService {
     this.logger.debug('Indexing blocks...');
 
     const processedBlocks = await this.processBlocks(blocks, eventCountMap);
+
     await this.prisma.block.createMany({
       data: processedBlocks,
     });
