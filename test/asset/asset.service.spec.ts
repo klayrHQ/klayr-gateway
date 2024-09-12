@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssetService } from '../../src/asset/asset.service';
 import { AssetRepoService } from 'src/asset/asset-repo.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { PrismaServiceMock, initDB, mockBlock } from 'test/helpers/mock-prisma-service';
 import { testBlock } from 'test/mock-values/node-api-mocks';
-import { Asset, Block } from 'src/node-api/types';
+import { Asset, Block } from 'src/modules/node-api/types';
 import { Payload } from 'src/event/types';
 
 describe('AssetService', () => {

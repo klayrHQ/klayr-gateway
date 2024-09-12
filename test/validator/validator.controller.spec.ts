@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ValidatorController } from '../../src/validator/validator.controller';
+import { ValidatorController } from '../../src/modules/validator/validator.controller';
 
 describe.skip('ValidatorController', () => {
   let controller: ValidatorController;

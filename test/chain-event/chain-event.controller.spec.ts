@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChainEventController } from '../../src/chain-event/chain-event.controller';
+import { ChainEventController } from '../../src/modules/chain-event/chain-event.controller';
 
 describe('ChainEventController', () => {
   let controller: ChainEventController;

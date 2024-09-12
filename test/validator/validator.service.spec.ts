@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountRepoService } from 'src/account/account-repo.service';
 import { AccountService } from 'src/account/account.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { ValidatorRepoService } from 'src/validator/validator.repo-service';
 import { ValidatorService } from 'src/validator/validator.service';
 import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AccountRepoService } from '../../src/account/account-repo.service';
+import { AccountRepoService } from '../../src/modules/account/account-repo.service';
 
 describe.skip('AccountService', () => {
   let service: AccountRepoService;

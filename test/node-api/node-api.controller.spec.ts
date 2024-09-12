@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NodeApiController } from '../../src/node-api/node-api.controller';
+import { NodeApiController } from '../../src/modules/node-api/node-api.controller';
 
 describe.skip('NodeApiController', () => {
   let controller: NodeApiController;
