@@ -1,4 +1,4 @@
-import { NodeApi } from 'src/node-api/node-api.service';
+import { NodeApi } from 'src/modules/node-api/node-api.service';
 import { newBlockArrayMock, newBlockEventMock, testBlock } from 'test/mock-values/node-api-mocks';
 
 export class MockNodeApiService {

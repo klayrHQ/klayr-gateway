@@ -1,4 +1,4 @@
-import { Block, NewBlockEvent } from 'src/node-api/types';
+import { Block, NewBlockEvent } from 'src/modules/node-api/types';
 
 export const mockValidator = {
   address: 'klyythpdte6squq3h95k4xnk8njd65w5akrn8pwc4',

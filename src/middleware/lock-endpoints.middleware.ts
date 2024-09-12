@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { StateService } from 'src/state/state.service';
-import { Modules, IndexerState } from 'src/state/types';
+import { StateService } from 'src/modules/state/state.service';
+import { Modules, IndexerState } from 'src/modules/state/types';
 
 @Injectable()
 export class LockEndpointsMiddleware implements NestMiddleware {
