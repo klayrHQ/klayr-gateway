@@ -13,12 +13,12 @@ import { LokiLogger } from 'nestjs-loki-logger';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { EventIndexService } from './event/event-index.service';
 import { CommandBus } from '@nestjs/cqrs';
-import { CheckForBlockFinalityCommand } from './commands/after-block-event/check-block-finality.command';
-import { UpdateBlockGeneratorCommand } from './commands/after-block-event/update-block-generator.command';
+import { CheckForBlockFinalityCommand } from './commands/post-block-event/check-block-finality.command';
+import { UpdateBlockGeneratorCommand } from './commands/post-block-event/update-block-generator.command';
 import {
   UpdateBlockFee,
   UpdateBlocksFeeCommand,
-} from './commands/after-block-event/update-block-fee.command';
+} from './commands/post-block-event/update-block-fee.command';
 import { IndexGenesisBlockCommand } from './commands/startup/genesis-index.command';
 import { IndexBlockCommand } from './commands/block-event/block-index.command';
 import { IndexTransactionCommand } from './commands/block-event/transaction-index.command';
