@@ -12,7 +12,6 @@ import { ChainEventModule } from './chain-event/chain-event.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StateModule } from './state/state.module';
 import { GeneratorModule } from './generator/generator.module';
-import { DbCacheModule } from './db-cache/db-cache.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchModule } from './search/search.module';
 import { LokiLoggerModule } from 'nestjs-loki-logger';
@@ -34,12 +33,10 @@ import { StakeModule } from './stake/stake.module';
         logToConsole: true,
       }),
     }),
-
     PrismaModule,
     StateModule,
     NodeApiModule,
     EventModule,
-    DbCacheModule,
     BlockModule,
     TransactionModule,
     ValidatorModule,

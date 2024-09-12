@@ -1,21 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AccountService } from 'src/account/account.service';
-
+import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { Logger } from '@nestjs/common';
 import {
   INSERT_KNOWN_ACCOUNTS,
   KNOWN_ACCOUNTS_MAINNET_URL,
   KNOWN_ACCOUNTS_TESTNET_URL,
 } from 'src/utils/constants';
-import { KnownAccounts } from './known-accounts.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { KnownAccounts } from 'src/indexer/interfaces/known-accounts.interface';
 
-@Injectable()
-export class IndexExtraService {
-  private readonly logger = new Logger(IndexExtraService.name);
+export class IndexKnownAccountsCommand implements ICommand {}
 
-  constructor(private readonly accountService: AccountService) {}
+@CommandHandler(IndexKnownAccountsCommand)
+export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAccountsCommand> {
+  private readonly logger = new Logger(IndexKnownAccountsHandler.name);
 
-  async indexExtraService() {
-    this.logger.debug(`Indexing extra service`);
+  constructor(private readonly prisma: PrismaService) {}
+
+  async execute(): Promise<void> {
+    this.logger.debug(`Indexing known accounts`);
     if (INSERT_KNOWN_ACCOUNTS) await this.writeKnownAccounts();
   }
 
@@ -24,9 +26,15 @@ export class IndexExtraService {
     for (const [address, accountInfo] of Object.entries(knownAccounts)) {
       if (address === 'address') continue; // interface in first row
 
-      await this.accountService.updateOrCreateAccount({
-        address: address,
-        name: `${accountInfo.owner} (${accountInfo.description})`,
+      await this.prisma.account.upsert({
+        where: { address },
+        update: {
+          name: `${accountInfo.owner} (${accountInfo.description})`,
+        },
+        create: {
+          address,
+          name: `${accountInfo.owner} (${accountInfo.description})`,
+        },
       });
     }
   }

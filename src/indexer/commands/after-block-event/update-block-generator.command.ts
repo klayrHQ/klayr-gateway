@@ -1,7 +1,7 @@
 import { ICommandHandler, CommandHandler } from '@nestjs/cqrs';
-import { Block } from '../interfaces/block.interface';
-import { ChainEvent } from '../chain-event/chain-event.interface';
-import { AssetTypes } from '../interfaces/asset.interface';
+import { Block } from '../../interfaces/block.interface';
+import { ChainEvent } from '../../interfaces/chain-event.interface';
+import { AssetTypes } from '../../interfaces/asset.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export class UpdateBlockGeneratorCommand {
