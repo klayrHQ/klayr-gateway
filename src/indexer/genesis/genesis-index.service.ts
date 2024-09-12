@@ -47,7 +47,7 @@ export class GenesisIndexService {
         break;
       case AssetTypes.POS:
         this.logger.debug('Genesis POS asset');
-        // ! for volidator-index module
+        // ! for genesis-index module
         await this.eventService.pushToGeneralEventQ({
           event: GatewayEvents.PROCESS_POS_ASSET,
           payload: decodedAsset.message.validators,

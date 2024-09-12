@@ -1,17 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { ChainEvent } from './chainEvent.interface';
+import { ChainEvent } from './chain-event.interface';
 import { Block } from '../interfaces/block.interface';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { TransactionEvents } from 'src/transaction/types';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import {
+  ChainEventGateway,
+  ChainEventTypes,
+  ValidatorBanned,
+  ValidatorCommissionChange,
+  ValidatorPunished,
+  ValidatorRegistered,
+  ValidatorStaked,
+} from './chain-event-pos.gateway';
+import { ValidatorEventService } from './validator/validator-event.service';
 
 @Injectable()
 export class ChainEventIndexService {
+  private chainEventGateways: Record<string, ChainEventGateway> = {};
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly nodeApi: NodeApiService,
-  ) {}
+    private readonly validatorEventService: ValidatorEventService,
+  ) {
+    const s = validatorEventService;
+    this.registerGateway(ChainEventTypes.POS_VALIDATOR_REGISTERED, new ValidatorRegistered(s));
+    this.registerGateway(ChainEventTypes.POS_VALIDATOR_STAKED, new ValidatorStaked(s));
+    this.registerGateway(ChainEventTypes.POS_COMMISSION_CHANGE, new ValidatorCommissionChange(s));
+    this.registerGateway(ChainEventTypes.POS_VALIDATOR_BANNED, new ValidatorBanned(s));
+    this.registerGateway(ChainEventTypes.POS_VALIDATOR_PUNISHED, new ValidatorPunished(s));
+  }
 
   public async indexChainEvents(blocks: Block[]): Promise<ChainEvent[]> {
     const decodedChainEvents = await this.decodeChainEvents(blocks);
@@ -19,6 +39,34 @@ export class ChainEventIndexService {
     await this.writeAccountsToDb(accounts);
 
     return decodedChainEvents;
+  }
+
+  public async processChainEvents(chainEvents: ChainEvent[]) {
+    chainEvents.forEach((e) => {
+      const gateway = this.chainEventGateways[`${e.module}:${e.name}`];
+      if (gateway) {
+        gateway.processChainEvent(e);
+      }
+    });
+  }
+
+  public createEventCountMap(chainEvents: ChainEvent[]): Map<number, number> {
+    const eventCountMap = new Map<number, number>();
+    chainEvents.forEach((event) => {
+      const height = event.height;
+      if (eventCountMap.has(height)) {
+        eventCountMap.set(height, eventCountMap.get(height)! + 1);
+      } else {
+        eventCountMap.set(height, 1);
+      }
+    });
+    return eventCountMap;
+  }
+
+  public async writeChainEventsToDb(events: ChainEvent[]) {
+    await this.prisma.chainEvents.createMany({
+      data: events as Prisma.ChainEventsCreateManyInput[],
+    });
   }
 
   private async decodeChainEvents(blocks: Block[]): Promise<ChainEvent[]> {
@@ -48,21 +96,6 @@ export class ChainEventIndexService {
     return accounts;
   }
 
-  public async writeChainEventsToDb(events: ChainEvent[]) {
-    await this.prisma.chainEvents.createMany({
-      data: events as Prisma.ChainEventsCreateManyInput[],
-    });
-
-    // ! probably handle events first before emitting
-    // events.forEach(async (e) => {
-    //   await this.eventService.pushToGeneralEventQ({
-    //     //TODO: Fix this type, dont know a clean solution yet
-    //     event: `${e.module}:${e.name}` as any,
-    //     payload: e,
-    //   });
-    // });
-  }
-
   private async writeAccountsToDb(accounts: { address: string }[]) {
     if (accounts.length > 0) return;
     for await (const { address } of accounts) {
@@ -90,5 +123,9 @@ export class ChainEventIndexService {
     }
     const data = this.nodeApi.decodeEventData(event.module, event.name, event.data as string);
     return JSON.stringify(data);
+  }
+
+  private registerGateway(chainEvent: ChainEventTypes, gateway: ChainEventGateway) {
+    this.chainEventGateways[chainEvent] = gateway;
   }
 }

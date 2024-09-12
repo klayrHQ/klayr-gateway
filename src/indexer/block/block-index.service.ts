@@ -14,10 +14,10 @@ export class BlockIndexService {
     private readonly nodeApi: NodeApiService,
   ) {}
 
-  public async indexBlocks(blocks: Block[]): Promise<void> {
+  public async indexBlocks(blocks: Block[], eventCountMap: Map<number, number>): Promise<void> {
     this.logger.debug('Indexing blocks...');
 
-    const processedBlocks = await this.processBlocks(blocks);
+    const processedBlocks = await this.processBlocks(blocks, eventCountMap);
     await this.prisma.block.createMany({
       data: processedBlocks,
     });
@@ -25,11 +25,8 @@ export class BlockIndexService {
 
   private async processBlocks(
     blocks: Block[],
-    // chainEvents: ChainEvent[],
+    eventCountMap: Map<number, number>,
   ): Promise<ProcessedBlockHeader[]> {
-    // ! for event-index module
-    // const eventCountMap = this.createEventCountMap(chainEvents);
-
     const promises = blocks.map(async (block) => {
       const { reward } = await this.nodeApi.invokeApi<RewardAtHeight>(
         NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
@@ -41,9 +38,7 @@ export class BlockIndexService {
         reward,
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
-        numberOfEvents: 0,
-        // ! for event-index module
-        // numberOfEvents: eventCountMap.get(block.header.height) || 0,
+        numberOfEvents: eventCountMap.get(block.header.height) || 0,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),
         totalForged: Number(reward),
       };
