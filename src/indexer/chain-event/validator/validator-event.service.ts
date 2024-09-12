@@ -15,8 +15,6 @@ import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 import { Validator as PrismaValidator } from '@prisma/client';
 import { ValidatorStatus } from './types';
 import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants';
-import { OnEvent } from '@nestjs/event-emitter';
-import { GatewayEvents } from 'src/event/types';
 
 @Injectable()
 export class ValidatorEventService {
@@ -29,12 +27,6 @@ export class ValidatorEventService {
     private readonly state: StateService,
     private readonly nodeApi: NodeApiService,
   ) {}
-
-  // ! probably to gateway index module will see
-  @OnEvent(GatewayEvents.INDEXER_STATE_CHANGE_INDEXING)
-  public async handleStateChange() {
-    await this.updateValidatorRanks();
-  }
 
   public async handleValidatorEvent(address: string) {
     await this.processValidatorEvent(address);

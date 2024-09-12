@@ -1,23 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { Block, ProcessedBlockHeader } from '../interfaces/block.interface';
+import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { RewardAtHeight } from 'src/node-api/types';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Block, ProcessedBlockHeader } from '../../interfaces/block.interface';
 import { LokiLogger } from 'nestjs-loki-logger';
 
-@Injectable()
-export class BlockIndexService {
-  private readonly logger = new LokiLogger(BlockIndexService.name);
+export class IndexBlockCommand implements ICommand {
+  constructor(
+    public readonly blocks: Block[],
+    public readonly eventCountMap: Map<number, number>,
+  ) {}
+}
+
+@CommandHandler(IndexBlockCommand)
+export class IndexBlockHandler implements ICommandHandler<IndexBlockCommand> {
+  private readonly logger = new LokiLogger(IndexBlockHandler.name);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly nodeApi: NodeApiService,
   ) {}
 
-  public async indexBlocks(blocks: Block[], eventCountMap: Map<number, number>): Promise<void> {
+  async execute(command: IndexBlockCommand): Promise<void> {
     this.logger.debug('Indexing blocks...');
 
-    const processedBlocks = await this.processBlocks(blocks, eventCountMap);
+    const processedBlocks = await this.processBlocks(command.blocks, command.eventCountMap);
 
     await this.prisma.block.createMany({
       data: processedBlocks,

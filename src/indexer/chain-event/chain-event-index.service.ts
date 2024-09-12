@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChainEvent } from './chain-event.interface';
+import { ChainEvent } from '../interfaces/chain-event.interface';
 import { Block } from '../interfaces/block.interface';
 import { NodeApi, NodeApiService } from 'src/node-api/node-api.service';
 import { TransactionEvents } from 'src/transaction/types';
@@ -27,7 +27,11 @@ export class ChainEventIndexService {
     private readonly nodeApi: NodeApiService,
     private readonly validatorEventService: ValidatorEventService,
   ) {
-    const s = validatorEventService;
+    this.initializeGateways();
+  }
+
+  private initializeGateways() {
+    const s = this.validatorEventService;
     this.registerGateway(ChainEventTypes.POS_VALIDATOR_REGISTERED, new ValidatorRegistered(s));
     this.registerGateway(ChainEventTypes.POS_VALIDATOR_STAKED, new ValidatorStaked(s));
     this.registerGateway(ChainEventTypes.POS_COMMISSION_CHANGE, new ValidatorCommissionChange(s));
@@ -35,14 +39,16 @@ export class ChainEventIndexService {
     this.registerGateway(ChainEventTypes.POS_VALIDATOR_PUNISHED, new ValidatorPunished(s));
   }
 
-  public async indexChainEvents(blocks: Block[]): Promise<ChainEvent[]> {
+  public async indexChainEvents(blocks: Block[]): Promise<[ChainEvent[], Map<number, number>]> {
     this.logger.debug(`Indexing chain events for ${blocks.length} blocks`);
 
     const decodedChainEvents = await this.decodeChainEvents(blocks);
     const accounts = await this.getAccountsFromChainEvents(decodedChainEvents);
     await this.writeAccountsToDb(accounts);
 
-    return decodedChainEvents;
+    const eventCountMap = this.createEventCountMap(decodedChainEvents);
+
+    return [decodedChainEvents, eventCountMap];
   }
 
   public async processChainEvents(chainEvents: ChainEvent[]) {

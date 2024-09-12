@@ -1,4 +1,4 @@
-import { ChainEvent } from './chain-event.interface';
+import { ChainEvent } from '../interfaces/chain-event.interface';
 import { ValidatorEventService } from './validator/validator-event.service';
 
 export enum ChainEventTypes {

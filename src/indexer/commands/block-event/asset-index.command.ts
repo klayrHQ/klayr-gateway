@@ -1,19 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { Asset, Block } from '../interfaces/block.interface';
-import { AssetTypes } from '../interfaces/asset.interface';
+import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Asset, Block } from '../../interfaces/block.interface';
+import { AssetTypes } from '../../interfaces/asset.interface';
 import { Payload } from 'src/event/types';
 import { LokiLogger } from 'nestjs-loki-logger';
 
-@Injectable()
-export class AssetIndexService {
-  private readonly logger = new LokiLogger(AssetIndexService.name);
+export class IndexAssetCommand implements ICommand {
+  constructor(public readonly blocks: Block[]) {}
+}
+
+@CommandHandler(IndexAssetCommand)
+export class IndexAssetHandler implements ICommandHandler<IndexAssetCommand> {
+  private readonly logger = new LokiLogger(IndexAssetHandler.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  public async indexAssets(blocks: Block[]) {
-    // this.logger.debug('Asset module: New asset event');
-    const assets = this.processAssets(blocks);
+  async execute(command: IndexAssetCommand): Promise<void> {
+    this.logger.debug('Indexing assets...');
+    const assets = this.processAssets(command.blocks);
 
     const assetsInput = assets.flatMap(({ height, data }) =>
       data.map((asset) => ({

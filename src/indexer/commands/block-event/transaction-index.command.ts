@@ -1,29 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { NodeApiService } from 'src/node-api/node-api.service';
+import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NodeApiService } from 'src/node-api/node-api.service';
 import { LokiLogger } from 'nestjs-loki-logger';
-import { Block, Transaction } from '../interfaces/block.interface';
+import { Block, Transaction } from '../../interfaces/block.interface';
 import { Payload } from 'src/event/types';
-import { TxEvents, UpdateBlockFee } from '../interfaces/transaction.interface';
+import { TxEvents, UpdateBlockFee } from '../../interfaces/transaction.interface';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { Prisma } from '@prisma/client';
 
-@Injectable()
-export class TransactionIndexService {
-  private readonly logger = new LokiLogger(TransactionIndexService.name);
+export class IndexTransactionCommand implements ICommand {
+  constructor(public readonly blocks: Block[]) {}
+}
+
+@CommandHandler(IndexTransactionCommand)
+export class IndexTransactionHandler implements ICommandHandler<IndexTransactionCommand> {
+  private readonly logger = new LokiLogger(IndexTransactionHandler.name);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly nodeApi: NodeApiService,
   ) {}
 
-  public async indexTransactions(blocks: Block[]): Promise<Map<number, UpdateBlockFee>> {
+  async execute(command: IndexTransactionCommand): Promise<Map<number, UpdateBlockFee>> {
     this.logger.debug('Indexing transactions...');
-    const transactions = this.getTransactionsOutOfBlocks(blocks);
+    const transactions = this.getTransactionsOutOfBlocks(command.blocks);
 
     const { accounts, processedTxs, totalBurntPerBlock } =
       await this.processTransactions(transactions);
-    if (!processedTxs || processedTxs.length === 0) return;
+    if (!processedTxs || processedTxs.length === 0) return new Map();
 
     await this.upsertAccounts(accounts);
 
@@ -43,7 +47,7 @@ export class TransactionIndexService {
       }));
   }
 
-  public async processTransactions(payload: Payload<Transaction>[]) {
+  private async processTransactions(payload: Payload<Transaction>[]) {
     const totalBurntPerBlock = new Map<number, UpdateBlockFee>();
     const accounts = new Map<string, { publicKey: string; nonce: string }>();
 
