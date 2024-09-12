@@ -142,7 +142,6 @@ export class NodeApiService {
     return codec.decodeJSON(schema.assets[0].data, Buffer.from(data, 'hex'));
   }
 
-  // TODO: Cant import type
   public calcMinFee(tx: any) {
     return this.client.transaction.computeMinFee(tx).toString();
   }

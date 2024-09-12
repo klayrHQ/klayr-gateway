@@ -82,7 +82,6 @@ export class IndexerService {
 
   private async executeStartUpCommands() {
     if (this.state.get(Modules.INDEXER) === IndexerState.START_UP) {
-      // ! not needed for refactor
       await this.commandBus.execute(new IndexGenesisBlockCommand());
       await this.commandBus.execute(new IndexKnownAccountsCommand());
     }
@@ -184,7 +183,6 @@ export class IndexerService {
 
         setImmediate(() => {
           this.syncWithNode().catch((error) => {
-            // TODO: Fix restart state, now it goes to restart on prisma errors etc..
             // this.state.set(Modules.INDEXER, IndexerState.RESTART);
             this.logger.error('Error syncing with node, will retry', error);
           });
