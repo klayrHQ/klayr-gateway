@@ -16,15 +16,17 @@ import { ValidatorStatus } from '../types';
 import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants';
 import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 import { IndexerState, Modules } from 'src/modules/state/types';
+import { Mutex } from 'async-mutex';
 
 export class ProcessValidatorCommand implements ICommand {
   constructor(public readonly validatorAddress: string) {}
 }
 
+const validatorMutex = new Mutex();
+
 @CommandHandler(ProcessValidatorCommand)
 export class ProcessValidatorHandler implements ICommandHandler<ProcessValidatorCommand> {
   private readonly logger = new LokiLogger(ProcessValidatorHandler.name);
-  private lockStore = new Map<string, boolean>();
   private isUpdatingValidators = false;
 
   constructor(
@@ -35,7 +37,15 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
 
   async execute(command: ProcessValidatorCommand): Promise<void> {
     const { validatorAddress } = command;
-    await this.processValidatorEvent(validatorAddress);
+    const release = await validatorMutex.acquire();
+
+    try {
+      await this.processValidatorEvent(validatorAddress);
+    } catch (error) {
+      this.logger.error(error);
+    } finally {
+      release();
+    }
 
     if (this.state.get(Modules.INDEXER) === IndexerState.INDEXING) {
       await this.updateValidatorRanks();
@@ -43,8 +53,6 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
   }
 
   private async processValidatorEvent(validatorAddress: string) {
-    if (!this.acquireLock(validatorAddress)) return;
-
     const [validatorInfo, expectedRewards, validatorExists] = await Promise.all([
       this.getValidatorPosInfo(validatorAddress),
       this.getExpectedValidatorRewards(validatorAddress),
@@ -79,8 +87,6 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
         },
       });
     }
-
-    this.releaseLock(validatorAddress);
   }
 
   private async createValidator(val: ValidatorInfo) {
@@ -211,16 +217,5 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
     return totalStakeBigInt < selfStakeBigInt * tenBigInt
       ? totalStakeBigInt
       : selfStakeBigInt * tenBigInt;
-  }
-
-  private acquireLock(key: string): boolean {
-    if (this.lockStore.get(key)) return false;
-
-    this.lockStore.set(key, true);
-    return true;
-  }
-
-  private releaseLock(key: string) {
-    this.lockStore.delete(key);
   }
 }

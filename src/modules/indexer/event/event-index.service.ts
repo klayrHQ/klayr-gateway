@@ -5,27 +5,14 @@ import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { TransactionEvents } from 'src/modules/transaction/types';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import {
-  PosEventTypes,
-  PosExecutionResult,
-  ValidatorBanned,
-  ValidatorCommissionChange,
-  ValidatorPunished,
-  ValidatorRegistered,
-  ValidatorStaked,
-} from './gateways/pos.gateway';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { EventGateway } from './gateways/event.gateway';
-import { TokenCommandExecutionResult, TokenEventTypes } from './gateways/token.gateway';
 import { CommandBus } from '@nestjs/cqrs';
-import {
-  InteroperabilityCommandExecutionResult,
-  InteroperabilityEventTypes,
-} from './gateways/interoperability.gateway';
+import { eventGatewayMap, eventFilterMap } from './event.config';
 
 @Injectable()
-export class ChainEventIndexService {
-  private readonly logger = new LokiLogger(ChainEventIndexService.name);
+export class EventIndexService {
+  private readonly logger = new LokiLogger(EventIndexService.name);
   private eventGateways: Record<string, EventGateway> = {};
 
   constructor(
@@ -39,22 +26,12 @@ export class ChainEventIndexService {
   private initializeGateways() {
     const bus = this.commandBus;
     const api = this.nodeApi;
-    this.registerGateway(PosEventTypes.POS_VALIDATOR_REGISTERED, new ValidatorRegistered(bus));
-    this.registerGateway(PosEventTypes.POS_VALIDATOR_STAKED, new ValidatorStaked(bus, api));
-    this.registerGateway(PosEventTypes.POS_COMMISSION_CHANGE, new ValidatorCommissionChange(bus));
-    this.registerGateway(PosEventTypes.POS_VALIDATOR_BANNED, new ValidatorBanned(bus));
-    this.registerGateway(PosEventTypes.POS_VALIDATOR_PUNISHED, new ValidatorPunished(bus));
-    this.registerGateway(PosEventTypes.POS_COMMAND_EXECUTION_RESULT, new PosExecutionResult(bus));
 
-    this.registerGateway(
-      TokenEventTypes.TOKEN_COMMAND_EXECUTION_RESULT,
-      new TokenCommandExecutionResult(bus),
-    );
-
-    this.registerGateway(
-      InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT,
-      new InteroperabilityCommandExecutionResult(bus),
-    );
+    Object.keys(eventGatewayMap).forEach((type) => {
+      const GatewayClass = eventGatewayMap[type];
+      const gatewayInstance = new GatewayClass(bus, api);
+      this.registerGateway(type, gatewayInstance);
+    });
   }
 
   public async indexChainEvents(blocks: Block[]): Promise<[ChainEvent[], Map<number, number>]> {
@@ -69,9 +46,16 @@ export class ChainEventIndexService {
     return [decodedChainEvents, eventCountMap];
   }
 
-  // TODO: fix double entries problem
   public async processChainEvents(chainEvents: ChainEvent[]) {
-    chainEvents.forEach((e) => {
+    const seenAddresses = new Set<string>();
+
+    const filteredEvents = chainEvents.filter((event) => {
+      const type = `${event.module}:${event.name}`;
+      const filterFunction = eventFilterMap[type];
+      return filterFunction ? filterFunction({ event, type, seenAddresses }) : false;
+    });
+
+    filteredEvents.forEach((e) => {
       const gateway = this.eventGateways[`${e.module}:${e.name}`];
       if (!gateway) return;
       gateway.processChainEvent(e);
@@ -153,10 +137,7 @@ export class ChainEventIndexService {
     return JSON.stringify(data);
   }
 
-  private registerGateway(
-    chainEvent: PosEventTypes | TokenEventTypes | InteroperabilityEventTypes,
-    gateway: EventGateway,
-  ) {
+  private registerGateway(chainEvent: string, gateway: EventGateway) {
     this.eventGateways[chainEvent] = gateway;
   }
 }

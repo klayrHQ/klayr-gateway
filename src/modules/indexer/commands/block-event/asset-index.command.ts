@@ -3,7 +3,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { Asset, Block } from '../../interfaces/block.interface';
 import { AssetTypes } from '../../interfaces/asset.interface';
 import { LokiLogger } from 'nestjs-loki-logger';
-import { Payload } from 'src/modules/indexer/chain-event/types';
+import { Payload } from 'src/modules/indexer/event/types';
 
 export class IndexAssetCommand implements ICommand {
   constructor(public readonly blocks: Block[]) {}

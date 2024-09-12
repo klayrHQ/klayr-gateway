@@ -4,7 +4,7 @@ import { NodeApiModule } from 'src/modules/node-api/node-api.module';
 import { IndexGenesisBlockHandler } from './commands/startup/genesis-index.command';
 import { StateModule } from 'src/modules/state/state.module';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { ChainEventIndexService } from './chain-event/chain-event-index.service';
+import { EventIndexService } from './event/event-index.service';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CheckForBlockFinalityHandler } from './commands/after-block-event/check-block-finality.command';
 import { UpdateBlockGeneratorHandler } from './commands/after-block-event/update-block-generator.command';
@@ -13,9 +13,9 @@ import { IndexKnownAccountsHandler } from './commands/startup/known-accounts.com
 import { IndexBlockHandler } from './commands/block-event/block-index.command';
 import { IndexTransactionHandler } from './commands/block-event/transaction-index.command';
 import { IndexAssetHandler } from './commands/block-event/asset-index.command';
-import { ExecutionResultHandler } from './chain-event/commands/execution-result.command';
-import { ProcessValidatorHandler } from './chain-event/commands/process-validator.command';
-import { AddStakesHandler } from './chain-event/commands/add-stakes.command';
+import { ExecutionResultHandler } from './event/commands/execution-result.command';
+import { ProcessValidatorHandler } from './event/commands/process-validator.command';
+import { AddStakesHandler } from './event/commands/add-stakes.command';
 
 @Module({
   imports: [CqrsModule, StateModule, NodeApiModule],
@@ -23,7 +23,7 @@ import { AddStakesHandler } from './chain-event/commands/add-stakes.command';
   providers: [
     PrismaService,
     IndexerService,
-    ChainEventIndexService,
+    EventIndexService,
 
     // startup commands
     IndexKnownAccountsHandler,
