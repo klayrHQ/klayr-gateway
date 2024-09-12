@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { Block, Transaction } from '../interfaces/block.interface';
 import { Payload } from 'src/event/types';
-import { UpdateBlockFee } from '../interfaces/transaction.interface';
+import { TxEvents, UpdateBlockFee } from '../interfaces/transaction.interface';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { Prisma } from '@prisma/client';
 
@@ -17,11 +17,12 @@ export class TransactionIndexService {
     private readonly nodeApi: NodeApiService,
   ) {}
 
-  public async indexTransactions(blocks: Block[]): Promise<void> {
+  public async indexTransactions(blocks: Block[]): Promise<Map<number, UpdateBlockFee>> {
     this.logger.debug('Indexing transactions...');
     const transactions = this.getTransactionsOutOfBlocks(blocks);
 
-    const { accounts, processedTxs } = await this.processTransactions(transactions);
+    const { accounts, processedTxs, totalBurntPerBlock } =
+      await this.processTransactions(transactions);
     if (!processedTxs || processedTxs.length === 0) return;
 
     await this.upsertAccounts(accounts);
@@ -29,6 +30,8 @@ export class TransactionIndexService {
     await this.prisma.transaction.createMany({
       data: processedTxs,
     });
+
+    return totalBurntPerBlock;
   }
 
   private getTransactionsOutOfBlocks(blocks: Block[]): Payload<Transaction>[] {
@@ -59,13 +62,7 @@ export class TransactionIndexService {
       ),
     );
 
-    return { processedTxs, accounts };
-
-    // ! for gateway-index module
-    // await this.eventService.pushToGeneralEventQ({
-    //   event: GatewayEvents.UPDATE_BLOCK_FEE,
-    //   payload: totalBurntPerBlock,
-    // });
+    return { processedTxs, accounts, totalBurntPerBlock };
   }
 
   private async createTransaction(params: {
@@ -87,12 +84,12 @@ export class TransactionIndexService {
       accounts.set(senderAddress, { publicKey: tx.senderPublicKey, nonce: tx.nonce });
     }
 
-    if (recipientAddress && recipientAddress) accounts.set(recipientAddress, {});
+    if (recipientAddress && !accounts.get(recipientAddress)) accounts.set(recipientAddress, {});
 
     // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
-    // if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
-    //   await this.handlePosStake(txParams);
-    // }
+    if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
+      await this.handlePosStake(txParams);
+    }
 
     return {
       id: tx.id,
@@ -146,5 +143,18 @@ export class TransactionIndexService {
       signatures: tx.signatures,
       params: tx.params,
     });
+  }
+
+  private async handlePosStake(txParams: any): Promise<void> {
+    await Promise.all(
+      txParams.stakes.map(
+        async (stake: { validatorAddress: string; amount: string; name?: string }) => {
+          const account = await this.prisma.account.findUnique({
+            where: { address: stake.validatorAddress },
+          });
+          if (account.name) stake.name = account.name;
+        },
+      ),
+    );
   }
 }

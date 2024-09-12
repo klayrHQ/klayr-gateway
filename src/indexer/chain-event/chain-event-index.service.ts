@@ -15,9 +15,11 @@ import {
   ValidatorStaked,
 } from './chain-event-pos.gateway';
 import { ValidatorEventService } from './validator/validator-event.service';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 @Injectable()
 export class ChainEventIndexService {
+  private readonly logger = new LokiLogger(ChainEventIndexService.name);
   private chainEventGateways: Record<string, ChainEventGateway> = {};
 
   constructor(
@@ -34,6 +36,8 @@ export class ChainEventIndexService {
   }
 
   public async indexChainEvents(blocks: Block[]): Promise<ChainEvent[]> {
+    this.logger.debug(`Indexing chain events for ${blocks.length} blocks`);
+
     const decodedChainEvents = await this.decodeChainEvents(blocks);
     const accounts = await this.getAccountsFromChainEvents(decodedChainEvents);
     await this.writeAccountsToDb(accounts);
@@ -44,9 +48,8 @@ export class ChainEventIndexService {
   public async processChainEvents(chainEvents: ChainEvent[]) {
     chainEvents.forEach((e) => {
       const gateway = this.chainEventGateways[`${e.module}:${e.name}`];
-      if (gateway) {
-        gateway.processChainEvent(e);
-      }
+      if (!gateway) return;
+      gateway.processChainEvent(e);
     });
   }
 
@@ -97,7 +100,7 @@ export class ChainEventIndexService {
   }
 
   private async writeAccountsToDb(accounts: { address: string }[]) {
-    if (accounts.length > 0) return;
+    if (accounts.length === 0) return;
     for await (const { address } of accounts) {
       await this.prisma.account.upsert({
         where: { address },
