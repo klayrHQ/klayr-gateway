@@ -61,7 +61,7 @@ export class IndexerService {
     });
   }
 
-  private async handleNewBlockEvent(blocks: Block[]): Promise<void> {
+  private async executeNewBlockCommands(blocks: Block[]): Promise<void> {
     this.logger.debug(
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
@@ -158,7 +158,7 @@ export class IndexerService {
 
       // modifying the blocks array here
       await Promise.all([
-        this.handleNewBlockEvent(blocks.reverse()),
+        this.executeNewBlockCommands(blocks.reverse()),
         this.nodeApi.cacheNodeApiOnNewBlock(),
         this.updateNextBlockToSync(blocks.at(-1).header.height + 1),
       ]);
@@ -196,7 +196,7 @@ export class IndexerService {
       });
 
       await Promise.all([
-        this.handleNewBlockEvent([block]),
+        this.executeNewBlockCommands([block]),
         this.nodeApi.cacheNodeApiOnNewBlock(),
         this.updateNextBlockToSync(newBlockHeight + 1),
       ]);
