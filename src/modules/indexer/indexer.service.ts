@@ -61,29 +61,48 @@ export class IndexerService {
     });
   }
 
-  private async executeNewBlockCommands(blocks: Block[]): Promise<void> {
+  private async executeStartUpCommands() {
+    if (this.state.get(Modules.INDEXER) !== IndexerState.START_UP) return;
+    await this.commandBus.execute(new IndexGenesisBlockCommand());
+    await this.commandBus.execute(new IndexKnownAccountsCommand());
+  }
+
+  private async executeBlockEventCommands(
+    blocks: Block[],
+  ): Promise<[ChainEvent[], Map<number, UpdateBlockFee>]> {
+    const [chainEvents, eventCountMap] = await this.indexChainEvents(blocks);
+    await this.indexBlocks(blocks, eventCountMap);
+    const totalBurntPerBlockMap = await this.indexTransactions(blocks);
+    await this.writeAndProcessChainEvents(chainEvents);
+    await this.indexAssets(blocks);
+
+    return [chainEvents, totalBurntPerBlockMap];
+  }
+
+  private async executePostIndexCommands(
+    blocks: Block[],
+    chainEvents: any[],
+    totalBurntPerBlockMap: Map<number, any>,
+  ) {
+    await Promise.all([
+      this.commandBus.execute(new CheckForBlockFinalityCommand()),
+      this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents)),
+      this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap)),
+    ]);
+  }
+
+  private async handleNewBlockEvent(blocks: Block[]): Promise<void> {
     this.logger.debug(
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
     try {
-      const [chainEvents, eventCountMap] = await this.indexChainEvents(blocks);
-      await this.indexBlocks(blocks, eventCountMap);
-      const totalBurntPerBlockMap = await this.indexTransactions(blocks);
-      await this.writeAndProcessChainEvents(chainEvents);
-      await this.indexAssets(blocks);
+      const [chainEvents, totalBurntPerBlockMap] = await this.executeBlockEventCommands(blocks);
 
       await this.executePostIndexCommands(blocks, chainEvents, totalBurntPerBlockMap);
 
       // TODO: Emit events for modular use
     } catch (error) {
       this.logger.error('Error handling new block event', error);
-    }
-  }
-
-  private async executeStartUpCommands() {
-    if (this.state.get(Modules.INDEXER) === IndexerState.START_UP) {
-      await this.commandBus.execute(new IndexGenesisBlockCommand());
-      await this.commandBus.execute(new IndexKnownAccountsCommand());
     }
   }
 
@@ -106,18 +125,6 @@ export class IndexerService {
 
   private async indexAssets(blocks: Block[]): Promise<void> {
     await this.commandBus.execute(new IndexAssetCommand(blocks));
-  }
-
-  private async executePostIndexCommands(
-    blocks: Block[],
-    chainEvents: any[],
-    totalBurntPerBlockMap: Map<number, any>,
-  ) {
-    await Promise.all([
-      this.commandBus.execute(new CheckForBlockFinalityCommand()),
-      this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents)),
-      this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap)),
-    ]);
   }
 
   private async setNextBlockandState() {
@@ -158,7 +165,7 @@ export class IndexerService {
 
       // modifying the blocks array here
       await Promise.all([
-        this.executeNewBlockCommands(blocks.reverse()),
+        this.handleNewBlockEvent(blocks.reverse()),
         this.nodeApi.cacheNodeApiOnNewBlock(),
         this.updateNextBlockToSync(blocks.at(-1).header.height + 1),
       ]);
@@ -196,7 +203,7 @@ export class IndexerService {
       });
 
       await Promise.all([
-        this.executeNewBlockCommands([block]),
+        this.handleNewBlockEvent([block]),
         this.nodeApi.cacheNodeApiOnNewBlock(),
         this.updateNextBlockToSync(newBlockHeight + 1),
       ]);
