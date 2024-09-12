@@ -11,7 +11,7 @@ import { StateService } from 'src/modules/state/state.service';
 import { IndexerState, Modules } from 'src/modules/state/types';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { ChainEventIndexService } from './chain-event/chain-event-index.service';
+import { EventIndexService } from './event/event-index.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { CheckForBlockFinalityCommand } from './commands/after-block-event/check-block-finality.command';
 import { UpdateBlockGeneratorCommand } from './commands/after-block-event/update-block-generator.command';
@@ -41,7 +41,7 @@ export class IndexerService {
     private readonly nodeApi: NodeApiService,
 
     private commandBus: CommandBus,
-    private chainEventIndexService: ChainEventIndexService,
+    private chainEventIndexService: EventIndexService,
   ) {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }

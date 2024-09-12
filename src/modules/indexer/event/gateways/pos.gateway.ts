@@ -6,6 +6,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { Staker } from 'src/modules/node-api/types';
 import { ChainEvent } from 'src/modules/indexer/interfaces/chain-event.interface';
 import { AddStakesCommand } from '../commands/add-stakes.command';
+import { PosValidatorStaked } from '../types';
 
 export enum PosEventTypes {
   VALIDATORS_GENERATOR_KEY_REGISTRATION = 'validators:generatorKeyRegistration',
@@ -17,7 +18,6 @@ export enum PosEventTypes {
   POS_COMMISSION_CHANGE = 'pos:commissionChange',
   POS_REWARDS_ASSIGNED = 'pos:rewardsAssigned',
   POS_COMMAND_EXECUTION_RESULT = 'pos:commandExecutionResult',
-  INTEROPERABILITY_COMMAND_EXECUTION_RESULT = 'interoperability:commandExecutionResult',
 
   // not used yet will be moved
   // DYNAMIC_REWARD_REWARD_MINTED = 'dynamicReward:rewardMinted',
@@ -67,8 +67,7 @@ export class ValidatorStaked extends EventGateway {
   }
 
   async processChainEvent(event: ChainEvent): Promise<void> {
-    const { senderAddress } = JSON.parse(event.data as string);
-
+    const { senderAddress } = JSON.parse(event.data as string) as PosValidatorStaked;
     const stakes = await this.nodeApi.invokeApi<Staker>(NodeApi.POS_GET_STAKER, {
       address: senderAddress,
     });
