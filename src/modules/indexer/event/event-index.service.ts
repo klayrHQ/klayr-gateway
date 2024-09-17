@@ -57,11 +57,11 @@ export class EventIndexService {
       return filterFunction ? filterFunction({ event, type, seenAddresses }) : false;
     });
 
-    filteredEvents.forEach((e) => {
+    for await (const e of filteredEvents) {
       const gateway = this.eventGateways[`${e.module}:${e.name}`];
-      if (!gateway) return;
-      gateway.processChainEvent(e);
-    });
+      if (!gateway) continue;
+      await gateway.processChainEvent(e);
+    }
   }
 
   public createEventCountMap(chainEvents: ChainEvent[]): Map<number, number> {
