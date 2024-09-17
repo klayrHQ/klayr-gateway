@@ -68,6 +68,5 @@ export const HEX_ADDRESS_LENGTH = 40;
 ///      Indexer Extra   ///
 ////////////////////////////
 
-export const INSERT_KNOWN_ACCOUNTS = true;
 export const KNOWN_ACCOUNTS_MAINNET_URL = 'https://static-data.klayr.xyz/known_mainnet.json';
 export const KNOWN_ACCOUNTS_TESTNET_URL = 'https://static-data.klayr.xyz/known_testnet.json';

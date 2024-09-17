@@ -1,10 +1,6 @@
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { Logger } from '@nestjs/common';
-import {
-  INSERT_KNOWN_ACCOUNTS,
-  KNOWN_ACCOUNTS_MAINNET_URL,
-  KNOWN_ACCOUNTS_TESTNET_URL,
-} from 'src/utils/constants';
+import { KNOWN_ACCOUNTS_MAINNET_URL, KNOWN_ACCOUNTS_TESTNET_URL } from 'src/utils/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { KnownAccounts } from 'src/modules/indexer/interfaces/known-accounts.interface';
 
@@ -18,7 +14,7 @@ export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAcco
 
   async execute(): Promise<void> {
     this.logger.debug(`Indexing known accounts`);
-    if (INSERT_KNOWN_ACCOUNTS) await this.writeKnownAccounts();
+    if (process.env.INDEX_KNOWN_ACCOUNTS === 'true') await this.writeKnownAccounts();
   }
 
   private async writeKnownAccounts() {
