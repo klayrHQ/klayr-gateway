@@ -13,18 +13,19 @@ import { LokiLogger } from 'nestjs-loki-logger';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { EventIndexService } from './event/event-index.service';
 import { CommandBus } from '@nestjs/cqrs';
-import { CheckForBlockFinalityCommand } from './commands/post-block-event/check-block-finality.command';
-import { UpdateBlockGeneratorCommand } from './commands/post-block-event/update-block-generator.command';
+import { CheckForBlockFinalityCommand } from './block/post-block-commands/check-block-finality.command';
+import { UpdateBlockGeneratorCommand } from './block/post-block-commands/update-block-generator.command';
 import {
   UpdateBlockFee,
   UpdateBlocksFeeCommand,
-} from './commands/post-block-event/update-block-fee.command';
-import { IndexGenesisBlockCommand } from './commands/startup/genesis-index.command';
-import { IndexBlockCommand } from './commands/block-event/block-index.command';
-import { IndexTransactionCommand } from './commands/block-event/transaction-index.command';
-import { IndexAssetCommand } from './commands/block-event/asset-index.command';
+} from './block/post-block-commands/update-block-fee.command';
+import { IndexGenesisBlockCommand } from './startup/genesis-index.command';
+import { IndexBlockCommand } from './block/block-commands/block-index.command';
+import { IndexTransactionCommand } from './block/block-commands/transaction-index.command';
+import { IndexAssetCommand } from './block/block-commands/asset-index.command';
 import { ChainEvent } from './interfaces/chain-event.interface';
-import { IndexKnownAccountsCommand } from './commands/startup/known-accounts.command';
+import { IndexKnownAccountsCommand } from './startup/known-accounts.command';
+import { UpdateValidatorRanks } from './event/commands/update-validator-ranks.command';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -41,7 +42,7 @@ export class IndexerService {
     private readonly nodeApi: NodeApiService,
 
     private commandBus: CommandBus,
-    private chainEventIndexService: EventIndexService,
+    private eventIndexService: EventIndexService,
   ) {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
@@ -71,24 +72,27 @@ export class IndexerService {
     blocks: Block[],
   ): Promise<[ChainEvent[], Map<number, UpdateBlockFee>]> {
     const [chainEvents, eventCountMap] = await this.indexChainEvents(blocks);
-    await this.indexBlocks(blocks, eventCountMap);
+    await this.indexBlockHeader(blocks, eventCountMap);
     const totalBurntPerBlockMap = await this.indexTransactions(blocks);
-    await this.writeAndProcessChainEvents(chainEvents);
     await this.indexAssets(blocks);
+
+    await this.writeAndProcessChainEvents(chainEvents);
 
     return [chainEvents, totalBurntPerBlockMap];
   }
 
-  private async executePostIndexCommands(
+  private async executePostBlockCommands(
     blocks: Block[],
     chainEvents: any[],
     totalBurntPerBlockMap: Map<number, any>,
   ) {
-    await Promise.all([
-      this.commandBus.execute(new CheckForBlockFinalityCommand()),
-      this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents)),
-      this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap)),
-    ]);
+    await this.commandBus.execute(new CheckForBlockFinalityCommand());
+    await this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents));
+    await this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap));
+
+    if (this.state.get(Modules.INDEXER) === IndexerState.SYNCING) {
+      await this.commandBus.execute(new UpdateValidatorRanks());
+    }
   }
 
   private async handleNewBlockEvent(blocks: Block[]): Promise<void> {
@@ -98,7 +102,7 @@ export class IndexerService {
     try {
       const [chainEvents, totalBurntPerBlockMap] = await this.executeBlockEventCommands(blocks);
 
-      await this.executePostIndexCommands(blocks, chainEvents, totalBurntPerBlockMap);
+      await this.executePostBlockCommands(blocks, chainEvents, totalBurntPerBlockMap);
 
       // TODO: Emit events for modular use
     } catch (error) {
@@ -106,11 +110,10 @@ export class IndexerService {
     }
   }
 
-  private async indexChainEvents(blocks: Block[]): Promise<[ChainEvent[], Map<number, number>]> {
-    return this.chainEventIndexService.indexChainEvents(blocks);
-  }
-
-  private async indexBlocks(blocks: Block[], eventCountMap: Map<number, number>): Promise<void> {
+  private async indexBlockHeader(
+    blocks: Block[],
+    eventCountMap: Map<number, number>,
+  ): Promise<void> {
     await this.commandBus.execute(new IndexBlockCommand(blocks, eventCountMap));
   }
 
@@ -118,9 +121,16 @@ export class IndexerService {
     return this.commandBus.execute(new IndexTransactionCommand(blocks));
   }
 
+  private async indexChainEvents(blocks: Block[]): Promise<[ChainEvent[], Map<number, number>]> {
+    const [chainEvents, eventCountMap, accounts] =
+      await this.eventIndexService.indexChainEvents(blocks);
+    await this.eventIndexService.writeAccountsToDb(accounts);
+    return [chainEvents, eventCountMap];
+  }
+
   private async writeAndProcessChainEvents(chainEvents: ChainEvent[]): Promise<void> {
-    await this.chainEventIndexService.writeChainEventsToDb(chainEvents);
-    await this.chainEventIndexService.processChainEvents(chainEvents);
+    await this.eventIndexService.writeChainEventsToDb(chainEvents);
+    await this.eventIndexService.processChainEvents(chainEvents);
   }
 
   private async indexAssets(blocks: Block[]): Promise<void> {

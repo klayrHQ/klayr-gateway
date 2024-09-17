@@ -1,21 +1,22 @@
 import { Module } from '@nestjs/common';
 import { IndexerService } from './indexer.service';
 import { NodeApiModule } from 'src/modules/node-api/node-api.module';
-import { IndexGenesisBlockHandler } from './commands/startup/genesis-index.command';
+import { IndexGenesisBlockHandler } from './startup/genesis-index.command';
 import { StateModule } from 'src/modules/state/state.module';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { EventIndexService } from './event/event-index.service';
 import { CqrsModule } from '@nestjs/cqrs';
-import { CheckForBlockFinalityHandler } from './commands/post-block-event/check-block-finality.command';
-import { UpdateBlockGeneratorHandler } from './commands/post-block-event/update-block-generator.command';
-import { UpdateBlocksFeeHandler } from './commands/post-block-event/update-block-fee.command';
-import { IndexKnownAccountsHandler } from './commands/startup/known-accounts.command';
-import { IndexBlockHandler } from './commands/block-event/block-index.command';
-import { IndexTransactionHandler } from './commands/block-event/transaction-index.command';
-import { IndexAssetHandler } from './commands/block-event/asset-index.command';
+import { CheckForBlockFinalityHandler } from './block/post-block-commands/check-block-finality.command';
+import { UpdateBlockGeneratorHandler } from './block/post-block-commands/update-block-generator.command';
+import { UpdateBlocksFeeHandler } from './block/post-block-commands/update-block-fee.command';
+import { IndexKnownAccountsHandler } from './startup/known-accounts.command';
+import { IndexBlockHandler } from './block/block-commands/block-index.command';
+import { IndexTransactionHandler } from './block/block-commands/transaction-index.command';
+import { IndexAssetHandler } from './block/block-commands/asset-index.command';
 import { ExecutionResultHandler } from './event/commands/execution-result.command';
 import { ProcessValidatorHandler } from './event/commands/process-validator.command';
 import { AddStakesHandler } from './event/commands/add-stakes.command';
+import { UpdateValidatorRanksHandler } from './event/commands/update-validator-ranks.command';
 
 @Module({
   imports: [CqrsModule, StateModule, NodeApiModule],
@@ -43,6 +44,7 @@ import { AddStakesHandler } from './event/commands/add-stakes.command';
     ExecutionResultHandler,
     ProcessValidatorHandler,
     AddStakesHandler,
+    UpdateValidatorRanksHandler,
   ],
   exports: [IndexerService],
 })

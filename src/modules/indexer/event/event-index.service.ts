@@ -34,7 +34,9 @@ export class EventIndexService {
     });
   }
 
-  public async indexChainEvents(blocks: Block[]): Promise<[ChainEvent[], Map<number, number>]> {
+  public async indexChainEvents(
+    blocks: Block[],
+  ): Promise<[ChainEvent[], Map<number, number>, { address: string }[]]> {
     this.logger.debug(`Indexing chain events for ${blocks.length} blocks`);
 
     const decodedChainEvents = await this.decodeChainEvents(blocks);
@@ -43,7 +45,7 @@ export class EventIndexService {
 
     const eventCountMap = this.createEventCountMap(decodedChainEvents);
 
-    return [decodedChainEvents, eventCountMap];
+    return [decodedChainEvents, eventCountMap, accounts];
   }
 
   public async processChainEvents(chainEvents: ChainEvent[]) {
@@ -81,6 +83,17 @@ export class EventIndexService {
     });
   }
 
+  public async writeAccountsToDb(accounts: { address: string }[]) {
+    if (accounts.length === 0) return;
+    for await (const { address } of accounts) {
+      await this.prisma.account.upsert({
+        where: { address },
+        update: {},
+        create: { address },
+      });
+    }
+  }
+
   private async decodeChainEvents(blocks: Block[]): Promise<ChainEvent[]> {
     const chainEventPromise = blocks.map(async (block) => {
       const chainEvents = await this.nodeApi.invokeApi<ChainEvent[]>(NodeApi.CHAIN_GET_EVENTS, {
@@ -98,7 +111,9 @@ export class EventIndexService {
     return (await Promise.all(chainEventPromise)).flat();
   }
 
-  private async getAccountsFromChainEvents(chainEvents: ChainEvent[]) {
+  private async getAccountsFromChainEvents(
+    chainEvents: ChainEvent[],
+  ): Promise<{ address: string }[]> {
     const accounts = chainEvents
       .filter((e) => e.name === 'initializeUserAccount')
       .map((e) => {
@@ -106,17 +121,6 @@ export class EventIndexService {
       });
 
     return accounts;
-  }
-
-  private async writeAccountsToDb(accounts: { address: string }[]) {
-    if (accounts.length === 0) return;
-    for await (const { address } of accounts) {
-      await this.prisma.account.upsert({
-        where: { address },
-        update: {},
-        create: { address },
-      });
-    }
   }
 
   private getTransactionId(topics: string): string | null {
