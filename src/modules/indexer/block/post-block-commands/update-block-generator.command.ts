@@ -52,18 +52,17 @@ export class UpdateBlockGeneratorHandler implements ICommandHandler<UpdateBlockG
   }
 
   private async updateValidators(validatorAddresses: Map<string, ValidatorRewardMap>) {
-    for (const [
+    for await (const [
       validatorAddress,
       { height, totalRewards, sharedRewards, selfStakeRewards },
     ] of validatorAddresses) {
-      const [blockCount, validator] = await Promise.all([
-        this.prisma.block.count({
-          where: { generatorAddress: validatorAddress },
-        }),
-        this.prisma.validator.findUnique({
-          where: { address: validatorAddress },
-        }),
-      ]);
+      const blockCount = await this.prisma.block.count({
+        where: { generatorAddress: validatorAddress },
+      });
+      const validator = await this.prisma.validator.findUnique({
+        where: { address: validatorAddress },
+      });
+
       await this.prisma.validator.update({
         where: { address: validatorAddress },
         data: {
