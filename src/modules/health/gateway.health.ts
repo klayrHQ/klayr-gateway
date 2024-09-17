@@ -1,25 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
-import { PrismaService } from '../prisma/prisma.service';
-import { NodeApiService } from '../node-api/node-api.service';
+import { StateService } from '../state/state.service';
+import { IndexerState, Modules } from '../state/types';
 
 @Injectable()
 export class IsSyncedIndicator extends HealthIndicator {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly nodeApi: NodeApiService,
-  ) {
+  constructor(private readonly state: StateService) {
     super();
   }
 
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
-    const nodeBlockHeight = this.nodeApi.nodeInfo.height;
-    const gatewayBlockHeight = (await this.prisma.nextBlockToSync.findFirst()).height;
+    const indexerState = this.state.get(Modules.INDEXER);
 
-    const isGatewaySynced = gatewayBlockHeight >= nodeBlockHeight;
+    const isGatewaySynced = indexerState === IndexerState.INDEXING;
     const result = this.getStatus(key, isGatewaySynced, {
-      gatewayHeight: gatewayBlockHeight,
-      nodeHeight: nodeBlockHeight,
+      state: indexerState,
     });
 
     if (isGatewaySynced) {
