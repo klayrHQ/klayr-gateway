@@ -59,6 +59,13 @@ export const MINIMUM_VALIDATOR_WEIGHT = BigInt(1_000e8);
 export const ACTIVE_VALIDATORS = 51;
 
 ////////////////////////////
+///       Accounts      ///
+////////////////////////////
+
+export const DEFAULT_ACCOUNTS_TO_FETCH = 10;
+export const MAX_ACCOUNTS_TO_FETCH = 100;
+
+////////////////////////////
 ///       Search         ///
 ////////////////////////////
 
