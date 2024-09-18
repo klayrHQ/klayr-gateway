@@ -12,7 +12,11 @@ import {
   ValidatorRegistered,
   ValidatorStaked,
 } from './gateways/pos.gateway';
-import { TokenCommandExecutionResult, TokenEventTypes } from './gateways/token.gateway';
+import {
+  TokenCommandExecutionResult,
+  TokenEventTypes,
+  TokenTransfer,
+} from './gateways/token.gateway';
 
 export const eventGatewayMap = {
   [PosEventTypes.POS_VALIDATOR_REGISTERED]: ValidatorRegistered,
@@ -22,6 +26,7 @@ export const eventGatewayMap = {
   [PosEventTypes.POS_VALIDATOR_PUNISHED]: ValidatorPunished,
   [PosEventTypes.POS_COMMAND_EXECUTION_RESULT]: PosExecutionResult,
   [TokenEventTypes.TOKEN_COMMAND_EXECUTION_RESULT]: TokenCommandExecutionResult,
+  [TokenEventTypes.TOKEN_TRANSFER]: TokenTransfer,
   [InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT]:
     InteroperabilityCommandExecutionResult,
 };
@@ -34,5 +39,6 @@ export const eventFilterMap = {
   [PosEventTypes.POS_COMMISSION_CHANGE]: alwaysTrue,
   [PosEventTypes.POS_COMMAND_EXECUTION_RESULT]: alwaysTrue,
   [TokenEventTypes.TOKEN_COMMAND_EXECUTION_RESULT]: alwaysTrue,
+  [TokenEventTypes.TOKEN_TRANSFER]: alwaysTrue,
   [InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT]: alwaysTrue,
 };

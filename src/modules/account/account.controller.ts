@@ -16,15 +16,30 @@ export class AccountController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountsResponse)
   async getAccounts(@Query() query: GetAccountsDto): Promise<GatewayResponse<any[]>> {
-    const { address, offset, limit } = query;
+    const { address, offset, sort, limit } = query;
+    const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_ACCOUNTS_TO_FETCH);
 
     const where: Prisma.AccountWhereInput = {
       ...(address && { address: address }),
     };
 
-    const account = await this.prisma.account.findMany({ where, take, skip: offset });
+    const accounts = await this.prisma.account.findMany({
+      where,
+      take,
+      orderBy: {
+        [field]: direction,
+      },
+      skip: offset,
+    });
 
-    return new GatewayResponse(account, {});
+    const response = accounts.map((account) => ({
+      ...account,
+      availableBalance: account.availableBalance.toString(),
+      lockedBalance: account.lockedBalance.toString(),
+      totalBalance: account.totalBalance.toString(),
+    }));
+
+    return new GatewayResponse(response, {});
   }
 }
