@@ -10,7 +10,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @ApiTags('Events')
 @Controller('events')
-export class ChainEventController {
+export class EventController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()

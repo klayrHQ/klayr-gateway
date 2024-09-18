@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ChainEventController } from './chain-event.controller';
+import { EventController } from './event.controller';
 import { NodeApiModule } from 'src/modules/node-api/node-api.module';
 
 @Module({
   imports: [NodeApiModule],
   providers: [],
-  controllers: [ChainEventController],
+  controllers: [EventController],
   exports: [],
 })
-export class ChainEventModule {}
+export class EventModule {}

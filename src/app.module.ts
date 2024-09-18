@@ -4,10 +4,10 @@ import { IndexerModule } from './modules/indexer/indexer.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NodeApiModule } from './modules/node-api/node-api.module';
 import { BlockModule } from './modules/block/block.module';
-import { ValidatorModule } from './modules/validator/validator.module';
+import { ValidatorModule } from './modules/pos/validator.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { AccountModule } from './modules/account/account.module';
-import { ChainEventModule } from './modules/chain-event/chain-event.module';
+import { EventModule } from './modules/event/event.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StateModule } from './modules/state/state.module';
 import { GeneratorModule } from './modules/generator/generator.module';
@@ -40,7 +40,7 @@ import { HealthModule } from './modules/health/health.module';
     ValidatorModule,
     AccountModule,
     IndexerModule,
-    ChainEventModule,
+    EventModule,
     GeneratorModule,
     SearchModule,
     TokenModule,
