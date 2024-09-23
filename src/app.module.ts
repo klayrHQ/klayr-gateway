@@ -17,6 +17,7 @@ import { LokiLoggerModule } from 'nestjs-loki-logger';
 import { TokenModule } from './modules/token/token.module';
 import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware';
 import { HealthModule } from './modules/health/health.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { HealthModule } from './modules/health/health.module';
     SearchModule,
     TokenModule,
     HealthModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
