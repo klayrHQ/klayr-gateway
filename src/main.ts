@@ -18,7 +18,6 @@ async function setupSwagger(app: INestApplication) {
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors(); // TODO: Settings

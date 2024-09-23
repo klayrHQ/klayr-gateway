@@ -177,3 +177,8 @@ export type Staker = {
     unstakeHeight: number;
   }[];
 };
+
+export type TokenBalance = {
+  availableBalance: string;
+  lockedBalances: { amount: string; module: string }[];
+};

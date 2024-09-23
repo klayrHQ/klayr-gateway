@@ -73,3 +73,8 @@ export enum ValidatorSortTypes {
   NEXT_ALLOCATED_TIME_ASC = 'nextAllocatedTime:asc',
   NEXT_ALLOCATED_TIME_DESC = 'nextAllocatedTime:desc',
 }
+
+export enum AccountSortTypes {
+  TOTAL_BALANCE_ASC = 'totalBalance:asc',
+  TOTAL_BALANCE_DESC = 'totalBalance:desc',
+}
