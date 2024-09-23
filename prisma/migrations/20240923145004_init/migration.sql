@@ -7,6 +7,7 @@ CREATE TABLE "Account" (
     "totalBalance" BIGINT NOT NULL DEFAULT 0,
     "availableBalance" BIGINT NOT NULL DEFAULT 0,
     "lockedBalance" BIGINT NOT NULL DEFAULT 0,
+    "rank" BIGINT NOT NULL DEFAULT 0,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
 );

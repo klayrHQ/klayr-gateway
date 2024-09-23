@@ -77,4 +77,8 @@ export enum ValidatorSortTypes {
 export enum AccountSortTypes {
   TOTAL_BALANCE_ASC = 'totalBalance:asc',
   TOTAL_BALANCE_DESC = 'totalBalance:desc',
+  AVAILABLE_BALANCE_ASC = 'availableBalance:asc',
+  AVAILABLE_BALANCE_DESC = 'availableBalance:desc',
+  LOCKED_BALANCE_ASC = 'lockedBalance:asc',
+  LOCKED_BALANCE_DESC = 'lockedBalance:desc',
 }

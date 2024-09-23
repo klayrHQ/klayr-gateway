@@ -24,6 +24,8 @@ export class AccountController {
       ...(address && { address: address }),
     };
 
+    console.log('sort', sort);
+
     const accounts = await this.prisma.account.findMany({
       where,
       take,
@@ -33,13 +35,16 @@ export class AccountController {
       skip: offset,
     });
 
+    const total = await this.prisma.account.count({ where });
+
     const response = accounts.map((account) => ({
       ...account,
       availableBalance: account.availableBalance.toString(),
       lockedBalance: account.lockedBalance.toString(),
       totalBalance: account.totalBalance.toString(),
+      rank: account.rank.toString(),
     }));
 
-    return new GatewayResponse(response, {});
+    return new GatewayResponse(response, { count: accounts.length, offset, total });
   }
 }
