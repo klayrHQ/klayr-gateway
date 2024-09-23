@@ -64,7 +64,7 @@ $ npm run test:cov
 
 ## Swagger api
 
-http://localhost:9901/api
+http://localhost:9901/api/v1/spec
 
 ## License
 
