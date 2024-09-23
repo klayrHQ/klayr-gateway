@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import {
@@ -10,7 +10,8 @@ import { EscrowedAmounts, SupportedTokens, TotalSupply } from 'src/modules/node-
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
 import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
-import e from 'express';
+import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
+import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
 
 @ApiTags('Token')
 @Controller('token')
@@ -44,6 +45,7 @@ export class TokenController {
   }
 
   @Get('account/exists')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountExistsResponse)
   async getTokenAccountExists(
     @Query() query: GetAccountExistsDto,
@@ -69,5 +71,20 @@ export class TokenController {
     );
 
     return new GatewayResponse({ isExists: tokenIDAccount.exists }, {});
+  }
+
+  @Get('available-ids')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getAccountExistsResponse)
+  async getTokenAvailableIds(
+    @Query() _: GetTokenAvailableIdsDto,
+  ): Promise<GatewayResponse<GetTokenAvailableIdsResDto>> {
+    // TODO: implement limit and sort, but makes no sense for the time being.
+    // TODO: maybe cache? Slow invoke
+    const availableIds = await this.nodeApi.invokeApi<string[]>(
+      NodeApi.TOKEN_GET_SUPPORTED_TOKENS,
+      {},
+    );
+    return new GatewayResponse({ tokenIDs: availableIds }, { total: availableIds.length });
   }
 }
