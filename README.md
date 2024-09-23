@@ -22,7 +22,7 @@ For any questions, suggestions, or feedback, please reach out to us at hello@kla
 $ npm install
 ```
 
-# Start local postgresql docker image:
+## Start local postgresql docker image:
 
 ```bash
 docker run --rm --name pg -p 5432:5432 -e POSTGRES_PASSWORD=welcome postgres:16
