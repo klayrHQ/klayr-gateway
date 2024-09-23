@@ -34,6 +34,7 @@ export enum NodeApi {
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
   TOKEN_GET_SUPPORTED_TOKENS = 'token_getSupportedTokens',
   TOKEN_GET_BALANCE = 'token_getBalance',
+  AUTH_GET_AUTH_ACCOUNT = 'auth_getAuthAccount',
 }
 
 // Functions to interact with the Node API
