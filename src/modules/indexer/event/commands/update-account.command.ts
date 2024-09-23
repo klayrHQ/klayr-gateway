@@ -5,16 +5,11 @@ import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { TokenBalance } from 'src/modules/node-api/types';
 import { LokiLogger } from 'nestjs-loki-logger';
 
-export interface TokenTransferEvent {
-  senderAddress: string;
-  recipientAddress: string;
-  tokenID: string;
-  amount: string;
-  result: number;
-}
-
 export class UpdateAccountCommand implements ICommand {
-  constructor(public readonly transferEvent: TokenTransferEvent) {}
+  constructor(
+    public readonly address: string,
+    public readonly tokenID: string,
+  ) {}
 }
 
 @CommandHandler(UpdateAccountCommand)
@@ -27,15 +22,15 @@ export class UpdateAccountHandler implements ICommandHandler<UpdateAccountComman
   ) {}
 
   async execute(command: UpdateAccountCommand): Promise<void> {
-    const { recipientAddress, tokenID } = command.transferEvent;
+    const { address, tokenID } = command;
 
     const accountInfo = await this.nodeApi.invokeApi<TokenBalance>(NodeApi.TOKEN_GET_BALANCE, {
-      address: recipientAddress,
+      address,
       tokenID,
     });
 
     if (!accountInfo || !accountInfo.lockedBalances || !accountInfo.availableBalance) {
-      return this.logger.error(`Failed to get account info for address ${recipientAddress}`);
+      return this.logger.error(`Failed to get account info for address ${address}`);
     }
 
     const lockedBalance = accountInfo.lockedBalances.reduce((sum, balance) => {
@@ -46,7 +41,7 @@ export class UpdateAccountHandler implements ICommandHandler<UpdateAccountComman
     const totalBalance = lockedBalance + availableBalance;
 
     await this.prisma.account.update({
-      where: { address: recipientAddress },
+      where: { address },
       data: {
         availableBalance: availableBalance,
         lockedBalance: lockedBalance,
