@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IndexerService, IndexerState } from '../../src/indexer/indexer.service';
-import { NodeApiService } from 'src/node-api/node-api.service';
+import { IndexerService, IndexerState } from '../../src/modules/indexer/indexer.service';
+import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { waitTimeout } from 'src/utils/helpers';
 import { EventService } from 'src/event/event.service';
 import { IndexerRepoService } from 'src/indexer/indexer-repo.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';
 import { MockNodeApiService } from 'test/helpers/mock-services';
 

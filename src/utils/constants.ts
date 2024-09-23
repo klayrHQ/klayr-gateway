@@ -2,8 +2,6 @@
 ///       General        ///
 ////////////////////////////
 
-export const DB_CACHE_SIZE = 100;
-
 ////////////////////////////
 ///       Swagger API    ///
 ////////////////////////////
@@ -28,7 +26,7 @@ export const RETRY_TIMEOUT = 5000; // 5 sec
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 2_500; // Can go to 7.5k give or take
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 5_000; // Can go to 7k give or take
 
 ////////////////////////////
 ///       Block          ///
@@ -61,6 +59,13 @@ export const MINIMUM_VALIDATOR_WEIGHT = BigInt(1_000e8);
 export const ACTIVE_VALIDATORS = 51;
 
 ////////////////////////////
+///       Accounts      ///
+////////////////////////////
+
+export const DEFAULT_ACCOUNTS_TO_FETCH = 10;
+export const MAX_ACCOUNTS_TO_FETCH = 100;
+
+////////////////////////////
 ///       Search         ///
 ////////////////////////////
 
@@ -70,6 +75,5 @@ export const HEX_ADDRESS_LENGTH = 40;
 ///      Indexer Extra   ///
 ////////////////////////////
 
-export const INSERT_KNOWN_ACCOUNTS = true;
 export const KNOWN_ACCOUNTS_MAINNET_URL = 'https://static-data.klayr.xyz/known_mainnet.json';
 export const KNOWN_ACCOUNTS_TESTNET_URL = 'https://static-data.klayr.xyz/known_testnet.json';

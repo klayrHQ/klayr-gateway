@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlockService } from '../../src/block/block.service';
-import { Block } from '../../src/node-api/types';
+import { BlockService } from '../../src/modules/block/block.service';
+import { Block } from '../../src/modules/node-api/types';
 import { testBlock } from 'test/mock-values/node-api-mocks';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { BlockRepoService } from 'src/block/block-repo.service';
 import { PrismaServiceMock, initDB } from 'test/helpers/mock-prisma-service';
 import { EventService } from 'src/event/event.service';
-import { NodeApiService } from 'src/node-api/node-api.service';
+import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { MockNodeApiService } from 'test/helpers/mock-services';
 import { ValidatorService } from 'src/validator/validator.service';
 

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlockController } from '../../src/block/block.controller';
+import { BlockController } from '../../src/modules/block/block.controller';
 import { BlockRepoService } from 'src/block/block-repo.service';
 
 describe('BlockController', () => {
