@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import {
@@ -44,6 +44,7 @@ export class TokenController {
   }
 
   @Get('account/exists')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountExistsResponse)
   async getTokenAccountExists(
     @Query() query: GetAccountExistsDto,
