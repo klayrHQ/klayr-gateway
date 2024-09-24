@@ -90,8 +90,8 @@ export class TransactionController {
         },
         skip: offset,
         include: {
-          sender: true,
-          recipient: true,
+          sender: { select: { address: true, publicKey: true, name: true } },
+          recipient: { select: { address: true, publicKey: true, name: true } },
           block: { select: { id: true, height: true, timestamp: true, isFinal: true } },
         },
       }),
