@@ -3,6 +3,7 @@ import { Block } from '../../interfaces/block.interface';
 import { ChainEvent } from '../../interfaces/chain-event.interface';
 import { AssetTypes } from '../../interfaces/asset.interface';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 export class UpdateBlockGeneratorCommand {
   constructor(
@@ -40,6 +41,7 @@ export class UpdateBlockGeneratorHandler implements ICommandHandler<UpdateBlockG
       const lockedAmount = this.getLockedAmountFromEvent(chainEvents, generatorAddress);
 
       const mapData = validatorData.get(generatorAddress) ?? this.createDefaultMap(height);
+
       validatorData.set(generatorAddress, {
         height: height,
         totalRewards: mapData.totalRewards + BigInt(reward),
@@ -59,9 +61,23 @@ export class UpdateBlockGeneratorHandler implements ICommandHandler<UpdateBlockG
       const blockCount = await this.prisma.block.count({
         where: { generatorAddress: validatorAddress },
       });
-      const validator = await this.prisma.validator.findUnique({
+      let validator = await this.prisma.validator.findUnique({
         where: { address: validatorAddress },
       });
+
+      if (!validator) {
+        validator = await this.prisma.validator.create({
+          data: {
+            address: validatorAddress,
+            lastGeneratedHeight: height,
+            generatedBlocks: blockCount,
+            totalRewards: totalRewards,
+            totalSharedRewards: sharedRewards,
+            totalSelfStakeRewards: selfStakeRewards,
+          },
+        });
+        continue;
+      }
 
       await this.prisma.validator.update({
         where: { address: validatorAddress },

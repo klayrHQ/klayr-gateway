@@ -33,6 +33,8 @@ export class AccountController {
       skip: offset,
     });
 
+    const total = await this.prisma.account.count({ where });
+
     const response = accounts.map((account) => ({
       ...account,
       availableBalance: account.availableBalance.toString(),
@@ -40,6 +42,6 @@ export class AccountController {
       totalBalance: account.totalBalance.toString(),
     }));
 
-    return new GatewayResponse(response, {});
+    return new GatewayResponse(response, { count: accounts.length, offset, total });
   }
 }
