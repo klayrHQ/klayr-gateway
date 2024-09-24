@@ -40,26 +40,13 @@ export class UpdateAccountHandler implements ICommandHandler<UpdateAccountComman
     const availableBalance = BigInt(accountInfo.availableBalance);
     const totalBalance = lockedBalance + availableBalance;
 
-    const rank = await this.getRank(totalBalance);
-
     await this.prisma.account.update({
       where: { address },
       data: {
         availableBalance: availableBalance,
         lockedBalance: lockedBalance,
         totalBalance: totalBalance,
-        rank: rank,
       },
     });
-  }
-
-  async getRank(totalBalance: bigint): Promise<bigint> {
-    const rankResult = await this.prisma.$queryRaw<{ rank: bigint }[]>`
-      SELECT COUNT(*) + 1 AS rank
-      FROM "Account"
-      WHERE "totalBalance" > ${totalBalance}
-    `;
-
-    return rankResult[0]?.rank || BigInt(1);
   }
 }

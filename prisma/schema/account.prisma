@@ -6,7 +6,6 @@ model Account {
   totalBalance         BigInt        @default(0)
   availableBalance     BigInt        @default(0)
   lockedBalance        BigInt        @default(0)
-  rank                 BigInt           @default(0)
   validator            Validator?
   block                Block[]
   stakes               Stake[]
