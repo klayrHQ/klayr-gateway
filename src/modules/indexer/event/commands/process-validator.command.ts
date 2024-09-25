@@ -82,11 +82,7 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
   }
 
   private async createValidator(val: ValidatorInfo) {
-    await this.prisma.account.upsert({
-      where: { address: val.address },
-      update: { name: val.name },
-      create: { address: val.address, name: val.name },
-    });
+    await this.upsertAccount(val.address, val.name);
 
     const keys = await this.getValidatorKeys(val.address);
 
@@ -108,6 +104,23 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
         blsKey: keys.blsKey,
       },
     });
+  }
+
+  private async upsertAccount(address: string, name: string) {
+    const account = await this.prisma.account.findUnique({
+      where: { address },
+    });
+
+    if (!account) {
+      await this.prisma.account.create({
+        data: { address, name },
+      });
+    } else {
+      await this.prisma.account.update({
+        where: { address },
+        data: { name },
+      });
+    }
   }
 
   private async getValidatorKeys(address: string): Promise<ValidatorKeys> {

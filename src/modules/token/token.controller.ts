@@ -10,7 +10,6 @@ import { EscrowedAmounts, SupportedTokens, TotalSupply } from 'src/modules/node-
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
 import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
-import e from 'express';
 
 @ApiTags('Token')
 @Controller('token')
