@@ -18,6 +18,7 @@ import { TokenModule } from './modules/token/token.module';
 import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { NetworkModule } from './modules/network/network.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AuthModule } from './modules/auth/auth.module';
     TokenModule,
     HealthModule,
     AuthModule,
+    NetworkModule,
   ],
   controllers: [],
   providers: [],
