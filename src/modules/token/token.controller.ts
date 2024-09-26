@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import {
@@ -6,11 +6,26 @@ import {
   getTokenSummaryResponse,
 } from './dto/get-token-summary-res.dto';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
-import { EscrowedAmounts, SupportedTokens, TotalSupply } from 'src/modules/node-api/types';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
 import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
-import e from 'express';
+import {
+  EscrowedAmounts,
+  SupportedTokens,
+  TokenBalances,
+  TotalSupply,
+} from 'src/modules/node-api/types';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
+import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
+import {
+  getTokenBalanceResponse,
+  GetTokenBalanceResponseDto,
+} from './dto/get-token-balance-res.dto';
+import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
+import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
+import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
+
 
 @ApiTags('Token')
 @Controller('token')
@@ -23,14 +38,11 @@ export class TokenController {
   @Get('summary')
   @ApiResponse(getTokenSummaryResponse)
   async getTokenSummary(): Promise<GatewayResponse<GetTokenSummaryResponseDto>> {
-    const [escrowedAmounts, totalSupply, supportedTokens, totalAccounts, totalTransactions] =
-      await Promise.all([
-        this.nodeApi.invokeApi<EscrowedAmounts>(NodeApi.TOKEN_GET_ESCROWED_AMOUNTS, {}),
-        this.nodeApi.invokeApi<TotalSupply>(NodeApi.TOKEN_GET_TOTAL_SUPPLY, {}),
-        this.nodeApi.invokeApi<SupportedTokens>(NodeApi.TOKEN_GET_SUPPORTED_TOKENS, {}),
-        this.prisma.account.count({}),
-        this.prisma.transaction.count({}),
-      ]);
+    const { escrowedAmounts, totalSupply, supportedTokens } = this.nodeApi.tokenSummaryInfo;
+    const [totalAccounts, totalTransactions] = await Promise.all([
+      this.prisma.account.count({}),
+      this.prisma.transaction.count({}),
+    ]);
 
     const flattenedResponse = {
       escrowedAmounts: escrowedAmounts.escrowedAmounts,
@@ -44,6 +56,7 @@ export class TokenController {
   }
 
   @Get('account/exists')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountExistsResponse)
   async getTokenAccountExists(
     @Query() query: GetAccountExistsDto,
@@ -69,5 +82,35 @@ export class TokenController {
     );
 
     return new GatewayResponse({ isExists: tokenIDAccount.exists }, {});
+  }
+
+  @Get('balances')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getTokenBalanceResponse)
+  async getBalancesForAddress(
+    @Query() query: GetTokenBalanceDto,
+  ): Promise<GatewayResponse<GetTokenBalanceResponseDto[]>> {
+    const { address } = query;
+
+    const tokenBalances = await this.nodeApi.invokeApi<TokenBalances>(NodeApi.TOKEN_GET_BALANCES, {
+      address,
+    });
+
+    return new GatewayResponse(tokenBalances.balances, {});
+  }
+  
+  @Get('available-ids')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getAccountExistsResponse)
+  async getTokenAvailableIds(
+    @Query() _: GetTokenAvailableIdsDto,
+  ): Promise<GatewayResponse<GetTokenAvailableIdsResDto>> {
+    // TODO: implement limit and sort, but makes no sense for the time being.
+    // TODO: maybe cache? Slow invoke
+    const availableIds = await this.nodeApi.invokeApi<string[]>(
+      NodeApi.TOKEN_GET_SUPPORTED_TOKENS,
+      {},
+    );
+    return new GatewayResponse({ tokenIDs: availableIds }, { total: availableIds.length });
   }
 }

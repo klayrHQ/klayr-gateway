@@ -182,3 +182,14 @@ export type TokenBalance = {
   availableBalance: string;
   lockedBalances: { amount: string; module: string }[];
 };
+
+export type TokenBalances = {
+  balances: {
+    tokenID: string;
+    availableBalance: string;
+    lockedBalance: {
+      amount: string;
+      module: string;
+    }[];
+  }[];
+};
