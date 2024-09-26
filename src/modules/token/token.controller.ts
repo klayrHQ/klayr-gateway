@@ -20,6 +20,8 @@ import {
   GetTokenBalanceResponseDto,
 } from './dto/get-token-balance-res.dto';
 import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
+import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
+import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
 
 @ApiTags('Token')
 @Controller('token')
@@ -94,5 +96,20 @@ export class TokenController {
     });
 
     return new GatewayResponse(tokenBalances.balances, {});
+  }
+  
+  @Get('available-ids')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getAccountExistsResponse)
+  async getTokenAvailableIds(
+    @Query() _: GetTokenAvailableIdsDto,
+  ): Promise<GatewayResponse<GetTokenAvailableIdsResDto>> {
+    // TODO: implement limit and sort, but makes no sense for the time being.
+    // TODO: maybe cache? Slow invoke
+    const availableIds = await this.nodeApi.invokeApi<string[]>(
+      NodeApi.TOKEN_GET_SUPPORTED_TOKENS,
+      {},
+    );
+    return new GatewayResponse({ tokenIDs: availableIds }, { total: availableIds.length });
   }
 }

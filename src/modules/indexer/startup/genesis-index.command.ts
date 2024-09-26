@@ -84,7 +84,7 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
       await this.prisma.account.upsert({
         where: { address: account.address },
         create: account,
-        update: {},
+        update: { name: account.name },
       });
     }
 
