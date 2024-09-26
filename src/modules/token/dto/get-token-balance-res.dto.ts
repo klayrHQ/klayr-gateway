@@ -1,12 +1,14 @@
-import { ApiResponseOptions } from '@nestjs/swagger';
+import { ApiResponseOptions, ApiProperty } from '@nestjs/swagger';
+
+class LockedBalance {
+  amount: string;
+  module: string;
+}
 
 export class GetTokenBalanceResponseDto {
   tokenID: string;
   availableBalance: string;
-  lockedBalance: {
-    amount: string;
-    module: string;
-  }[];
+  lockedBalance: LockedBalance[];
 }
 
 export const getTokenBalanceResponse: ApiResponseOptions = {
