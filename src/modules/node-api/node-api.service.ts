@@ -5,9 +5,17 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { RETRY_TIMEOUT } from 'src/utils/constants';
+import { BLOCKS_TO_CACHE_TOKEN_SUMMARY, RETRY_TIMEOUT } from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
-import { GeneratorList, NewBlockEvent, NodeInfo, SchemaModule } from './types';
+import {
+  EscrowedAmounts,
+  GeneratorList,
+  NewBlockEvent,
+  NodeInfo,
+  SchemaModule,
+  SupportedTokens,
+  TotalSupply,
+} from './types';
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
 
@@ -50,6 +58,11 @@ export class NodeApiService {
   private subscription: any;
   public nodeInfo: NodeInfo;
   public generatorList: GeneratorList;
+  public tokenSummaryInfo: {
+    escrowedAmounts: EscrowedAmounts;
+    totalSupply: TotalSupply;
+    supportedTokens: SupportedTokens;
+  };
 
   async onModuleInit() {
     await this.connectToNode();
@@ -81,11 +94,23 @@ export class NodeApiService {
     }
   }
 
-  public async cacheNodeApiOnNewBlock() {
+  public async cacheNodeApiOnNewBlock(blockHeight: number) {
     const generatorList = await this.invokeApi<GeneratorList>(NodeApi.CHAIN_GET_GENERATOR_LIST, {});
     if (!generatorList) throw new InternalServerErrorException('Failed to fetch generator list');
-
     this.generatorList = generatorList;
+
+    if (blockHeight % BLOCKS_TO_CACHE_TOKEN_SUMMARY === 0) {
+      const [escrowedAmounts, totalSupply, supportedTokens] = await Promise.all([
+        this.invokeApi<EscrowedAmounts>(NodeApi.TOKEN_GET_ESCROWED_AMOUNTS, {}),
+        this.invokeApi<TotalSupply>(NodeApi.TOKEN_GET_TOTAL_SUPPLY, {}),
+        this.invokeApi<SupportedTokens>(NodeApi.TOKEN_GET_SUPPORTED_TOKENS, {}),
+      ]);
+      this.tokenSummaryInfo = {
+        escrowedAmounts,
+        totalSupply,
+        supportedTokens,
+      };
+    }
   }
 
   public async invokeApi<T>(endpoint: string, params: any): Promise<T> {

@@ -6,6 +6,9 @@ import {
   getTokenSummaryResponse,
 } from './dto/get-token-summary-res.dto';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
+import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
 import {
   EscrowedAmounts,
   SupportedTokens,
@@ -23,6 +26,7 @@ import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
 import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
 import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
 
+
 @ApiTags('Token')
 @Controller('token')
 export class TokenController {
@@ -34,14 +38,11 @@ export class TokenController {
   @Get('summary')
   @ApiResponse(getTokenSummaryResponse)
   async getTokenSummary(): Promise<GatewayResponse<GetTokenSummaryResponseDto>> {
-    const [escrowedAmounts, totalSupply, supportedTokens, totalAccounts, totalTransactions] =
-      await Promise.all([
-        this.nodeApi.invokeApi<EscrowedAmounts>(NodeApi.TOKEN_GET_ESCROWED_AMOUNTS, {}),
-        this.nodeApi.invokeApi<TotalSupply>(NodeApi.TOKEN_GET_TOTAL_SUPPLY, {}),
-        this.nodeApi.invokeApi<SupportedTokens>(NodeApi.TOKEN_GET_SUPPORTED_TOKENS, {}),
-        this.prisma.account.count({}),
-        this.prisma.transaction.count({}),
-      ]);
+    const { escrowedAmounts, totalSupply, supportedTokens } = this.nodeApi.tokenSummaryInfo;
+    const [totalAccounts, totalTransactions] = await Promise.all([
+      this.prisma.account.count({}),
+      this.prisma.transaction.count({}),
+    ]);
 
     const flattenedResponse = {
       escrowedAmounts: escrowedAmounts.escrowedAmounts,
