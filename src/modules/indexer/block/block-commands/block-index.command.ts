@@ -1,7 +1,7 @@
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
-import { RewardAtHeight } from 'src/modules/node-api/types';
+import { ExpectedValidatorRewards } from 'src/modules/node-api/types';
 import { Block, ProcessedBlockHeader } from '../../interfaces/block.interface';
 import { LokiLogger } from 'nestjs-loki-logger';
 
@@ -36,19 +36,19 @@ export class IndexBlockHandler implements ICommandHandler<IndexBlockCommand> {
     eventCountMap: Map<number, number>,
   ): Promise<ProcessedBlockHeader[]> {
     const promises = blocks.map(async (block) => {
-      const { reward } = await this.nodeApi.invokeApi<RewardAtHeight>(
-        NodeApi.REWARD_GET_DEFAULT_REWARD_AT_HEIGHT,
-        { height: block.header.height },
+      const { blockReward } = await this.nodeApi.invokeApi<ExpectedValidatorRewards>(
+        NodeApi.REWARD_GET_EXPECTED_VALIDATOR_REWARDS,
+        { validatorAddress: block.header.generatorAddress },
       );
 
       return {
         ...block.header,
-        reward,
+        reward: blockReward,
         numberOfTransactions: block.transactions.length,
         numberOfAssets: block.assets.length,
         numberOfEvents: eventCountMap.get(block.header.height) || 0,
         aggregateCommit: JSON.stringify(block.header.aggregateCommit),
-        totalForged: Number(reward),
+        totalForged: Number(blockReward),
       };
     });
 
