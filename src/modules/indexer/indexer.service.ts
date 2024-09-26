@@ -176,7 +176,7 @@ export class IndexerService {
       // modifying the blocks array here
       await Promise.all([
         this.handleNewBlockEvent(blocks.reverse()),
-        this.nodeApi.cacheNodeApiOnNewBlock(),
+        this.nodeApi.cacheNodeApiOnNewBlock(blocks.at(-1).header.height),
         this.updateNextBlockToSync(blocks.at(-1).header.height + 1),
       ]);
 
@@ -214,7 +214,7 @@ export class IndexerService {
 
       await Promise.all([
         this.handleNewBlockEvent([block]),
-        this.nodeApi.cacheNodeApiOnNewBlock(),
+        this.nodeApi.cacheNodeApiOnNewBlock(block.header.height),
         this.updateNextBlockToSync(newBlockHeight + 1),
       ]);
     });
