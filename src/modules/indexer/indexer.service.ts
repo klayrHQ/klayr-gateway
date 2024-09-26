@@ -200,7 +200,7 @@ export class IndexerService {
 
         setImmediate(() => {
           this.syncWithNode().catch((error) => {
-            // this.state.set(Modules.INDEXER, IndexerState.RESTART);
+            this.state.set(Modules.INDEXER, IndexerState.RESTART);
             this.logger.error('Error syncing with node, will retry', error);
           });
         });
