@@ -193,3 +193,16 @@ export type TokenBalances = {
     }[];
   }[];
 };
+
+type AttributesArray = {
+  module: string;
+  attributes: string;
+};
+
+export type NFTBalance = {
+  nfts: {
+    id: string;
+    attributesArray: AttributesArray[];
+    lockingModule: string;
+  }[];
+};
