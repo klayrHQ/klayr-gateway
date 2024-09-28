@@ -9,15 +9,7 @@ import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
 import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
-import {
-  EscrowedAmounts,
-  SupportedTokens,
-  TokenBalances,
-  TotalSupply,
-} from 'src/modules/node-api/types';
-import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { getAccountExistsResponse } from './dto/get-token-account-exists-res.dto';
-import { GetAccountExistsDto } from './dto/get-token-account-exists.dto';
+import { TokenBalances } from 'src/modules/node-api/types';
 import {
   getTokenBalanceResponse,
   GetTokenBalanceResponseDto,
@@ -25,7 +17,6 @@ import {
 import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
 import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
 import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
-
 
 @ApiTags('Token')
 @Controller('token')
@@ -38,16 +29,16 @@ export class TokenController {
   @Get('summary')
   @ApiResponse(getTokenSummaryResponse)
   async getTokenSummary(): Promise<GatewayResponse<GetTokenSummaryResponseDto>> {
-    const { escrowedAmounts, totalSupply, supportedTokens } = this.nodeApi.tokenSummaryInfo;
+    const summary = this.nodeApi.tokenSummaryInfo;
     const [totalAccounts, totalTransactions] = await Promise.all([
       this.prisma.account.count({}),
       this.prisma.transaction.count({}),
     ]);
 
     const flattenedResponse = {
-      escrowedAmounts: escrowedAmounts.escrowedAmounts,
-      totalSupply: totalSupply.totalSupply,
-      supportedTokens: supportedTokens.supportedTokens,
+      escrowedAmounts: summary.escrowedAmounts.escrowedAmounts ?? [],
+      totalSupply: summary.totalSupply.totalSupply ?? [],
+      supportedTokens: summary.supportedTokens.supportedTokens ?? [],
       totalAccounts,
       totalTransactions,
     };
@@ -98,7 +89,7 @@ export class TokenController {
 
     return new GatewayResponse(tokenBalances.balances, {});
   }
-  
+
   @Get('available-ids')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountExistsResponse)

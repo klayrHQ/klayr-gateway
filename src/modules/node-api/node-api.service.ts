@@ -100,11 +100,15 @@ export class NodeApiService {
     this.generatorList = generatorList;
 
     if (blockHeight % BLOCKS_TO_CACHE_TOKEN_SUMMARY === 0) {
-      const [escrowedAmounts, totalSupply, supportedTokens] = await Promise.all([
-        this.invokeApi<EscrowedAmounts>(NodeApi.TOKEN_GET_ESCROWED_AMOUNTS, {}),
-        this.invokeApi<TotalSupply>(NodeApi.TOKEN_GET_TOTAL_SUPPLY, {}),
-        this.invokeApi<SupportedTokens>(NodeApi.TOKEN_GET_SUPPORTED_TOKENS, {}),
-      ]);
+      const escrowedAmounts = await this.invokeApi<EscrowedAmounts>(
+        NodeApi.TOKEN_GET_ESCROWED_AMOUNTS,
+        {},
+      );
+      const totalSupply = await this.invokeApi<TotalSupply>(NodeApi.TOKEN_GET_TOTAL_SUPPLY, {});
+      const supportedTokens = await this.invokeApi<SupportedTokens>(
+        NodeApi.TOKEN_GET_SUPPORTED_TOKENS,
+        {},
+      );
       this.tokenSummaryInfo = {
         escrowedAmounts,
         totalSupply,
