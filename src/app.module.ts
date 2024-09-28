@@ -19,6 +19,7 @@ import { LockEndpointsMiddleware } from './middleware/lock-endpoints.middleware'
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NetworkModule } from './modules/network/network.module';
+import { NftModule } from './modules/nft/nft.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { NetworkModule } from './modules/network/network.module';
     HealthModule,
     AuthModule,
     NetworkModule,
+    NftModule,
   ],
   controllers: [],
   providers: [],
