@@ -22,9 +22,9 @@ export class SearchController {
       search = getKlayr32AddressFromAddress(search);
     }
 
-    const [blocks, validators, transactions] = await Promise.all([
+    const [blocks, accounts, transactions] = await Promise.all([
       this.searchBlocks(search),
-      this.searchValidators(search),
+      this.searchAccounts(search),
       this.searchTransactions(search),
     ]);
 
@@ -33,11 +33,9 @@ export class SearchController {
       id: block.id,
     }));
 
-    const formattedValidators = validators.map((validator) => ({
-      name: validator.account.name,
-      address: validator.address,
-      publicKey: validator.account.publicKey,
-      rank: validator.rank,
+    const formattedAccounts = accounts.map((account) => ({
+      address: account.address,
+      name: account.name,
     }));
 
     const formattedTransactions = transactions.map((transaction) => ({
@@ -46,7 +44,7 @@ export class SearchController {
     }));
 
     return {
-      validators: formattedValidators,
+      accounts: formattedAccounts,
       blocks: formattedBlocks,
       transactions: formattedTransactions,
     };
@@ -73,41 +71,6 @@ export class SearchController {
     return transactions;
   }
 
-  private async searchValidators(search: string): Promise<
-    {
-      address: string;
-      rank: number;
-      account: {
-        name: string;
-        publicKey: string;
-      };
-    }[]
-  > {
-    const where: Prisma.ValidatorWhereInput = {
-      OR: [
-        { account: { name: { contains: search } } },
-        { address: { equals: search } },
-        { account: { publicKey: { equals: search } } },
-      ],
-    };
-
-    const validators = await this.prisma.validator.findMany({
-      where,
-      select: {
-        address: true,
-        rank: true,
-        account: {
-          select: {
-            name: true,
-            publicKey: true,
-          },
-        },
-      },
-    });
-
-    return validators;
-  }
-
   private async searchBlocks(search: string): Promise<{ id: string; height: number }[]> {
     const height = Number(search);
     const where: Prisma.BlockWhereInput = {
@@ -127,5 +90,26 @@ export class SearchController {
     });
 
     return blocks;
+  }
+
+  private async searchAccounts(search: string): Promise<
+    {
+      address: string;
+      name: string | null;
+    }[]
+  > {
+    const where: Prisma.AccountWhereInput = {
+      address: { contains: search },
+    };
+
+    const accounts = await this.prisma.account.findMany({
+      where,
+      select: {
+        address: true,
+        name: true,
+      },
+    });
+
+    return accounts;
   }
 }
