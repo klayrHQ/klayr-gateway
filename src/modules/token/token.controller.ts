@@ -29,16 +29,16 @@ export class TokenController {
   @Get('summary')
   @ApiResponse(getTokenSummaryResponse)
   async getTokenSummary(): Promise<GatewayResponse<GetTokenSummaryResponseDto>> {
-    const { escrowedAmounts, totalSupply, supportedTokens } = this.nodeApi.tokenSummaryInfo;
+    const summary = this.nodeApi.tokenSummaryInfo;
     const [totalAccounts, totalTransactions] = await Promise.all([
       this.prisma.account.count({}),
       this.prisma.transaction.count({}),
     ]);
 
     const flattenedResponse = {
-      escrowedAmounts: escrowedAmounts.escrowedAmounts,
-      totalSupply: totalSupply.totalSupply,
-      supportedTokens: supportedTokens.supportedTokens,
+      escrowedAmounts: summary.escrowedAmounts.escrowedAmounts ?? [],
+      totalSupply: summary.totalSupply.totalSupply ?? [],
+      supportedTokens: summary.supportedTokens.supportedTokens ?? [],
       totalAccounts,
       totalTransactions,
     };
