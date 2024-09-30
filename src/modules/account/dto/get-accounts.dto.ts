@@ -12,6 +12,20 @@ export class GetAccountsDto {
   address?: string;
 
   /**
+   * Get account by name
+   */
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  /**
+   * Get account by public key
+   */
+  @IsString()
+  @IsOptional()
+  publicKey?: string;
+
+  /**
    * Sort accounts.
    */
   @IsString()

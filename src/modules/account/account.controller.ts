@@ -16,12 +16,14 @@ export class AccountController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAccountsResponse)
   async getAccounts(@Query() query: GetAccountsDto): Promise<GatewayResponse<any[]>> {
-    const { address, offset, sort, limit } = query;
+    const { address, name, publicKey, offset, sort, limit } = query;
     const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_ACCOUNTS_TO_FETCH);
 
     const where: Prisma.AccountWhereInput = {
-      ...(address && { address: address }),
+      ...(address && { address }),
+      ...(name && { name }),
+      ...(publicKey && { publicKey }),
     };
 
     const accounts = await this.prisma.account.findMany({
