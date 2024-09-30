@@ -11,7 +11,7 @@ export class GetClaimableRewardsResponseDto {
 
 export const getClaimableRewardsResponse: ApiResponseOptions = {
   status: 200,
-  description: 'The validator counts have been successfully fetched.',
+  description: 'The claimable rewards have been successfully fetched.',
   type: GetClaimableRewardsResponseDto,
   isArray: true,
 };
