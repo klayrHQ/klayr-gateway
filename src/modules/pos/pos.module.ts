@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ValidatorController } from './validator.controller';
+import { PosController } from './pos.controller';
 import { NodeApiModule } from 'src/modules/node-api/node-api.module';
 import { StateModule } from 'src/modules/state/state.module';
 
 @Module({
   imports: [StateModule, NodeApiModule],
   providers: [],
-  controllers: [ValidatorController],
+  controllers: [PosController],
 })
-export class ValidatorModule {}
+export class PosModule {}
