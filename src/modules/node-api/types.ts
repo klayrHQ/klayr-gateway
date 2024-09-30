@@ -206,3 +206,11 @@ export type NFTBalance = {
     lockingModule: string;
   }[];
 };
+
+export type ValidateBlsKey = {
+  valid: boolean;
+};
+
+export type NodeApiError = {
+  error: string;
+};

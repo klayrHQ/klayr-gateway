@@ -28,9 +28,9 @@ import {
 import { StakesQueryDto } from './dto/get-stakes.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 
-@ApiTags('Validators')
+@ApiTags('Pos')
 @Controller('pos')
-export class ValidatorController {
+export class PosController {
   constructor(
     private readonly nodeApi: NodeApiService,
     private readonly prisma: PrismaService,
