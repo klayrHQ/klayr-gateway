@@ -213,3 +213,11 @@ export type ClaimableRewards = {
     reward: string;
   }[];
 };
+
+export type ValidateBlsKey = {
+  valid: boolean;
+};
+
+export type NodeApiError = {
+  error: string;
+};

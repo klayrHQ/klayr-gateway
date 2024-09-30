@@ -33,9 +33,9 @@ import {
   GetClaimableRewardsResponseDto,
 } from './dto/get-claimable-rewards-res.dto';
 
-@ApiTags('Validators')
+@ApiTags('Pos')
 @Controller('pos')
-export class ValidatorController {
+export class PosController {
   constructor(
     private readonly nodeApi: NodeApiService,
     private readonly prisma: PrismaService,

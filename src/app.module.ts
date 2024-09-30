@@ -4,7 +4,7 @@ import { IndexerModule } from './modules/indexer/indexer.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { NodeApiModule } from './modules/node-api/node-api.module';
 import { BlockModule } from './modules/block/block.module';
-import { ValidatorModule } from './modules/pos/validator.module';
+import { PosModule } from './modules/pos/pos.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { AccountModule } from './modules/account/account.module';
 import { EventModule } from './modules/event/event.module';
@@ -20,6 +20,7 @@ import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { NetworkModule } from './modules/network/network.module';
 import { NftModule } from './modules/nft/nft.module';
+import { ValidatorModule } from './modules/validator/validator.module';
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { NftModule } from './modules/nft/nft.module';
     NodeApiModule,
     BlockModule,
     TransactionModule,
-    ValidatorModule,
+    PosModule,
     AccountModule,
     IndexerModule,
     EventModule,
@@ -50,6 +51,7 @@ import { NftModule } from './modules/nft/nft.module';
     HealthModule,
     AuthModule,
     NetworkModule,
+    ValidatorModule,
     NftModule,
   ],
   controllers: [],

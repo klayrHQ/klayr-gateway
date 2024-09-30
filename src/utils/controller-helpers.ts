@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
+import { NodeApiError } from 'src/modules/node-api/types';
 
 export class ControllerHelpers {
+  static isNodeApiError(response: any): response is NodeApiError {
+    return (response as NodeApiError).error !== undefined;
+  }
   static buildRangeCondition(value: string): Record<string, any> {
     if (!value) {
       return {};
