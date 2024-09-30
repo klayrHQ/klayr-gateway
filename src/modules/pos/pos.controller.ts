@@ -16,8 +16,8 @@ import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helper
 import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
-import { NodeApiService } from 'src/modules/node-api/node-api.service';
-import { Generator } from 'src/modules/node-api/types';
+import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
+import { ClaimableRewards, Generator } from 'src/modules/node-api/types';
 import { ValidatorStatus } from './types';
 import {
   getStakersResponse,
@@ -27,6 +27,11 @@ import {
 } from './dto/get-stakes-res.dto';
 import { StakesQueryDto } from './dto/get-stakes.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { GetClaimableRewardsDto } from './dto/get-claimable-rewards.dto';
+import {
+  getClaimableRewardsResponse,
+  GetClaimableRewardsResponseDto,
+} from './dto/get-claimable-rewards-res.dto';
 
 @ApiTags('Pos')
 @Controller('pos')
@@ -99,6 +104,34 @@ export class PosController {
       data: formattedCounts,
       meta: {},
     };
+  }
+
+  @Get('rewards/claimable')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getClaimableRewardsResponse)
+  async getClaimableRewards(
+    @Query() query: GetClaimableRewardsDto,
+  ): Promise<GatewayResponse<GetClaimableRewardsResponseDto>> {
+    const { address, publicKey, name } = query;
+    const account = await this.prisma.account.findUnique({
+      where: {
+        ...(address && { address }),
+        ...(publicKey && { publicKey }),
+        ...(name && { name }),
+      },
+      select: { address: true, publicKey: true, name: true },
+    });
+
+    if (!account) throw new BadRequestException('Account not found');
+
+    const claimableRewards = await this.nodeApi.invokeApi<ClaimableRewards>(
+      NodeApi.POS_GET_CLAIMABLE_REWARDS,
+      {
+        address: account.address,
+      },
+    );
+
+    return new GatewayResponse(claimableRewards, { account });
   }
 
   @Get('stakes')

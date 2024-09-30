@@ -207,6 +207,13 @@ export type NFTBalance = {
   }[];
 };
 
+export type ClaimableRewards = {
+  rewards: {
+    tokenID: string;
+    reward: string;
+  }[];
+};
+
 export type ValidateBlsKey = {
   valid: boolean;
 };
