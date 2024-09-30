@@ -37,6 +37,7 @@ export enum NodeApi {
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   POS_GET_STAKER = 'pos_getStaker',
+  POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
   VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',

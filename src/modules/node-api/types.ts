@@ -206,3 +206,10 @@ export type NFTBalance = {
     lockingModule: string;
   }[];
 };
+
+export type ClaimableRewards = {
+  rewards: {
+    tokenID: string;
+    reward: string;
+  }[];
+};
