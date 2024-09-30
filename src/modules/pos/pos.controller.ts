@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Query,
   UsePipes,
   ValidationPipe,
@@ -12,7 +14,11 @@ import {
   getValidatorCountsResponse,
   getValidatorResponse,
 } from './dto/get-validator-res.dto';
-import { GatewayResponse, ValidatorSortTypes } from 'src/utils/controller-helpers';
+import {
+  ControllerHelpers,
+  GatewayResponse,
+  ValidatorSortTypes,
+} from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
@@ -130,6 +136,9 @@ export class PosController {
         address: account.address,
       },
     );
+
+    if (ControllerHelpers.isNodeApiError(claimableRewards))
+      throw new HttpException(claimableRewards.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse(claimableRewards, { account });
   }

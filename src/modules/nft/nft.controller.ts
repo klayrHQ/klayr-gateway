@@ -1,8 +1,16 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
-import { GatewayResponse } from 'src/utils/controller-helpers';
+import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { NFTBalance } from '../node-api/types';
 import { getNFTbalanceResponse, GetNFTBalanceResponseDto } from './dto/get-nft-balance-res.dto';
 import { GetNFTBalanceDto } from './dto/get-nft-balance.dto';
@@ -20,10 +28,13 @@ export class NftController {
   ): Promise<GatewayResponse<GetNFTBalanceResponseDto[]>> {
     const { address } = query;
 
-    const { nfts } = await this.nodeApi.invokeApi<NFTBalance>(NodeApi.NFT_GET_NFTS, {
+    const nftBalance = await this.nodeApi.invokeApi<NFTBalance>(NodeApi.NFT_GET_NFTS, {
       address,
     });
 
-    return new GatewayResponse(nfts, { total: nfts.length });
+    if (ControllerHelpers.isNodeApiError(nftBalance))
+      throw new HttpException(nftBalance.error, HttpStatus.NOT_FOUND);
+
+    return new GatewayResponse(nftBalance.nfts, { total: nftBalance.nfts.length });
   }
 }
