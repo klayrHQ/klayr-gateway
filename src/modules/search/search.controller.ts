@@ -99,7 +99,7 @@ export class SearchController {
     }[]
   > {
     const where: Prisma.AccountWhereInput = {
-      address: { contains: search },
+      OR: [{ address: { contains: search } }, { name: { contains: search } }],
     };
 
     const accounts = await this.prisma.account.findMany({
