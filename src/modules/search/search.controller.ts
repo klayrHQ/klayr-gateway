@@ -3,7 +3,7 @@ import { SearchQueryDto } from './dto/get-search.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetSearchResponse, getSearchResponse } from './dto/get-search-res.dto';
 import { getKlayr32AddressFromAddress } from 'src/utils/helpers';
-import { HEX_ADDRESS_LENGTH } from 'src/utils/constants';
+import { HEX_ADDRESS_LENGTH, SEARCH_LIMIT } from 'src/utils/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -66,6 +66,7 @@ export class SearchController {
       include: {
         sender: true,
       },
+      take: SEARCH_LIMIT,
     });
 
     return transactions;
@@ -87,6 +88,7 @@ export class SearchController {
         id: true,
         height: true,
       },
+      take: SEARCH_LIMIT,
     });
 
     return blocks;
@@ -108,6 +110,7 @@ export class SearchController {
         address: true,
         name: true,
       },
+      take: SEARCH_LIMIT,
     });
 
     return accounts;
