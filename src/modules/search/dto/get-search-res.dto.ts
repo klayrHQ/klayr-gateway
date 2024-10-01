@@ -1,10 +1,8 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class SearchValidators {
+export class SearchAccounts {
   name: string;
   address: string;
-  publicKey: string;
-  rank: number;
 }
 
 export class SearchBlocks {
@@ -18,7 +16,7 @@ export class SearchTransactions {
 }
 
 export class GetSearchResponse {
-  validators: SearchValidators[];
+  accounts: SearchAccounts[];
   blocks: SearchBlocks[];
   transactions: SearchTransactions[];
 }
