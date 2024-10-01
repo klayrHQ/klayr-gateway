@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Query,
   UsePipes,
   ValidationPipe,
@@ -9,7 +11,7 @@ import {
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
-import { GatewayResponse } from 'src/utils/controller-helpers';
+import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { getAuthResponse, GetAuthResponseDto } from './dto/get-auth-res.dto';
 import { GetAuthDto } from './dto/get-auth.dto';
 
@@ -39,6 +41,9 @@ export class AuthController {
     const auth = await this.nodeApi.invokeApi<GetAuthResponseDto>(NodeApi.AUTH_GET_AUTH_ACCOUNT, {
       address,
     });
+
+    if (ControllerHelpers.isNodeApiError(auth))
+      throw new HttpException(auth.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse(auth, {
       address: account.address,

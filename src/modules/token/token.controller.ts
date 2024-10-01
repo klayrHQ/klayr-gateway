@@ -1,6 +1,14 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GatewayResponse } from 'src/utils/controller-helpers';
+import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import {
   GetTokenSummaryResponseDto,
   getTokenSummaryResponse,
@@ -72,6 +80,9 @@ export class TokenController {
       },
     );
 
+    if (ControllerHelpers.isNodeApiError(tokenIDAccount))
+      throw new HttpException(tokenIDAccount.error, HttpStatus.NOT_FOUND);
+
     return new GatewayResponse({ isExists: tokenIDAccount.exists }, {});
   }
 
@@ -86,6 +97,9 @@ export class TokenController {
     const tokenBalances = await this.nodeApi.invokeApi<TokenBalances>(NodeApi.TOKEN_GET_BALANCES, {
       address,
     });
+
+    if (ControllerHelpers.isNodeApiError(tokenBalances))
+      throw new HttpException(tokenBalances.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse(tokenBalances.balances, {});
   }
@@ -102,6 +116,9 @@ export class TokenController {
       NodeApi.TOKEN_GET_SUPPORTED_TOKENS,
       {},
     );
+
+    if (ControllerHelpers.isNodeApiError(availableIds))
+      throw new HttpException(availableIds.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse({ tokenIDs: availableIds }, { total: availableIds.length });
   }
