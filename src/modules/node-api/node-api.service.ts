@@ -37,18 +37,24 @@ export enum NodeApi {
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   POS_GET_STAKER = 'pos_getStaker',
-  VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
+  POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
+  POS_GET_PENDING_UNLOCKS = 'pos_getPendingUnlocks',
+
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
   TOKEN_GET_SUPPORTED_TOKENS = 'token_getSupportedTokens',
   TOKEN_GET_BALANCE = 'token_getBalance',
   TOKEN_GET_BALANCES = 'token_getBalances',
   TOKEN_HAS_USER_ACCOUNT = 'token_hasUserAccount',
+
   AUTH_GET_AUTH_ACCOUNT = 'auth_getAuthAccount',
 
   NETWORK_GET_CONNECTED_PEERS = 'network_getConnectedPeers',
 
   NFT_GET_NFTS = 'nft_getNFTs',
+
+  VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
+  VALIDATORS_VALIDATE_BLS_KEY = 'validators_validateBLSKey',
 }
 
 // Functions to interact with the Node API

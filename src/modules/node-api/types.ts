@@ -206,3 +206,28 @@ export type NFTBalance = {
     lockingModule: string;
   }[];
 };
+
+export type ClaimableRewards = {
+  rewards: {
+    tokenID: string;
+    reward: string;
+  }[];
+};
+
+export type ValidateBlsKey = {
+  valid: boolean;
+};
+
+export type PendingUnlocks = {
+  pendingUnlocks: {
+    validatorAddress: string;
+    amount: string;
+    unstakeHeight: number;
+    unlockable: boolean;
+    expectedUnlockableHeight: number;
+  }[];
+};
+
+export type NodeApiError = {
+  error: string;
+};
