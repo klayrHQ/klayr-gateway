@@ -172,17 +172,25 @@ export class NodeApiService {
     const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
     const metadata = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
 
-    // upsert to make sure it only exists once
+    const registeredModules = metadata.modules.map((module: any) => module.name);
+    const moduleCommands = metadata.modules.flatMap((module: any) =>
+      module.commands.map((command: any) => `${module.name}:${command.name}`),
+    );
+
+    const upsertData = {
+      schema: JSON.stringify(schema),
+      metaData: JSON.stringify(metadata),
+      registeredModules,
+      moduleCommands,
+    };
+
+    // Upsert to make sure it only exists once
     await this.prisma.cachedSchemas.upsert({
       where: { id: CACHED_SCHEMAS_ID },
-      update: {
-        schema: JSON.stringify(schema),
-        metaData: JSON.stringify(metadata),
-      },
+      update: upsertData,
       create: {
         id: CACHED_SCHEMAS_ID,
-        schema: JSON.stringify(schema),
-        metaData: JSON.stringify(metadata),
+        ...upsertData,
       },
     });
   }
