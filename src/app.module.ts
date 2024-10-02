@@ -21,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { NetworkModule } from './modules/network/network.module';
 import { NftModule } from './modules/nft/nft.module';
 import { ValidatorModule } from './modules/validator/validator.module';
+import { SchemasModule } from './modules/schemas/schemas.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ValidatorModule } from './modules/validator/validator.module';
     NetworkModule,
     ValidatorModule,
     NftModule,
+    SchemasModule,
   ],
   controllers: [],
   providers: [],

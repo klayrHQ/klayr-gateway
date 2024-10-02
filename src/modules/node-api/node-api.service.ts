@@ -5,7 +5,11 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { BLOCKS_TO_CACHE_TOKEN_SUMMARY, RETRY_TIMEOUT } from 'src/utils/constants';
+import {
+  BLOCKS_TO_CACHE_TOKEN_SUMMARY,
+  CACHED_SCHEMAS_ID,
+  RETRY_TIMEOUT,
+} from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import {
   EscrowedAmounts,
@@ -18,6 +22,7 @@ import {
 } from './types';
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
+import { PrismaService } from '../prisma/prisma.service';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -72,9 +77,15 @@ export class NodeApiService {
     supportedTokens: SupportedTokens;
   };
 
+  constructor(private readonly prisma: PrismaService) {}
+
   async onModuleInit() {
     await this.connectToNode();
     await this.getAndSetSchemas();
+  }
+
+  async onApplicationBootstrap() {
+    await this.cacheSchemas();
   }
 
   // TODO: reconnect on disconnect
@@ -155,6 +166,25 @@ export class NodeApiService {
   private async getAndSetSchemas() {
     const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
+  }
+
+  private async cacheSchemas() {
+    const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
+    const metadata = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
+
+    // upsert to make sure it only exists once
+    await this.prisma.cachedSchemas.upsert({
+      where: { id: CACHED_SCHEMAS_ID },
+      update: {
+        schema: JSON.stringify(schema),
+        metaData: JSON.stringify(metadata),
+      },
+      create: {
+        id: CACHED_SCHEMAS_ID,
+        schema: JSON.stringify(schema),
+        metaData: JSON.stringify(metadata),
+      },
+    });
   }
 
   public decodeTxData(mod: string, command: string, data: string): unknown {
