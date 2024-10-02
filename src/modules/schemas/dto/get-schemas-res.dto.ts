@@ -7,6 +7,15 @@ class Schema {
   required: string[];
 }
 
+class ModuleSchema {
+  commands: object[];
+  events: object[];
+  stores: object[];
+  endpoints: object[];
+  assets: object[];
+  name: string;
+}
+
 export class GetSchemaResponseDto {
   block: Schema;
   header: Schema;
@@ -14,6 +23,7 @@ export class GetSchemaResponseDto {
   transaction: Schema;
   event: Schema;
   standardEvent: Schema;
+  modules: ModuleSchema[];
 }
 
 export const getSchemaResponse: ApiResponseOptions = {

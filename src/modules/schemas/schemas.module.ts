@@ -3,7 +3,7 @@ import { SchemasController } from './schemas.controller';
 import { NodeApiModule } from '../node-api/node-api.module';
 
 @Module({
-  imports: [NodeApiModule],
+  imports: [],
   controllers: [SchemasController],
 })
 export class SchemasModule {}

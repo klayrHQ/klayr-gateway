@@ -1,22 +1,22 @@
-import { BadRequestException, Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NodeApi, NodeApiService } from '../node-api/node-api.service';
-import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
+import { GatewayResponse } from 'src/utils/controller-helpers';
 import { getSchemaResponse } from './dto/get-schemas-res.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Schemas')
 @Controller('schemas')
 export class SchemasController {
-  constructor(private readonly nodeApi: NodeApiService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get()
   @ApiResponse(getSchemaResponse)
   async getSchemas() {
-    const schemas = await this.nodeApi.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
+    const cachedSchema = await this.prisma.cachedSchemas.findFirst();
 
-    if (ControllerHelpers.isNodeApiError(schemas))
-      throw new HttpException(schemas.error, HttpStatus.NOT_FOUND);
+    const schemas = JSON.parse(cachedSchema.schema);
+    const metaData = JSON.parse(cachedSchema.metaData);
 
-    return new GatewayResponse(schemas, {});
+    return new GatewayResponse({ ...schemas, ...metaData }, {});
   }
 }

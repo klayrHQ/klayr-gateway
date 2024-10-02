@@ -1,0 +1,5 @@
+model cachedSchemas {
+  id        Int    @id 
+  schema    String
+  metaData  String
+}

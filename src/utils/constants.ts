@@ -21,6 +21,7 @@ export const GLOBAL_PREFIX = 'api/v1';
 
 export const RETRY_TIMEOUT = 5000; // 5 sec
 export const BLOCKS_TO_CACHE_TOKEN_SUMMARY = 100;
+export const CACHED_SCHEMAS_ID = 1;
 
 ////////////////////////////
 ///       Indexer        ///
