@@ -23,7 +23,13 @@ import { ValidatorQueryDto } from './dto/get-validator.dto';
 import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
-import { ClaimableRewards, Generator, PendingUnlocks } from 'src/modules/node-api/types';
+import {
+  ClaimableRewards,
+  Generator,
+  LockedReward,
+  PendingUnlocks,
+  PosTokenID,
+} from 'src/modules/node-api/types';
 import { ValidatorStatus } from './types';
 import {
   getStakersResponse,
@@ -38,11 +44,10 @@ import {
   getClaimableRewardsResponse,
   GetClaimableRewardsResponseDto,
 } from './dto/get-claimable-rewards-res.dto';
-import {
-  getLockedRewardsResponse,
-  GetLockedRewardsResponseDto,
-} from './dto/get-locked-rewards-res.dto';
+import { getUnlocksResponse, GetUnlocksResponseDto } from './dto/get-unlocks-res.dto';
+import { GetUnlocksDto } from './dto/get-unlocks.dto';
 import { GetLockedRewardsDto } from './dto/get-locked-rewards.dto';
+import { GetLockedRewardsResDto } from './dto/get-locked-rewards-res.dto';
 
 @ApiTags('Pos')
 @Controller('pos')
@@ -123,16 +128,7 @@ export class PosController {
   async getClaimableRewards(
     @Query() query: GetClaimableRewardsDto,
   ): Promise<GatewayResponse<GetClaimableRewardsResponseDto>> {
-    const { address, publicKey, name } = query;
-    const account = await this.prisma.account.findFirst({
-      where: {
-        ...(address && { address }),
-        ...(publicKey && { publicKey }),
-        ...(name && { name }),
-      },
-      select: { address: true, publicKey: true, name: true },
-    });
-
+    const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
     const claimableRewards = await this.nodeApi.invokeApi<ClaimableRewards>(
@@ -148,22 +144,36 @@ export class PosController {
     return new GatewayResponse(claimableRewards, { account });
   }
 
-  @Get('unlocks')
+  @Get('rewards/locked')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getLockedRewardsResponse)
+  @ApiResponse(getClaimableRewardsResponse)
   async getLockedRewards(
     @Query() query: GetLockedRewardsDto,
-  ): Promise<GatewayResponse<GetLockedRewardsResponseDto>> {
-    const { address, publicKey, name } = query;
-    const account = await this.prisma.account.findFirst({
-      where: {
-        ...(address && { address }),
-        ...(publicKey && { publicKey }),
-        ...(name && { name }),
-      },
-      select: { address: true, publicKey: true, name: true },
-    });
+  ): Promise<GatewayResponse<GetLockedRewardsResDto[]>> {
+    const account = await this.findAccount(this.prisma, query);
+    if (!account) throw new BadRequestException('Account not found');
 
+    const posTokenID = await this.nodeApi.invokeApi<PosTokenID>(NodeApi.POS_GET_POS_TOKEN_ID, {});
+    if (ControllerHelpers.isNodeApiError(posTokenID))
+      throw new HttpException(posTokenID.error, HttpStatus.NOT_FOUND);
+
+    const rewards = await this.nodeApi.invokeApi<LockedReward>(NodeApi.POS_GET_LOCKED_REWARD, {
+      address: account.address,
+      tokenID: posTokenID.tokenID,
+    });
+    if (ControllerHelpers.isNodeApiError(rewards))
+      throw new HttpException(rewards.error, HttpStatus.NOT_FOUND);
+
+    return new GatewayResponse([{ tokenID: posTokenID.tokenID, reward: rewards.reward }], {
+      account,
+    });
+  }
+
+  @Get('unlocks')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getUnlocksResponse)
+  async getUnlocks(@Query() query: GetUnlocksDto): Promise<GatewayResponse<GetUnlocksResponseDto>> {
+    const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
     const unlocks = await this.nodeApi.invokeApi<PendingUnlocks>(NodeApi.POS_GET_PENDING_UNLOCKS, {
@@ -212,17 +222,8 @@ export class PosController {
       throw new BadRequestException('At least one of address, publicKey, or name must be provided');
     }
 
-    const where: Prisma.AccountWhereUniqueInput = {
-      ...(address && { address }),
-      ...(publicKey && { publicKey }),
-      ...(name && { name }),
-    };
-
-    const account = await this.prisma.account.findUnique({ where });
-
-    if (!account) {
-      return { account: null, response: [] };
-    }
+    const account = await this.findAccount(this.prisma, query);
+    if (!account) throw new BadRequestException('Account not found');
 
     const stakes = await this.prisma.stake.findMany({
       where: { [stakeKey]: account.address },
@@ -238,6 +239,21 @@ export class PosController {
     });
 
     return { account, response };
+  }
+
+  private async findAccount(
+    prisma: PrismaService,
+    query: { address?: string; publicKey?: string; name?: string },
+  ) {
+    const { address, publicKey, name } = query;
+    return await prisma.account.findFirst({
+      where: {
+        ...(address && { address }),
+        ...(publicKey && { publicKey }),
+        ...(name && { name }),
+      },
+      select: { address: true, publicKey: true, name: true },
+    });
   }
 
   private getValidatorResponse(

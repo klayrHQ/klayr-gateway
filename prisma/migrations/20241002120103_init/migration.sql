@@ -56,6 +56,8 @@ CREATE TABLE "cachedSchemas" (
     "id" INTEGER NOT NULL,
     "schema" TEXT NOT NULL,
     "metaData" TEXT NOT NULL,
+    "registeredModules" TEXT[],
+    "moduleCommands" TEXT[],
 
     CONSTRAINT "cachedSchemas_pkey" PRIMARY KEY ("id")
 );
