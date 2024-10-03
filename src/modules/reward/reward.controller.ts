@@ -25,7 +25,7 @@ export class RewardController {
   @Get('annual-inflation')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAnnualInflationRes)
-  async getTokenAccountExists(
+  async getAnnualInflation (
     @Query() query: GetAnnualInflationDto,
   ): Promise<GatewayResponse<GetAnnualInflationResDto>> {
     const { height } = query;
