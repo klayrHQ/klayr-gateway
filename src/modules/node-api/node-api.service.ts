@@ -39,11 +39,14 @@ export enum NodeApi {
   REWARD_GET_EXPECTED_VALIDATOR_REWARDS = 'dynamicReward_getExpectedValidatorRewards',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
+
+  POS_GET_POS_TOKEN_ID = 'pos_getPoSTokenID',
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   POS_GET_STAKER = 'pos_getStaker',
   POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
   POS_GET_PENDING_UNLOCKS = 'pos_getPendingUnlocks',
+  POS_GET_LOCKED_REWARD = 'pos_getLockedReward',
 
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',

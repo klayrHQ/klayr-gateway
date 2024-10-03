@@ -241,6 +241,14 @@ export type ClaimableRewards = {
   }[];
 };
 
+export type PosTokenID = {
+  tokenID: string;
+};
+
+export type LockedReward = {
+  reward: string;
+};
+
 export type ValidateBlsKey = {
   valid: boolean;
 };
