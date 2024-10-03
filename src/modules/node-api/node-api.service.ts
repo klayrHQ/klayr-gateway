@@ -5,7 +5,11 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { BLOCKS_TO_CACHE_TOKEN_SUMMARY, RETRY_TIMEOUT } from 'src/utils/constants';
+import {
+  BLOCKS_TO_CACHE_TOKEN_SUMMARY,
+  CACHED_SCHEMAS_ID,
+  RETRY_TIMEOUT,
+} from 'src/utils/constants';
 import { waitTimeout } from 'src/utils/helpers';
 import {
   EscrowedAmounts,
@@ -18,6 +22,7 @@ import {
 } from './types';
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
+import { PrismaService } from '../prisma/prisma.service';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -32,13 +37,17 @@ export enum NodeApi {
   CHAIN_GET_GENERATOR_LIST = 'chain_getGeneratorList',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
   REWARD_GET_EXPECTED_VALIDATOR_REWARDS = 'dynamicReward_getExpectedValidatorRewards',
+  REWARD_GET_ANNUAL_INFLATION = 'dynamicReward_getAnnualInflation',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
+
+  POS_GET_POS_TOKEN_ID = 'pos_getPoSTokenID',
   POS_GET_VALIDATOR = 'pos_getValidator',
   POS_GET_ALL_VALIDATORS = 'pos_getAllValidators',
   POS_GET_STAKER = 'pos_getStaker',
   POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
   POS_GET_PENDING_UNLOCKS = 'pos_getPendingUnlocks',
+  POS_GET_LOCKED_REWARD = 'pos_getLockedReward',
 
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
@@ -72,9 +81,15 @@ export class NodeApiService {
     supportedTokens: SupportedTokens;
   };
 
+  constructor(private readonly prisma: PrismaService) {}
+
   async onModuleInit() {
     await this.connectToNode();
     await this.getAndSetSchemas();
+  }
+
+  async onApplicationBootstrap() {
+    await this.cacheSchemas();
   }
 
   // TODO: reconnect on disconnect
@@ -155,6 +170,33 @@ export class NodeApiService {
   private async getAndSetSchemas() {
     const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
+  }
+
+  private async cacheSchemas() {
+    const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
+    const metadata = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
+
+    const registeredModules = metadata.modules.map((module: any) => module.name);
+    const moduleCommands = metadata.modules.flatMap((module: any) =>
+      module.commands.map((command: any) => `${module.name}:${command.name}`),
+    );
+
+    const upsertData = {
+      schema: JSON.stringify(schema),
+      metaData: JSON.stringify(metadata),
+      registeredModules,
+      moduleCommands,
+    };
+
+    // Upsert to make sure it only exists once
+    await this.prisma.cachedSchemas.upsert({
+      where: { id: CACHED_SCHEMAS_ID },
+      update: upsertData,
+      create: {
+        id: CACHED_SCHEMAS_ID,
+        ...upsertData,
+      },
+    });
   }
 
   public decodeTxData(mod: string, command: string, data: string): unknown {

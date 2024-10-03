@@ -1,0 +1,7 @@
+model cachedSchemas {
+  id                  Int    @id 
+  schema              String
+  metaData            String
+  registeredModules   String[]
+  moduleCommands      String[]
+}

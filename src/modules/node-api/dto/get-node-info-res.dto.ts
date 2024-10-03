@@ -31,6 +31,8 @@ export class NodeInfoDto {
   genesisHeight: number;
   genesis: Genesis;
   network: Network;
+  registeredModules: string[];
+  moduleCommands: string[];
 }
 
 export const getNodeInfoResponse: ApiResponseOptions = {

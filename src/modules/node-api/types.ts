@@ -61,10 +61,37 @@ export interface NewBlockEvent {
   [key: string]: BlockHeader;
 }
 
+interface GenesisBlock {
+  fromFile: string;
+}
+
+interface Genesis {
+  block: GenesisBlock;
+  blockTime: number;
+  bftBatchSize: number;
+  maxTransactionsSize: number;
+  minimumCertifyHeight: number;
+  chainID: string;
+}
+
+interface Network {
+  version: string;
+  port: number;
+  seedPeers: string[];
+}
+
 export interface NodeInfo {
+  version: string;
+  networkVersion: string;
+  chainID: string;
+  lastBlockID: string;
   height: number;
-  genesisHeight: number;
   finalizedHeight: number;
+  syncing: boolean;
+  unconfirmedTransactions: number;
+  genesisHeight: number;
+  genesis: Genesis;
+  network: Network;
   [key: string]: unknown;
 }
 
@@ -214,6 +241,14 @@ export type ClaimableRewards = {
   }[];
 };
 
+export type PosTokenID = {
+  tokenID: string;
+};
+
+export type LockedReward = {
+  reward: string;
+};
+
 export type ValidateBlsKey = {
   valid: boolean;
 };
@@ -230,4 +265,14 @@ export type PendingUnlocks = {
 
 export type NodeApiError = {
   error: string;
+};
+
+export type AnnualInflation = {
+  tokenID: string;
+  rate: string;
+};
+
+export type DefaultReward = {
+  tokenID: string;
+  defaultReward: string;
 };
