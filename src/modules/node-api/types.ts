@@ -236,3 +236,8 @@ export type AnnualInflation = {
   tokenID: string;
   rate: string;
 };
+
+export type DefaultReward = {
+  tokenID: string;
+  defaultReward: string;
+};
