@@ -61,10 +61,37 @@ export interface NewBlockEvent {
   [key: string]: BlockHeader;
 }
 
+interface GenesisBlock {
+  fromFile: string;
+}
+
+interface Genesis {
+  block: GenesisBlock;
+  blockTime: number;
+  bftBatchSize: number;
+  maxTransactionsSize: number;
+  minimumCertifyHeight: number;
+  chainID: string;
+}
+
+interface Network {
+  version: string;
+  port: number;
+  seedPeers: string[];
+}
+
 export interface NodeInfo {
+  version: string;
+  networkVersion: string;
+  chainID: string;
+  lastBlockID: string;
   height: number;
-  genesisHeight: number;
   finalizedHeight: number;
+  syncing: boolean;
+  unconfirmedTransactions: number;
+  genesisHeight: number;
+  genesis: Genesis;
+  network: Network;
   [key: string]: unknown;
 }
 
