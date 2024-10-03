@@ -266,3 +266,8 @@ export type PendingUnlocks = {
 export type NodeApiError = {
   error: string;
 };
+
+export type AnnualInflation = {
+  tokenID: string;
+  rate: string;
+};
