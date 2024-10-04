@@ -3,7 +3,6 @@ import { IndexerService } from './indexer.service';
 import { NodeApiModule } from 'src/modules/node-api/node-api.module';
 import { IndexGenesisBlockHandler } from './startup/genesis-index.command';
 import { StateModule } from 'src/modules/state/state.module';
-import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { EventIndexService } from './event/event-index.service';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CheckForBlockFinalityHandler } from './block/post-block-commands/check-block-finality.command';
@@ -23,7 +22,6 @@ import { UpdateAccountHandler } from './event/commands/update-account.command';
   imports: [CqrsModule, StateModule, NodeApiModule],
   controllers: [],
   providers: [
-    PrismaService,
     IndexerService,
     EventIndexService,
 

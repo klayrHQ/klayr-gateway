@@ -7,4 +7,5 @@ export enum IndexerState {
   RESTART,
   SYNCING,
   INDEXING,
+  PROCESSING_BLOCKS,
 }

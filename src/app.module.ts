@@ -23,6 +23,8 @@ import { NftModule } from './modules/nft/nft.module';
 import { ValidatorModule } from './modules/validator/validator.module';
 import { SchemasModule } from './modules/schemas/schemas.module';
 import { RewardModule } from './modules/reward/reward.module';
+import { APP_FILTER } from '@nestjs/core';
+import { LokiExceptionFilter } from './filters/all-exceptions.filter';
 
 @Module({
   imports: [
@@ -59,7 +61,12 @@ import { RewardModule } from './modules/reward/reward.module';
     RewardModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: LokiExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
