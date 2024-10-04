@@ -1,10 +1,5 @@
 import { apiClient } from '@klayr/client';
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   BLOCKS_TO_CACHE_TOKEN_SUMMARY,
   CACHED_SCHEMAS_ID,
@@ -23,6 +18,7 @@ import {
 import { codec } from '@klayr/codec';
 import { Interval } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -69,7 +65,7 @@ export enum NodeApi {
 // Functions to interact with the Node API
 @Injectable()
 export class NodeApiService {
-  private readonly logger = new Logger(NodeApiService.name);
+  private readonly logger = new LokiLogger(NodeApiService.name);
   private client: apiClient.APIClient;
   private schemaMap: Map<string, SchemaModule>;
   private subscription: any;
@@ -96,7 +92,8 @@ export class NodeApiService {
   public async connectToNode() {
     while (!this.client) {
       this.client = await apiClient.createWSClient(process.env.NODE_URL).catch(async (err) => {
-        this.logger.error('Failed connecting to node, retrying...', err);
+        this.logger.error('Failed connecting to node, retrying...');
+        this.logger.error(err.message);
         await waitTimeout(RETRY_TIMEOUT);
         return null;
       });
@@ -142,7 +139,7 @@ export class NodeApiService {
 
   public async invokeApi<T>(endpoint: string, params: any): Promise<T> {
     return this.client.invoke<T>(endpoint, params).catch((err) => {
-      this.logger.error(err);
+      this.logger.error(err.message);
       throw new BadRequestException(err);
     });
   }
@@ -156,7 +153,7 @@ export class NodeApiService {
         callback(newBlockData);
       });
     } catch (err) {
-      this.logger.error(err);
+      this.logger.error(err.message);
       throw new InternalServerErrorException(err);
     }
   }

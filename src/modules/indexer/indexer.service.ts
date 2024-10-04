@@ -106,7 +106,8 @@ export class IndexerService {
 
       // TODO: Emit events for modular use
     } catch (error) {
-      this.logger.error('Error handling new block event', error);
+      this.logger.error('Error handling new block event');
+      this.logger.error(error.message);
     }
   }
 
