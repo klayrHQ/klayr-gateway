@@ -1,16 +1,16 @@
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { Block } from '../interfaces/block.interface';
 import { AssetTypes, Validator } from '../interfaces/asset.interface';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 export class IndexGenesisBlockCommand implements ICommand {}
 
 @CommandHandler(IndexGenesisBlockCommand)
 export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlockCommand> {
-  private readonly logger = new Logger(IndexGenesisBlockHandler.name);
+  private readonly logger = new LokiLogger(IndexGenesisBlockHandler.name);
 
   constructor(
     private readonly nodeApiService: NodeApiService,

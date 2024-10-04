@@ -1,14 +1,14 @@
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
 import { KNOWN_ACCOUNTS_MAINNET_URL, KNOWN_ACCOUNTS_TESTNET_URL } from 'src/utils/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { KnownAccounts } from 'src/modules/indexer/interfaces/known-accounts.interface';
+import { LokiLogger } from 'nestjs-loki-logger';
 
 export class IndexKnownAccountsCommand implements ICommand {}
 
 @CommandHandler(IndexKnownAccountsCommand)
 export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAccountsCommand> {
-  private readonly logger = new Logger(IndexKnownAccountsHandler.name);
+  private readonly logger = new LokiLogger(IndexKnownAccountsHandler.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
