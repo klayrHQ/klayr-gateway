@@ -99,6 +99,7 @@ export class IndexerService {
     this.logger.debug(
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
+    const state = this.state.get(Modules.INDEXER);
     try {
       this.state.set(Modules.INDEXER, IndexerState.PROCESSING_BLOCKS);
       const [chainEvents, totalBurntPerBlockMap] = await this.executeBlockEventCommands(blocks);
@@ -110,7 +111,7 @@ export class IndexerService {
       this.logger.error('Error handling new block event');
       this.logger.error(error.message);
     } finally {
-      this.state.set(Modules.INDEXER, IndexerState.INDEXING);
+      this.state.set(Modules.INDEXER, state);
     }
   }
 
