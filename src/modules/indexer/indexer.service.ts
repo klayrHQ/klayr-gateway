@@ -35,6 +35,7 @@ import { UpdateValidatorRanks } from './event/commands/update-validator-ranks.co
 export class IndexerService {
   private readonly logger = new LokiLogger(IndexerService.name);
   public nextBlockToSync: number;
+  private processingBlocks = false;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -100,7 +101,7 @@ export class IndexerService {
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
     try {
-      this.state.set(Modules.INDEXER, IndexerState.PROCESSING_BLOCKS);
+      this.processingBlocks = true;
       const [chainEvents, totalBurntPerBlockMap] = await this.executeBlockEventCommands(blocks);
 
       await this.executePostBlockCommands(blocks, chainEvents, totalBurntPerBlockMap);
@@ -110,7 +111,7 @@ export class IndexerService {
       this.logger.error('Error handling new block event');
       this.logger.error(error.message);
     } finally {
-      this.state.set(Modules.INDEXER, IndexerState.INDEXING);
+      this.processingBlocks = false;
     }
   }
 
@@ -198,7 +199,7 @@ export class IndexerService {
       if (state === IndexerState.SYNCING)
         return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
 
-      if (state === IndexerState.PROCESSING_BLOCKS)
+      if (this.processingBlocks)
         return this.logger.log(`Already processing blocks: Current height ${this.nextBlockToSync}`);
 
       // will go back to syncing state if received block is greather then `nextBlockToSync`

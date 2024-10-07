@@ -3,7 +3,12 @@ import { SearchQueryDto } from './dto/get-search.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetSearchResponse, getSearchResponse } from './dto/get-search-res.dto';
 import { getKlayr32AddressFromAddress } from 'src/utils/helpers';
-import { HEX_ADDRESS_LENGTH, SEARCH_LIMIT } from 'src/utils/constants';
+import {
+  HEX_ADDRESS_LENGTH,
+  KLAYR_ADDRESS_LENGTH,
+  KLAYR_TRANSACTION_ID_LENGTH,
+  SEARCH_LIMIT,
+} from 'src/utils/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -57,6 +62,8 @@ export class SearchController {
       };
     }>[]
   > {
+    if (search.length !== KLAYR_TRANSACTION_ID_LENGTH) return [];
+
     const where: Prisma.TransactionWhereInput = {
       id: { contains: search },
     };
@@ -100,9 +107,17 @@ export class SearchController {
       name: string | null;
     }[]
   > {
-    const where: Prisma.AccountWhereInput = {
-      OR: [{ address: { contains: search } }, { name: { contains: search } }],
-    };
+    let where: Prisma.AccountWhereInput;
+
+    if (search.length === KLAYR_ADDRESS_LENGTH) {
+      where = {
+        address: { contains: search },
+      };
+    } else {
+      where = {
+        name: { startsWith: search },
+      };
+    }
 
     const accounts = await this.prisma.account.findMany({
       where,

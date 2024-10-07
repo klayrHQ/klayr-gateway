@@ -73,6 +73,8 @@ export const MAX_ACCOUNTS_TO_FETCH = 100;
 
 export const HEX_ADDRESS_LENGTH = 40;
 export const SEARCH_LIMIT = 20;
+export const KLAYR_ADDRESS_LENGTH = 41;
+export const KLAYR_TRANSACTION_ID_LENGTH = 64;
 
 ////////////////////////////
 ///      Indexer Extra   ///
