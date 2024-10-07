@@ -111,7 +111,7 @@ export class SearchController {
 
     if (search.length === KLAYR_ADDRESS_LENGTH) {
       where = {
-        OR: [{ address: { contains: search } }, { name: { contains: search } }],
+        address: { contains: search },
       };
     } else {
       where = {
