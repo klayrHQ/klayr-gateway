@@ -28,19 +28,24 @@ export class UpdateValidatorRanksHandler implements ICommandHandler<UpdateValida
       },
     });
 
-    const sortedValidators = this.sortValidators(validators);
-
     let numberOfActiveValidators = ACTIVE_VALIDATORS;
-    for await (const [index, validator] of sortedValidators.entries()) {
-      validator.rank = index + 1;
+    for (const validator of validators) {
       const validatorStatus = this.calcStatus(validator, numberOfActiveValidators);
+      validator.status = validatorStatus;
 
       if (this.isBannedOrPunished(validator.status) && validator.rank <= numberOfActiveValidators) {
         numberOfActiveValidators++;
       }
+    }
+
+    const sortedValidators = this.sortValidators(validators);
+
+    for (const [index, validator] of sortedValidators.entries()) {
+      validator.rank = index + 1;
+
       await this.prisma.validator.update({
         where: { address: validator.address },
-        data: { rank: validator.rank, status: validatorStatus },
+        data: { rank: validator.rank, status: validator.status },
       });
     }
 
