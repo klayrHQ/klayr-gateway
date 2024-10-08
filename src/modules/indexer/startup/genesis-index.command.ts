@@ -1,10 +1,11 @@
-import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { Block } from '../interfaces/block.interface';
 import { AssetTypes, Validator } from '../interfaces/asset.interface';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { LokiLogger } from 'nestjs-loki-logger';
+import { UpdateAccountCommand } from '../event/commands/update-account.command';
 
 export class IndexGenesisBlockCommand implements ICommand {}
 
@@ -15,6 +16,7 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
   constructor(
     private readonly nodeApiService: NodeApiService,
     private readonly prisma: PrismaService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   async execute(): Promise<void> {
@@ -54,7 +56,10 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
     switch (decodedAsset.name) {
       case AssetTypes.TOKEN:
         this.logger.debug('Genesis token asset');
-        await this.handleGenesisTokenAsset(decodedAsset.message.userSubstore);
+        await this.handleGenesisTokenAsset(
+          decodedAsset.message.userSubstore,
+          decodedAsset.message.supplySubstore[0].tokenID,
+        );
         break;
       case AssetTypes.POS:
         this.logger.debug('Genesis POS asset');
@@ -66,11 +71,14 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
     }
   }
 
-  private async handleGenesisTokenAsset(users: { address: string }[]) {
+  private async handleGenesisTokenAsset(users: { address: string }[], tokenID: string) {
     const addresses = users.map((user) => ({ address: user.address }));
     await this.prisma.account.createMany({
       data: addresses,
     });
+    for await (const user of addresses) {
+      await this.commandBus.execute(new UpdateAccountCommand(user.address, tokenID));
+    }
   }
 
   private async processPosAsset(validators: Validator[]) {
