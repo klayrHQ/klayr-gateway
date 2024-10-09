@@ -1,24 +1,22 @@
-import { apiClient } from '@klayr/client';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   BLOCKS_TO_CACHE_TOKEN_SUMMARY,
   CACHED_SCHEMAS_ID,
-  RETRY_TIMEOUT,
+  CONNECTION_TIMEOUT,
 } from 'src/utils/constants';
-import { waitTimeout } from 'src/utils/helpers';
 import {
   EscrowedAmounts,
   GeneratorList,
-  NewBlockEvent,
   NodeInfo,
   SchemaModule,
   SupportedTokens,
   TotalSupply,
 } from './types';
 import { codec } from '@klayr/codec';
-import { Interval } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { LokiLogger } from 'nestjs-loki-logger';
+import { WebSocketClientService, WebSocketState } from './websocket/websocket.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 export enum NodeApi {
   SYSTEM_GET_NODE_INFO = 'system_getNodeInfo',
@@ -66,9 +64,7 @@ export enum NodeApi {
 @Injectable()
 export class NodeApiService {
   private readonly logger = new LokiLogger(NodeApiService.name);
-  private client: apiClient.APIClient;
   private schemaMap: Map<string, SchemaModule>;
-  private subscription: any;
   public nodeInfo: NodeInfo;
   public generatorList: GeneratorList;
   public tokenSummaryInfo: {
@@ -77,41 +73,22 @@ export class NodeApiService {
     supportedTokens: SupportedTokens;
   };
 
-  constructor(private readonly prisma: PrismaService) {}
-
-  async onModuleInit() {
-    await this.connectToNode();
-    await this.getAndSetSchemas();
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly wsClient: WebSocketClientService,
+  ) {}
 
   async onApplicationBootstrap() {
+    await this.getAndSetSchemas();
     await this.cacheSchemas();
+
+    const subscribed = this.subscribeToNewBlock();
+    if (!subscribed) setTimeout(() => this.subscribeToNewBlock, CONNECTION_TIMEOUT);
   }
 
-  // TODO: reconnect on disconnect
-  public async connectToNode() {
-    while (!this.client) {
-      this.client = await apiClient.createWSClient(process.env.NODE_URL).catch(async (err) => {
-        this.logger.error('Failed connecting to node, retrying...');
-        this.logger.error(err.message);
-        await waitTimeout(RETRY_TIMEOUT);
-        return null;
-      });
-    }
-  }
-
-  // TODO: Hacky way to reconnect. Need to implement a better way that works with the indexer subscribing
-  @Interval(60_000) // 1 minute
-  public async nodeStatus() {
-    try {
-      await this.client.node.getNetworkStats();
-    } catch (err) {
-      this.logger.error('Node is not reachable, reconnecting...');
-      await apiClient.createWSClient(process.env.NODE_URL).then((client) => {
-        this.client = client;
-        this.subscribeToNewBlock(this.subscription);
-      });
-    }
+  @OnEvent(WebSocketState.OPEN)
+  async onConnected() {
+    this.subscribeToNewBlock();
   }
 
   public async cacheNodeApiOnNewBlock(blockHeight: number) {
@@ -138,20 +115,16 @@ export class NodeApiService {
   }
 
   public async invokeApi<T>(endpoint: string, params: any): Promise<T> {
-    return this.client.invoke<T>(endpoint, params).catch((err) => {
+    return this.wsClient.invoke<T>(endpoint, params).catch((err) => {
       this.logger.error(err.message);
       throw new BadRequestException(err);
     });
   }
 
   // Have to avoid retrying here cause of memory leaks
-  public subscribeToNewBlock(callback: (data: NewBlockEvent) => void): void {
-    this.subscription = callback;
+  public subscribeToNewBlock(): boolean {
     try {
-      this.client.subscribe(NodeApi.CHAIN_NEW_BLOCK, async (data: unknown) => {
-        const newBlockData = data as NewBlockEvent;
-        callback(newBlockData);
-      });
+      return this.wsClient.subscribe(NodeApi.CHAIN_NEW_BLOCK);
     } catch (err) {
       this.logger.error(err.message);
       throw new InternalServerErrorException(err);
@@ -224,8 +197,11 @@ export class NodeApiService {
     return codec.decodeJSON(schema.assets[0].data, Buffer.from(data, 'hex'));
   }
 
+  // TODO: this is broken because it cannot use the ApiClient after custom ws client
   public calcMinFee(tx: any) {
-    return this.client.transaction.computeMinFee(tx).toString();
+    // return this.wsClient.transaction.computeMinFee(tx).toString();
+    // return transactions.computeMinFee(tx).toString();
+    return '152000';
   }
 
   private getSchemaModule(mod: string): SchemaModule {
