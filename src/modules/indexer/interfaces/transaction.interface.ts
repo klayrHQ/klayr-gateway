@@ -22,5 +22,7 @@ export enum TxEvents {
   POS_STAKE = 'pos:stake',
   POS_REGISTER_VALIDATOR = 'pos:registerValidator',
   POS_CHANGE_COMMISSION = 'pos:changeCommission',
+
   TOKEN_TRANSFER = 'token:transfer',
+  TOKEN_TRANSFER_CROSS_CHAIN = 'token:transferCrossChain',
 }

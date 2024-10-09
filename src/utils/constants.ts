@@ -82,3 +82,10 @@ export const KLAYR_TRANSACTION_ID_LENGTH = 64;
 
 export const KNOWN_ACCOUNTS_MAINNET_URL = 'https://static-data.klayr.xyz/known_mainnet.json';
 export const KNOWN_ACCOUNTS_TESTNET_URL = 'https://static-data.klayr.xyz/known_testnet.json';
+
+////////////////////////////
+///    Websocket client  ///
+////////////////////////////
+
+export const CONNECTION_TIMEOUT = 10000;
+export const RESPONSE_TIMEOUT = 10000;
