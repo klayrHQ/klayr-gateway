@@ -48,9 +48,9 @@ export class WebSocketClientService implements OnModuleDestroy {
       this.handleMessage(data);
     });
 
-    this.ws.on('error', (error) => {
+    this.ws.on('error', async (error) => {
       this.logger.error(`WebSocket error: ${error.message}`);
-      this.ws.close();
+      await this.disconnect();
     });
 
     this.ws.on('close', () => {
@@ -152,7 +152,35 @@ export class WebSocketClientService implements OnModuleDestroy {
     }
   }
 
-  onModuleDestroy() {
+  public async disconnect(): Promise<void> {
+    this.requestCounter = 0;
+    this.pendingRequests = {};
+
+    if (!this.ws) return;
+
+    if (this.ws.readyState === WebSocket.CLOSED) {
+      this.ws = undefined;
+      return;
+    }
+
+    const closeHandler = new Promise<void>((resolve) => {
+      const onClose = () => {
+        this.ws?.removeEventListener('close', onClose);
+        resolve();
+      };
+
+      this.ws?.addEventListener('close', onClose);
+    });
+
     this.ws.close();
+    await promiseWithTimeout(
+      [closeHandler],
+      CONNECTION_TIMEOUT,
+      `Could not disconnect in ${CONNECTION_TIMEOUT}ms`,
+    );
+  }
+
+  async onModuleDestroy() {
+    await this.disconnect();
   }
 }
