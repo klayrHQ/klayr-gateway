@@ -37,13 +37,13 @@ export class TransactionController {
   public async getTransaction(
     @Query() query: GetTransactionDto,
   ): Promise<GatewayResponse<GetTransactionsResDto[]>> {
-    // TODO: receivingChainID query and implementation
     const {
       transactionID,
       blockID,
       senderAddress,
       recipientAddress,
       nonce,
+      receivingChainID,
       address,
       timestamp,
       moduleCommand,
@@ -68,6 +68,7 @@ export class TransactionController {
       ...(blockID && { block: { id: blockID } }),
       ...(senderAddress && { senderAddress }),
       ...(recipientAddress && { recipientAddress }),
+      ...(receivingChainID && { receivingChainID }),
       ...(module && { module }),
       ...(command && { command }),
       ...(nonce && { nonce }),
@@ -142,6 +143,7 @@ export class TransactionController {
       signatures,
       senderAddress,
       recipientAddress,
+      receivingChainID,
       height,
       ...rest
     } = transaction;
@@ -155,6 +157,7 @@ export class TransactionController {
     if (!sender.name) delete sender.name;
     if (recipient && !recipient.publicKey) delete recipient.publicKey;
     if (recipient && !recipient.name) delete recipient.name;
+    if (!receivingChainID) delete newTransaction.receivingChainID;
     return newTransaction;
   }
 }

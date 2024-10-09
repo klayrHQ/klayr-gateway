@@ -76,6 +76,8 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
     await this.prisma.account.createMany({
       data: addresses,
     });
+
+    if (process.env.NODE_ENV === 'dev') return;
     for await (const user of addresses) {
       await this.commandBus.execute(new UpdateAccountCommand(user.address, tokenID));
     }

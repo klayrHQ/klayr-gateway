@@ -106,6 +106,7 @@ CREATE TABLE "Transaction" (
     "signatures" TEXT[],
     "index" INTEGER NOT NULL,
     "senderAddress" TEXT NOT NULL,
+    "receivingChainID" TEXT,
     "recipientAddress" TEXT,
     "executionStatus" TEXT DEFAULT 'pending',
 

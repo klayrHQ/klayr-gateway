@@ -90,9 +90,20 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
 
     if (recipientAddress && !accounts.get(recipientAddress)) accounts.set(recipientAddress, {});
 
-    // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
-    if (`${tx.module}:${tx.command}` === TxEvents.POS_STAKE) {
-      await this.handlePosStake(txParams);
+    let receivingChainID = null;
+
+    switch (`${tx.module}:${tx.command}`) {
+      case TxEvents.POS_STAKE:
+        // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
+        await this.handlePosStake(txParams);
+        break;
+
+      case TxEvents.TOKEN_TRANSFER_CROSS_CHAIN:
+        receivingChainID = this.handleTransferCrossChain(txParams);
+        break;
+
+      default:
+        break;
     }
 
     return {
@@ -107,6 +118,7 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
       senderAddress: senderAddress,
       recipientAddress,
       index,
+      receivingChainID,
       params: txParams,
     };
   }
@@ -160,5 +172,14 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
         },
       ),
     );
+  }
+
+  // ! Dont know if it works, will check on deployment
+  private handleTransferCrossChain(txParams: any): string {
+    this.logger.debug('Handling cross chain transfer');
+    this.logger.debug(`Params: ${txParams}`);
+    const receivingChainID = txParams.receivingChainID;
+    this.logger.debug(`Receiving chain ID: ${receivingChainID}`);
+    return receivingChainID;
   }
 }
