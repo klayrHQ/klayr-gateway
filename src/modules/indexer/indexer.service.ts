@@ -26,6 +26,7 @@ import { IndexAssetCommand } from './block/block-commands/asset-index.command';
 import { ChainEvent } from './interfaces/chain-event.interface';
 import { IndexKnownAccountsCommand } from './startup/known-accounts.command';
 import { UpdateValidatorRanks } from './event/commands/update-validator-ranks.command';
+import { OnEvent } from '@nestjs/event-emitter';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -48,19 +49,10 @@ export class IndexerService {
     this.state.set(Modules.INDEXER, IndexerState.START_UP);
   }
 
-  async onModuleInit() {
-    await this.nodeApi.getAndSetNodeInfo();
-  }
-
   async onApplicationBootstrap() {
+    await this.nodeApi.getAndSetNodeInfo();
     await this.setNextBlockandState();
     await this.executeStartUpCommands();
-
-    setImmediate(() => {
-      this.subscribeToNewBlock().catch((error) => {
-        this.logger.error('Error syncing with node', error);
-      });
-    });
   }
 
   private async executeStartUpCommands() {
@@ -191,41 +183,40 @@ export class IndexerService {
     }
   }
 
-  private async subscribeToNewBlock(): Promise<void> {
-    this.nodeApi.subscribeToNewBlock(async (newBlockData: NewBlockEvent) => {
-      const newBlockHeight = newBlockData.blockHeader.height;
-      const state = this.state.get(Modules.INDEXER);
+  @OnEvent(NodeApi.CHAIN_NEW_BLOCK)
+  private async subscribeToNewBlock(newBlockData: NewBlockEvent): Promise<void> {
+    const newBlockHeight = newBlockData.blockHeader.height;
+    const state = this.state.get(Modules.INDEXER);
 
-      if (state === IndexerState.SYNCING)
-        return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
+    if (state === IndexerState.SYNCING)
+      return this.logger.log(`Syncing: Current height ${this.nextBlockToSync}`);
 
-      if (this.processingBlocks)
-        return this.logger.log(`Already processing blocks: Current height ${this.nextBlockToSync}`);
+    if (this.processingBlocks)
+      return this.logger.log(`Already processing blocks: Current height ${this.nextBlockToSync}`);
 
-      // will go back to syncing state if received block is greather then `nextBlockToSync`
-      if (newBlockHeight > this.nextBlockToSync || state === IndexerState.RESTART) {
-        this.state.set(Modules.INDEXER, IndexerState.SYNCING);
+    // will go back to syncing state if received block is greather then `nextBlockToSync`
+    if (newBlockHeight > this.nextBlockToSync || state === IndexerState.RESTART) {
+      this.state.set(Modules.INDEXER, IndexerState.SYNCING);
 
-        setImmediate(() => {
-          this.syncWithNode().catch((error) => {
-            this.state.set(Modules.INDEXER, IndexerState.RESTART);
-            this.logger.error('Error syncing with node, will retry', error);
-          });
+      setImmediate(() => {
+        this.syncWithNode().catch((error) => {
+          this.state.set(Modules.INDEXER, IndexerState.RESTART);
+          this.logger.error('Error syncing with node, will retry', error);
         });
-
-        return;
-      }
-
-      const block = await this.nodeApi.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
-        id: newBlockData.blockHeader.id,
       });
 
-      await Promise.all([
-        this.handleNewBlockEvent([block]),
-        this.nodeApi.cacheNodeApiOnNewBlock(block.header.height),
-        this.updateNextBlockToSync(newBlockHeight + 1),
-      ]);
+      return;
+    }
+
+    const block = await this.nodeApi.invokeApi<Block>(NodeApi.CHAIN_GET_BLOCK_BY_ID, {
+      id: newBlockData.blockHeader.id,
     });
+
+    await Promise.all([
+      this.handleNewBlockEvent([block]),
+      this.nodeApi.cacheNodeApiOnNewBlock(block.header.height),
+      this.updateNextBlockToSync(newBlockHeight + 1),
+    ]);
   }
 
   private async updateNextBlockToSync(height: number): Promise<void> {

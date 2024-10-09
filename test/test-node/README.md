@@ -8,6 +8,12 @@ This project was bootstrapped with [Klayr SDK](https://github.com/klayrhq/klayr-
 ./bin/run start
 ```
 
+### Send tokens
+
+```
+./bin/run transaction:create token transfer 10000000 --params='{"tokenID": "0400000000000000", "amount": "100000000", "recipientAddress": "kly4mba244me87reyg9fegcy2cesdfw6gq9r8we5x", "data": ""}' --json --pretty
+```
+
 ### Add a new module
 
 ```
