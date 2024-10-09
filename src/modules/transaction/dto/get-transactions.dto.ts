@@ -41,11 +41,18 @@ export class GetTransactionDto {
   nonce?: string;
 
   /**
+   * Filter transactions by receivingChainID.
+   */
+  @IsString()
+  @IsOptional()
+  receivingChainID?: string;
+
+  /**
    * Filter transactions by module and command. Format: "module:command".
    */
   @IsString()
   @IsOptional()
-  @Matches(/^[a-z]+:[a-z]+$/, {
+  @Matches(/^[a-zA-Z]+:[a-zA-Z]+$/, {
     message: 'moduleCommand must have a format "token:transfer"',
   })
   moduleCommand?: string;

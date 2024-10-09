@@ -28,6 +28,7 @@ export class GetTransactionsResDto {
   signatures: string[];
   sender: Account;
   recipient?: Account;
+  receivingChainID?: string;
   block: Block;
 }
 

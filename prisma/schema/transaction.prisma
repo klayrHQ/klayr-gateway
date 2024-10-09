@@ -10,6 +10,7 @@ model Transaction {
   signatures       String[]
   index            Int
   senderAddress    String
+  receivingChainID String?
   recipientAddress String?
   executionStatus  String?       @default("pending")
   sender           Account       @relation("sender", fields: [senderAddress], references: [address])
