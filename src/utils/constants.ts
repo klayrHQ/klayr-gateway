@@ -28,7 +28,7 @@ export const CACHED_SCHEMAS_ID = 1;
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 4_000; // Can go to 7k give or take
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 2_500; // Can go to 7k give or take
 
 ////////////////////////////
 ///       Block          ///
