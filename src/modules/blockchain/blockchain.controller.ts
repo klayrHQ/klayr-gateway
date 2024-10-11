@@ -5,6 +5,11 @@ import { GatewayResponse } from 'src/utils/controller-helpers';
 import { GetBlockchainMetaDto } from './dto/get-blockchain-apps-meta.dto';
 import { Prisma } from '@prisma/client';
 import { GetAppsMetaResDto, getAppsMetaResponse } from './dto/get-blockchain-apps-meta-res.dto';
+import { GetBlockchainTokensMetaDto } from './dto/get-blockchain-apps-tokens.dto';
+import {
+  GetTokensMetaResDto,
+  getTokensMetaResponse,
+} from './dto/get-blockchain-apps-tokens-res.dto';
 
 @ApiTags('Application Off-Chain Metadata')
 @Controller('blockchain')
@@ -81,5 +86,70 @@ export class BlockchainController {
     ]);
 
     return new GatewayResponse(apps, { count: apps.length, offset, total });
+  }
+
+  @Get('apps/meta/tokens')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getTokensMetaResponse)
+  public async getTokensMeta(
+    @Query() query: GetBlockchainTokensMetaDto,
+  ): Promise<GatewayResponse<GetTokensMetaResDto[]>> {
+    const { chainName, chainID, tokenName, tokenID, network, search, limit, offset, sort } = query;
+
+    const [sortField, sortOrder] = sort.split(':');
+
+    const where: Prisma.TokenWhereInput = {
+      ...(chainName && { app: { chainName: chainName } }),
+      ...(chainID && { chainID: chainID }),
+      ...(tokenName && { tokenName: { in: tokenName.split(',') } }),
+      ...(tokenID && { tokenID: { in: tokenID.split(',') } }),
+      ...(network && { app: { networkType: { in: network.split(',') } } }),
+      ...(search && {
+        app: { chainName: { contains: search, mode: 'insensitive' } },
+      }),
+    };
+
+    const [tokens, total] = await Promise.all([
+      this.prisma.token.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: {
+          [sortField]: sortOrder,
+        },
+        include: {
+          app: {
+            select: {
+              chainName: true,
+              networkType: true,
+            },
+          },
+          logo: {
+            select: {
+              png: true,
+              svg: true,
+              tokenID: true,
+            },
+          },
+          denomUnits: {
+            select: {
+              denom: true,
+              decimals: true,
+              aliases: true,
+              tokenID: true,
+            },
+          },
+        },
+      }),
+      this.prisma.token.count({ where }),
+    ]);
+
+    const flattenedTokens = tokens.map(({ app, ...token }) => ({
+      chainName: app.chainName,
+      networkType: app.networkType,
+      ...token,
+    }));
+
+    return new GatewayResponse(flattenedTokens, { count: tokens.length, offset, total });
   }
 }

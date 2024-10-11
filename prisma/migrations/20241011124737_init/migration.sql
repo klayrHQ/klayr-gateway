@@ -153,6 +153,40 @@ CREATE TABLE "Stake" (
 );
 
 -- CreateTable
+CREATE TABLE "Token" (
+    "tokenID" TEXT NOT NULL,
+    "chainID" TEXT NOT NULL,
+    "tokenName" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "displayDenom" TEXT NOT NULL,
+    "baseDenom" TEXT NOT NULL,
+
+    CONSTRAINT "Token_pkey" PRIMARY KEY ("tokenID")
+);
+
+-- CreateTable
+CREATE TABLE "TokenLogo" (
+    "id" SERIAL NOT NULL,
+    "png" TEXT NOT NULL,
+    "svg" TEXT NOT NULL,
+    "tokenID" TEXT NOT NULL,
+
+    CONSTRAINT "TokenLogo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DenomUnit" (
+    "id" SERIAL NOT NULL,
+    "denom" TEXT NOT NULL,
+    "decimals" INTEGER NOT NULL,
+    "aliases" TEXT[],
+    "tokenID" TEXT NOT NULL,
+
+    CONSTRAINT "DenomUnit_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "height" INTEGER NOT NULL,
@@ -221,6 +255,12 @@ CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
 -- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Token_tokenID_key" ON "Token"("tokenID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokenLogo_tokenID_key" ON "TokenLogo"("tokenID");
+
 -- AddForeignKey
 ALTER TABLE "ServiceURL" ADD CONSTRAINT "ServiceURL_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -250,6 +290,15 @@ ALTER TABLE "Stake" ADD CONSTRAINT "Stake_staker_fkey" FOREIGN KEY ("staker") RE
 
 -- AddForeignKey
 ALTER TABLE "Stake" ADD CONSTRAINT "Stake_validatorAddress_fkey" FOREIGN KEY ("validatorAddress") REFERENCES "Validator"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Token" ADD CONSTRAINT "Token_chainID_fkey" FOREIGN KEY ("chainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TokenLogo" ADD CONSTRAINT "TokenLogo_tokenID_fkey" FOREIGN KEY ("tokenID") REFERENCES "Token"("tokenID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DenomUnit" ADD CONSTRAINT "DenomUnit_tokenID_fkey" FOREIGN KEY ("tokenID") REFERENCES "Token"("tokenID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_senderAddress_fkey" FOREIGN KEY ("senderAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;

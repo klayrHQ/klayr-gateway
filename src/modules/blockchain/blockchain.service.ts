@@ -6,6 +6,7 @@ import { BLOCKCHAIN_NETWORKS } from 'src/utils/constants';
 import { LokiLogger } from 'nestjs-loki-logger';
 
 const APP_JSON_FILE = 'app.json';
+const NATIVE_TOKENS_FILE = 'nativetokens.json';
 const DIRECTORY = 'dir';
 
 @Injectable()
@@ -49,59 +50,98 @@ export class BlockchainService implements OnModuleInit {
   private async processDirectory(path: string, branch: string) {
     const dirContents = await this.githubService.getRepoContents(path, branch);
 
+    let chainID: string;
     for (const dirItem of dirContents) {
       if (dirItem.name === APP_JSON_FILE) {
-        await this.processAppJsonFile(dirItem.download_url);
+        chainID = await this.processAppJsonFile(dirItem.download_url);
+      }
+      if (dirItem.name === NATIVE_TOKENS_FILE) {
+        await this.processNativeTokensFile(dirItem.download_url, chainID);
       }
     }
   }
 
-  private async processAppJsonFile(downloadUrl: string) {
+  private async processAppJsonFile(downloadUrl: string): Promise<string> {
     const appJsonContents = await this.githubService.getFileContents(downloadUrl);
     await this.createAndSaveAppData(appJsonContents);
+    return appJsonContents.chainID;
+  }
+
+  private async processNativeTokensFile(downloadUrl: string, chainID: string) {
+    const nativeTokensContents = await this.githubService.getFileContents(downloadUrl);
+    await this.createAndSaveNativeTokens(nativeTokensContents.tokens, chainID);
   }
 
   private async createAndSaveAppData(appJsonContents: AppJsonContents) {
+    const {
+      title,
+      description,
+      chainName,
+      displayName,
+      chainID,
+      networkType,
+      genesisURL,
+      projectPage,
+      backgroundColor,
+      logo,
+      serviceURLs,
+      explorers,
+      appNodes,
+    } = appJsonContents;
+
     const appData = {
-      title: appJsonContents.title,
-      description: appJsonContents.description,
-      chainName: appJsonContents.chainName,
-      displayName: appJsonContents.displayName,
-      chainID: appJsonContents.chainID,
-      networkType: appJsonContents.networkType,
-      genesisURL: appJsonContents.genesisURL,
-      projectPage: appJsonContents.projectPage,
-      backgroundColor: appJsonContents.backgroundColor,
+      title,
+      description,
+      chainName,
+      displayName,
+      chainID,
+      networkType,
+      genesisURL,
+      projectPage,
+      backgroundColor,
       logo: {
-        create: {
-          png: appJsonContents.logo.png,
-          svg: appJsonContents.logo.svg,
-        },
+        create: logo,
       },
       serviceURLs: {
-        create: appJsonContents.serviceURLs.map((url: any) => ({
-          http: url.http,
-          ws: url.ws,
-          apiCertificatePublicKey: url.apiCertificatePublicKey,
-        })),
+        create: serviceURLs,
       },
       explorers: {
-        create: appJsonContents.explorers.map((explorer: any) => ({
-          url: explorer.url,
-          txnPage: explorer.txnPage,
-        })),
+        create: explorers,
       },
       appNodes: {
-        create: appJsonContents.appNodes.map((node: any) => ({
-          url: node.url,
-          maintainer: node.maintainer,
-          apiCertificatePublicKey: node.apiCertificatePublicKey,
-        })),
+        create: appNodes,
       },
     };
 
     await this.prisma.app.create({
       data: appData,
     });
+  }
+
+  private async createAndSaveNativeTokens(nativeTokensContents: any, chainID: string) {
+    for (const token of nativeTokensContents) {
+      const { tokenID, tokenName, description, logo, symbol, displayDenom, baseDenom, denomUnits } =
+        token;
+
+      const tokenData = {
+        tokenID,
+        chainID,
+        tokenName,
+        description,
+        logo: {
+          create: logo,
+        },
+        symbol,
+        displayDenom,
+        baseDenom,
+        denomUnits: {
+          create: denomUnits,
+        },
+      };
+
+      await this.prisma.token.create({
+        data: tokenData,
+      });
+    }
   }
 }

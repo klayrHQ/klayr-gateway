@@ -15,7 +15,7 @@
         "5432:5432",
         "-e",
         "POSTGRES_PASSWORD=welcome",
-        "postgres:16"
+        "postgres:17-bullseye"
       ],
       "problemMatcher": [],
       "detail": "Runs a PostgreSQL container with the specified settings"

@@ -1,0 +1,29 @@
+model Token {
+  tokenID      String      @id @unique
+  chainID      String
+  tokenName    String
+  description  String
+  logo         TokenLogo?
+  symbol       String
+  displayDenom String
+  baseDenom    String
+  denomUnits   DenomUnit[]
+  app          App         @relation(fields: [chainID], references: [chainID])
+}
+
+model TokenLogo {
+  id      Int    @id @default(autoincrement())
+  png     String
+  svg     String
+  tokenID String @unique
+  token   Token? @relation(fields: [tokenID], references: [tokenID])
+}
+
+model DenomUnit {
+  id       Int      @id @default(autoincrement())
+  denom    String
+  decimals Int
+  aliases  String[]
+  tokenID  String
+  token    Token    @relation(fields: [tokenID], references: [tokenID])
+}
