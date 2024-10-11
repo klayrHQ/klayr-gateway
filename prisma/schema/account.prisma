@@ -12,4 +12,3 @@ model Account {
   transactionSender    Transaction[] @relation("sender")
   transactionRecipient Transaction[] @relation("recipient")
 }
-

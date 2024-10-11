@@ -89,3 +89,14 @@ export const KNOWN_ACCOUNTS_TESTNET_URL = 'https://static-data.klayr.xyz/known_t
 
 export const CONNECTION_TIMEOUT = 10000;
 export const RESPONSE_TIMEOUT = 10000;
+
+////////////////////////////
+///    Blockchain        ///
+////////////////////////////
+
+export enum BLOCKCHAIN_NETWORKS {
+  MAINNET = 'mainnet',
+  TESTNET = 'testnet',
+  DEVNET = 'devnet',
+}
+export const GITHUB_BASE_URL = 'https://api.github.com/repos/KlayrHQ/app-registry/contents';
