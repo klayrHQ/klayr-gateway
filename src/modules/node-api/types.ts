@@ -276,3 +276,11 @@ export type DefaultReward = {
   tokenID: string;
   defaultReward: string;
 };
+
+export type FeeTokenID = {
+  tokenID: string;
+};
+
+export type MinFeePerByte = {
+  minFeePerByte: number;
+};

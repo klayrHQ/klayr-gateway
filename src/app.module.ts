@@ -26,6 +26,7 @@ import { RewardModule } from './modules/reward/reward.module';
 import { APP_FILTER } from '@nestjs/core';
 import { LokiExceptionFilter } from './filters/all-exceptions.filter';
 import { BlockchainModule } from './modules/blockchain/blockchain.module';
+import { FeesModule } from './modules/fees/fees.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { BlockchainModule } from './modules/blockchain/blockchain.module';
     SchemasModule,
     RewardModule,
     BlockchainModule,
+    FeesModule,
   ],
   controllers: [],
   providers: [
