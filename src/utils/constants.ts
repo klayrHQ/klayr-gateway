@@ -28,14 +28,16 @@ export const CACHED_SCHEMAS_ID = 1;
 ////////////////////////////
 
 export const KEY_NEXT_BLOCK_TO_SYNC = 1;
-export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 4_000; // Can go to 7k give or take
+export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 2_500; // Can go to 7k give or take
 
 ////////////////////////////
 ///       Block          ///
 ////////////////////////////
 
 export const DEFAULT_BLOCKS_TO_FETCH = 10;
+export const DEFAULT_ASSETS_TO_FETCH = 10;
 export const MAX_BLOCKS_TO_FETCH = 100;
+export const MAX_ASSETS_TO_FETCH = 100;
 
 ////////////////////////////
 ///       Transaction    ///
@@ -89,3 +91,14 @@ export const KNOWN_ACCOUNTS_TESTNET_URL = 'https://static-data.klayr.xyz/known_t
 
 export const CONNECTION_TIMEOUT = 10000;
 export const RESPONSE_TIMEOUT = 10000;
+
+////////////////////////////
+///    Blockchain        ///
+////////////////////////////
+
+export enum BLOCKCHAIN_NETWORKS {
+  MAINNET = 'mainnet',
+  TESTNET = 'testnet',
+  DEVNET = 'devnet',
+}
+export const GITHUB_BASE_URL = 'https://api.github.com/repos/KlayrHQ/app-registry/contents';

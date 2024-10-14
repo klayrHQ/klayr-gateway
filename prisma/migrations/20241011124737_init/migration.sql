@@ -12,6 +12,65 @@ CREATE TABLE "Account" (
 );
 
 -- CreateTable
+CREATE TABLE "App" (
+    "chainID" TEXT NOT NULL,
+    "chainName" TEXT NOT NULL,
+    "displayName" TEXT,
+    "title" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'activated',
+    "description" TEXT NOT NULL,
+    "networkType" TEXT NOT NULL,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "genesisURL" TEXT NOT NULL,
+    "projectPage" TEXT NOT NULL,
+    "backgroundColor" TEXT NOT NULL,
+
+    CONSTRAINT "App_pkey" PRIMARY KEY ("chainID")
+);
+
+-- CreateTable
+CREATE TABLE "ServiceURL" (
+    "id" SERIAL NOT NULL,
+    "http" TEXT NOT NULL,
+    "ws" TEXT NOT NULL,
+    "apiCertificatePublicKey" TEXT,
+    "appChainID" TEXT NOT NULL,
+
+    CONSTRAINT "ServiceURL_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Logo" (
+    "id" SERIAL NOT NULL,
+    "png" TEXT NOT NULL,
+    "svg" TEXT NOT NULL,
+    "appChainID" TEXT NOT NULL,
+
+    CONSTRAINT "Logo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Explorer" (
+    "id" SERIAL NOT NULL,
+    "url" TEXT NOT NULL,
+    "txnPage" TEXT NOT NULL,
+    "appChainID" TEXT NOT NULL,
+
+    CONSTRAINT "Explorer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AppNode" (
+    "id" SERIAL NOT NULL,
+    "url" TEXT NOT NULL,
+    "maintainer" TEXT,
+    "apiCertificatePublicKey" TEXT,
+    "appChainID" TEXT NOT NULL,
+
+    CONSTRAINT "AppNode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Asset" (
     "id" SERIAL NOT NULL,
     "height" INTEGER NOT NULL,
@@ -94,6 +153,40 @@ CREATE TABLE "Stake" (
 );
 
 -- CreateTable
+CREATE TABLE "Token" (
+    "tokenID" TEXT NOT NULL,
+    "chainID" TEXT NOT NULL,
+    "tokenName" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "displayDenom" TEXT NOT NULL,
+    "baseDenom" TEXT NOT NULL,
+
+    CONSTRAINT "Token_pkey" PRIMARY KEY ("tokenID")
+);
+
+-- CreateTable
+CREATE TABLE "TokenLogo" (
+    "id" SERIAL NOT NULL,
+    "png" TEXT NOT NULL,
+    "svg" TEXT NOT NULL,
+    "tokenID" TEXT NOT NULL,
+
+    CONSTRAINT "TokenLogo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DenomUnit" (
+    "id" SERIAL NOT NULL,
+    "denom" TEXT NOT NULL,
+    "decimals" INTEGER NOT NULL,
+    "aliases" TEXT[],
+    "tokenID" TEXT NOT NULL,
+
+    CONSTRAINT "DenomUnit_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "height" INTEGER NOT NULL,
@@ -148,6 +241,12 @@ CREATE UNIQUE INDEX "Account_address_key" ON "Account"("address");
 CREATE UNIQUE INDEX "Account_publicKey_key" ON "Account"("publicKey");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "App_chainID_key" ON "App"("chainID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Logo_appChainID_key" ON "Logo"("appChainID");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");
 
 -- CreateIndex
@@ -155,6 +254,24 @@ CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Token_tokenID_key" ON "Token"("tokenID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokenLogo_tokenID_key" ON "TokenLogo"("tokenID");
+
+-- AddForeignKey
+ALTER TABLE "ServiceURL" ADD CONSTRAINT "ServiceURL_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Logo" ADD CONSTRAINT "Logo_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Explorer" ADD CONSTRAINT "Explorer_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AppNode" ADD CONSTRAINT "AppNode_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Asset" ADD CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") REFERENCES "Block"("height") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -173,6 +290,15 @@ ALTER TABLE "Stake" ADD CONSTRAINT "Stake_staker_fkey" FOREIGN KEY ("staker") RE
 
 -- AddForeignKey
 ALTER TABLE "Stake" ADD CONSTRAINT "Stake_validatorAddress_fkey" FOREIGN KEY ("validatorAddress") REFERENCES "Validator"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Token" ADD CONSTRAINT "Token_chainID_fkey" FOREIGN KEY ("chainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TokenLogo" ADD CONSTRAINT "TokenLogo_tokenID_fkey" FOREIGN KEY ("tokenID") REFERENCES "Token"("tokenID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DenomUnit" ADD CONSTRAINT "DenomUnit_tokenID_fkey" FOREIGN KEY ("tokenID") REFERENCES "Token"("tokenID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_senderAddress_fkey" FOREIGN KEY ("senderAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;

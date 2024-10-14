@@ -58,6 +58,9 @@ export enum NodeApi {
 
   VALIDATORS_GET_VALIDATOR = 'validators_getValidator',
   VALIDATORS_VALIDATE_BLS_KEY = 'validators_validateBLSKey',
+
+  FEE_GET_FEE_TOKEN_ID = 'fee_getFeeTokenID',
+  FEE_GET_MIN_FEE_PER_BYTE = 'fee_getMinFeePerByte',
 }
 
 // Functions to interact with the Node API

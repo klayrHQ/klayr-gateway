@@ -151,6 +151,7 @@ export class TransactionController {
       ...rest,
       sender,
       recipient,
+      receivingChainID,
       params: params,
       signatures: signatures,
     };
