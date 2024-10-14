@@ -35,7 +35,9 @@ export const NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE = 2_500; // Can go to 7k give or t
 ////////////////////////////
 
 export const DEFAULT_BLOCKS_TO_FETCH = 10;
+export const DEFAULT_ASSETS_TO_FETCH = 10;
 export const MAX_BLOCKS_TO_FETCH = 100;
+export const MAX_ASSETS_TO_FETCH = 100;
 
 ////////////////////////////
 ///       Transaction    ///
