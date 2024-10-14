@@ -22,6 +22,9 @@ import {
   postTransactionResponse,
 } from './dto/post-transaction-res.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { PostDryRunResDto, postDryRunResponse } from './dto/post-dry-run-res.dto';
+import { PostDryRunTransactionDto } from './dto/post-dry-run.dto';
+import { transactions } from '@klayr/client';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -104,13 +107,18 @@ export class TransactionController {
     return new GatewayResponse(transactionRes, { count: transactions.length, offset, total });
   }
 
+  @Post('dryrun')
   @Post()
-  @ApiResponse(postTransactionResponse)
+  @ApiResponse(postDryRunResponse)
   public async transactionNodeApi(
-    @Body() body: PostTransactionDto,
-  ): Promise<PostTransactionResponseDto> {
+    @Body() body: PostDryRunTransactionDto,
+  ): Promise<PostDryRunResDto> {
+    console.log('body', body);
+    const test = transactions.getBytes(body.transaction);
+    // https://github.com/LiskArchive/lisk-service/blob/60e7328af66997fc9f27285d5434b719aebb16fd/services/blockchain-connector/shared/sdk/encoder.js
+    console.log({ test });
     try {
-      return await this.nodeApiService.invokeApi(NodeApi.TXPOOL_POST_TX, body);
+      return await this.nodeApiService.invokeApi(NodeApi.TXPOOL_DRY_RUN_TX, body);
     } catch (error) {
       throw new HttpException(
         {
