@@ -1,22 +1,14 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { BlockchainAppsMetaSortTypes } from 'src/utils/controller-helpers';
+import { BlockChainTokensSortTypes } from 'src/utils/controller-helpers';
 
-export class GetBlockchainMetaDto {
+export class GetBlockchainTokensMetaDto {
   /**
    * Chain name to query. Supports case-insensitive chain name.
    */
   @IsString()
   @IsOptional()
   chainName?: string;
-
-  /**
-   * Display name to query. Supports case-insensitive display name.
-   */
-  @IsString()
-  @IsOptional()
-  displayName?: string;
 
   /**
    * Chain ID to query (can be expressed as CSV).
@@ -26,12 +18,18 @@ export class GetBlockchainMetaDto {
   chainID?: string;
 
   /**
-   * Filter default blockchain application.
+   * Token name to query (can be expressed as CSV).
    */
-  @IsBoolean()
+  @IsString()
   @IsOptional()
-  @Transform(({ value }) => value === 'true')
-  isDefault?: boolean;
+  tokenName?: string;
+
+  /**
+   * Token ID to query (can be expressed as CSV).
+   */
+  @IsString()
+  @IsOptional()
+  tokenID?: string;
 
   /**
    * Network for which the application metadata is to be queried (can be expressed as CSV).
@@ -45,7 +43,7 @@ export class GetBlockchainMetaDto {
   network?: string;
 
   /**
-   * Case-insensitive search by chain name or display name. Supports both partial and full text search.
+   * Case-insensitive search by token name. Supports both partial and full text search.
    */
   @IsString()
   @IsOptional()
@@ -71,10 +69,10 @@ export class GetBlockchainMetaDto {
    * Fields to sort results by.
    */
   @IsString()
-  @IsEnum(BlockchainAppsMetaSortTypes, {
+  @IsEnum(BlockChainTokensSortTypes, {
     message:
       'sort must be one of the following values: ' +
-      Object.values(BlockchainAppsMetaSortTypes).join(', '),
+      Object.values(BlockChainTokensSortTypes).join(', '),
   })
-  sort?: BlockchainAppsMetaSortTypes = BlockchainAppsMetaSortTypes.CHAIN_NAME_ASC;
+  sort?: BlockChainTokensSortTypes = BlockChainTokensSortTypes.TOKEN_ID_ASC;
 }

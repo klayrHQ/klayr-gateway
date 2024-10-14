@@ -94,3 +94,8 @@ export enum BlockchainAppsMetaSortTypes {
   CHAIN_ID_ASC = 'chainID:asc',
   CHAIN_ID_DESC = 'chainID:desc',
 }
+
+export enum BlockChainTokensSortTypes {
+  TOKEN_ID_ASC = 'tokenID:asc',
+  TOKEN_ID_DESC = 'tokenID:desc',
+}
