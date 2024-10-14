@@ -1,0 +1,51 @@
+model App {
+  chainID         String       @id @unique
+  chainName       String       
+  displayName     String?      
+  title           String
+  status          String       @default("activated")  // TODO: dont know the flow of this field
+  description     String
+  networkType     String
+  isDefault       Boolean      @default(false)  // TODO: dont know the flow of this field
+  genesisURL      String
+  projectPage     String
+  serviceURLs     ServiceURL[]
+  logo            Logo?
+  backgroundColor String
+  explorers       Explorer[]
+  appNodes        AppNode[]
+}
+
+model ServiceURL {
+  id                      Int    @id @default(autoincrement())
+  http                    String
+  ws                      String
+  apiCertificatePublicKey String?
+  appChainID              String
+  app                     App    @relation(fields: [appChainID], references: [chainID])
+}
+
+model Logo {
+  id         Int    @id @default(autoincrement())
+  png        String
+  svg        String
+  appChainID String @unique
+  app        App    @relation(fields: [appChainID], references: [chainID])
+}
+
+model Explorer {
+  id         Int    @id @default(autoincrement())
+  url        String
+  txnPage    String
+  appChainID String
+  app        App    @relation(fields: [appChainID], references: [chainID])
+}
+
+model AppNode {
+  id                      Int    @id @default(autoincrement())
+  url                     String
+  maintainer              String?
+  apiCertificatePublicKey String?
+  appChainID              String
+  app                     App    @relation(fields: [appChainID], references: [chainID])
+}
