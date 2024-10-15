@@ -73,6 +73,7 @@ export class IndexGenesisBlockHandler implements ICommandHandler<IndexGenesisBlo
 
   private async handleGenesisTokenAsset(users: { address: string }[], tokenID: string) {
     const addresses = users.map((user) => ({ address: user.address }));
+
     await this.prisma.account.createMany({
       data: addresses,
     });

@@ -1,0 +1,13 @@
+[
+  {
+    "data": "08001000",
+    "index": 0,
+    "module": "dynamicReward",
+    "name": "rewardMinted",
+    "topics": [
+      "03",
+      "e11aefcb752fc487a58c80a802dce57597896275"
+    ],
+    "height": 2500
+  }
+]
