@@ -4,6 +4,7 @@ export enum Modules {
 
 export enum IndexerState {
   START_UP,
+  STARTED,
   RESTART,
   SYNCING,
   INDEXING,
