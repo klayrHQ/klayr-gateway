@@ -1,60 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
-import { IndexerService } from '../src/modules/indexer/indexer.service';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { Client } from 'pg';
-import { execSync } from 'child_process';
-import { NodeApiService } from 'src/modules/node-api/node-api.service';
-import { MockNodeApiService } from './mocks/node-api.service.mock';
-import { waitTimeout } from 'src/utils/helpers';
+
 import { readFromJson } from './helpers/helpers';
-import { WebSocketClientService } from 'src/modules/node-api/websocket/websocket.service';
-import { MockWebsocketClientService } from './mocks/websocket.service.mock';
+import { setupE2ETests } from './helpers/e2e-beforeAll';
 
 jest.setTimeout(30000);
 
 describe('IndexerService (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let indexerService: IndexerService;
-  let nodeApiService: NodeApiService;
   let postgresContainer: StartedPostgreSqlContainer;
   let postgresClient: Client;
 
   beforeAll(async () => {
-    postgresContainer = await new PostgreSqlContainer('postgres:17-bullseye').start();
-
-    const connectionUri = postgresContainer.getConnectionUri();
-    process.env.DATABASE_URL = connectionUri;
-    process.env.NODE_ENV = 'dev';
-
-    postgresClient = new Client({ connectionString: connectionUri });
-    await postgresClient.connect();
-
-    execSync('npx prisma migrate deploy --preview-feature', { env: process.env, stdio: 'inherit' });
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(NodeApiService)
-      .useClass(MockNodeApiService)
-      .overrideProvider(WebSocketClientService)
-      .useClass(MockWebsocketClientService)
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-    prisma = app.get<PrismaService>(PrismaService);
-    indexerService = app.get<IndexerService>(IndexerService);
-    nodeApiService = app.get<NodeApiService>(NodeApiService);
-
-    // let the app sync / indexing mock blocks
-    await waitTimeout(5_000);
-
-    const blocks = await nodeApiService.invokeApi('block_array', {});
-    await indexerService.handleNewBlockEvent(blocks as any);
+    const setup = await setupE2ETests();
+    app = setup.app;
+    prisma = setup.prisma;
+    postgresContainer = setup.postgresContainer;
+    postgresClient = setup.postgresClient;
   });
 
   afterAll(async () => {
@@ -109,10 +74,3 @@ describe('IndexerService (e2e)', () => {
     expect(block?.id).toBe(randomBlock.header.id);
   });
 });
-
-// import * as fs from 'fs';
-// import * as path from 'path';
-// writeToJson(filename: string, data: any): void {
-//   const filePath = path.join(__dirname, filename);
-//   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-// }

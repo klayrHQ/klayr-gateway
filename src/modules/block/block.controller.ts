@@ -25,10 +25,14 @@ export class BlockController {
 
     const where: Prisma.BlockWhereInput = {
       ...(blockID && { id: blockID }),
-      ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
+      ...(height && {
+        AND: [
+          { height: ControllerHelpers.buildRangeCondition(height) },
+          { height: { not: 0 } }, // Exclude genesis block by default
+        ],
+      }),
       ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
       ...(generatorAddress && { generatorAddress }),
-      height: { not: 0 }, // Exclude genesis block be default
     };
 
     const [blocks, total] = await Promise.all([
