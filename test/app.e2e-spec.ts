@@ -10,6 +10,8 @@ import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { MockNodeApiService } from './mocks/node-api.service.mock';
 import { waitTimeout } from 'src/utils/helpers';
 import { readFromJson } from './helpers/helpers';
+import { WebSocketClientService } from 'src/modules/node-api/websocket/websocket.service';
+import { MockWebsocketClientService } from './mocks/websocket.service.mock';
 
 jest.setTimeout(30000);
 
@@ -38,6 +40,8 @@ describe('IndexerService (e2e)', () => {
     })
       .overrideProvider(NodeApiService)
       .useClass(MockNodeApiService)
+      .overrideProvider(WebSocketClientService)
+      .useClass(MockWebsocketClientService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -46,7 +50,7 @@ describe('IndexerService (e2e)', () => {
     indexerService = app.get<IndexerService>(IndexerService);
     nodeApiService = app.get<NodeApiService>(NodeApiService);
 
-    // let the app sync
+    // let the app sync / indexing mock blocks
     await waitTimeout(5_000);
 
     const blocks = await nodeApiService.invokeApi('block_array', {});
@@ -62,7 +66,7 @@ describe('IndexerService (e2e)', () => {
 
   beforeEach(async () => {});
 
-  it('should genesesis block / addresses', async () => {
+  it('should index genesesis block / addresses', async () => {
     const addressesToCheck = [
       'klyzze2ntt8uss26997whdmdaj5vz7uzbszqggs56',
       'klyzxzngaoedk3p85yy89thj8yjqsecfc77hc5mjn',
