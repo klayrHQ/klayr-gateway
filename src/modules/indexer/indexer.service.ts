@@ -27,6 +27,8 @@ import { ChainEvent } from './interfaces/chain-event.interface';
 import { IndexKnownAccountsCommand } from './startup/known-accounts.command';
 import { UpdateValidatorRanks } from './event/commands/update-validator-ranks.command';
 import { OnEvent } from '@nestjs/event-emitter';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -94,7 +96,7 @@ export class IndexerService {
     }
   }
 
-  private async handleNewBlockEvent(blocks: Block[]): Promise<void> {
+  public async handleNewBlockEvent(blocks: Block[]): Promise<void> {
     this.logger.debug(
       `Block module: New block event ${blocks.at(0).header.height}:${blocks.at(-1).header.height}`,
     );
@@ -190,7 +192,7 @@ export class IndexerService {
   }
 
   @OnEvent(NodeApi.CHAIN_NEW_BLOCK)
-  private async subscribeToNewBlock(newBlockData: NewBlockEvent): Promise<void> {
+  public async subscribeToNewBlock(newBlockData: NewBlockEvent): Promise<void> {
     const newBlockHeight = newBlockData.blockHeader.height;
     const state = this.state.get(Modules.INDEXER);
 
