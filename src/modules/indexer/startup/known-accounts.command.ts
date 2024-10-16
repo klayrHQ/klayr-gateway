@@ -19,6 +19,7 @@ export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAcco
 
   private async writeKnownAccounts() {
     const knownAccounts = await this.getKnownAccounts();
+    if (!knownAccounts) return;
     for (const [address, accountInfo] of Object.entries(knownAccounts)) {
       if (address === 'address') continue; // interface in first row
 
@@ -36,14 +37,20 @@ export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAcco
   }
 
   private async getKnownAccounts() {
-    const knownAccountsUrl = process.env.NODE_URL.includes('mainnet')
-      ? KNOWN_ACCOUNTS_MAINNET_URL
-      : process.env.NODE_URL.includes('testnet')
-        ? KNOWN_ACCOUNTS_TESTNET_URL
-        : undefined;
+    if (!process.env.INDEX_KNOWN_ACCOUNTS) {
+      this.logger.error('INDEX_KNOWN_ACCOUNTS env variable not set');
+      return;
+    }
+
+    const knownAccountsUrl =
+      process.env.KLAYR_ENV === 'mainnet'
+        ? KNOWN_ACCOUNTS_MAINNET_URL
+        : process.env.KLAYR_ENV === 'testnet'
+          ? KNOWN_ACCOUNTS_TESTNET_URL
+          : undefined;
 
     if (!knownAccountsUrl) {
-      this.logger.error(`Unknown network: ${process.env.NODE_URL}`);
+      this.logger.error(`Unknown network: ${process.env.KLAYR_ENV}`);
       return;
     }
 
