@@ -299,5 +299,5 @@ export type ChainAccount = {
 };
 
 export type ChainAccounts = {
-  chain: ChainAccount[];
+  chains: ChainAccount[];
 };

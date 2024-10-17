@@ -17,3 +17,16 @@ export type PosValidatorStaked = {
   amount: string;
   result: number;
 };
+
+export type ChainAccountUpdateEvent = {
+  name: string;
+  lastCertificate: LastCertificate;
+  status: number;
+};
+
+export type LastCertificate = {
+  height: number;
+  timestamp: number;
+  stateRoot: string;
+  validatorsHash: string;
+};

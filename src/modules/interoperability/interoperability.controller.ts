@@ -1,41 +1,41 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Query,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { NodeApi, NodeApiService } from '../node-api/node-api.service';
-import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GatewayResponse } from 'src/utils/controller-helpers';
 import { GetAppsDto } from './dto/get-apps.dto';
-import { ChainAccounts } from '../node-api/types';
+import { getAppsResponse } from './dto/get-apps-res.dto';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Interoperability')
 @Controller('blockchain')
 export class InteroperabilityController {
-  constructor(private readonly nodeApi: NodeApiService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get('apps')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  // @ApiResponse(getAuthResponse)
+  @ApiResponse(getAppsResponse)
   async getAuth(@Query() query: GetAppsDto): Promise<GatewayResponse<any>> {
-    const { chainID } = query;
+    const { chainID, chainName, status, search, limit, offset } = query;
 
-    const apps = await this.nodeApi.invokeApi<ChainAccounts>(
-      NodeApi.INTEROPERABILITY_GET_ALL_CHAIN_ACCOUNTS,
-      {
-        chainID,
-      },
-    );
+    const where: Prisma.BlockchainAppWhereInput = {
+      ...(chainName && { chainName: chainName }),
+      ...(chainID && { chainID: { in: chainID.split(',') } }),
+      ...(status && { status: status }),
+      ...(search && {
+        chainName: { contains: search, mode: 'insensitive' },
+      }),
+    };
 
-    console.log(apps);
+    const [apps, total] = await Promise.all([
+      this.prisma.blockchainApp.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        include: { escrow: true },
+      }),
+      this.prisma.blockchainApp.count({ where }),
+    ]);
 
-    if (ControllerHelpers.isNodeApiError(apps))
-      throw new HttpException(apps.error, HttpStatus.NOT_FOUND);
-
-    return new GatewayResponse(apps, {});
+    return new GatewayResponse(apps, { total, limit, offset });
   }
 }
