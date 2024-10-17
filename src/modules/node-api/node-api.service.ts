@@ -61,6 +61,8 @@ export enum NodeApi {
 
   FEE_GET_FEE_TOKEN_ID = 'fee_getFeeTokenID',
   FEE_GET_MIN_FEE_PER_BYTE = 'fee_getMinFeePerByte',
+
+  INTEROPERABILITY_GET_ALL_CHAIN_ACCOUNTS = 'interoperability_getAllChainAccounts',
 }
 
 // Functions to interact with the Node API

@@ -3,7 +3,7 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { Block, Transaction } from '../../interfaces/block.interface';
-import { TxEvents, UpdateBlockFee } from '../../interfaces/transaction.interface';
+import { TxTypes, UpdateBlockFee } from '../../interfaces/transaction.interface';
 import { getKlayr32AddressFromPublicKey } from 'src/utils/helpers';
 import { Prisma } from '@prisma/client';
 import { Payload } from '@prisma/client/runtime/library';
@@ -93,14 +93,17 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
     let receivingChainID = null;
 
     switch (`${tx.module}:${tx.command}`) {
-      case TxEvents.POS_STAKE:
+      case TxTypes.POS_STAKE:
         // TODO: this is not complete because validators are added after all txs, but decent quick solution which covers 80% +
         await this.handlePosStake(txParams);
         break;
 
-      case TxEvents.TOKEN_TRANSFER_CROSS_CHAIN:
+      case TxTypes.TOKEN_TRANSFER_CROSS_CHAIN:
         receivingChainID = this.handleTransferCrossChain(txParams);
         break;
+
+      case TxTypes.INTEROPERABILITY_REGISTER_SIDECHAIN:
+        await this.handleRegisterSidechain(txParams, senderAddress);
 
       default:
         break;
@@ -174,12 +177,17 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
     );
   }
 
-  // ! Dont know if it works, will check on deployment
   private handleTransferCrossChain(txParams: any): string {
-    this.logger.debug('Handling cross chain transfer');
-    this.logger.debug(`Params: ${txParams}`);
-    const receivingChainID = txParams.receivingChainID;
-    this.logger.debug(`Receiving chain ID: ${receivingChainID}`);
-    return receivingChainID;
+    return txParams.receivingChainID;
+  }
+
+  private async handleRegisterSidechain(txParams: any, sender: string): Promise<void> {
+    await this.prisma.blockchainApp.create({
+      data: {
+        chainID: txParams.chainID,
+        chainName: txParams.name,
+        address: sender,
+      },
+    });
   }
 }

@@ -5,6 +5,7 @@ import {
   filterValidatorStaked,
 } from './event.filters';
 import {
+  InteroperabilityChainAccountUpdated,
   InteroperabilityCommandExecutionResult,
   InteroperabilityEventTypes,
 } from './gateways/interoperability.gateway';
@@ -44,6 +45,8 @@ export const eventGatewayMap = {
 
   [InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT]:
     InteroperabilityCommandExecutionResult,
+  [InteroperabilityEventTypes.INTEROPERABILITY_CHAIN_ACCOUNT_UPDATED]:
+    InteroperabilityChainAccountUpdated,
 };
 
 export const eventFilterMap = {
@@ -62,4 +65,5 @@ export const eventFilterMap = {
   [TokenEventTypes.TOKEN_MINT]: filterTokenLockUnLockBurnMint,
 
   [InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT]: alwaysTrue,
+  [InteroperabilityEventTypes.INTEROPERABILITY_CHAIN_ACCOUNT_UPDATED]: alwaysTrue,
 };

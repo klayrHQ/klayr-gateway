@@ -111,6 +111,29 @@ CREATE TABLE "Block" (
 );
 
 -- CreateTable
+CREATE TABLE "BlockchainApp" (
+    "chainID" TEXT NOT NULL,
+    "chainName" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "status" TEXT,
+    "lastCertificateHeight" INTEGER,
+    "lastUpdated" INTEGER,
+    "escrowedKLY" TEXT,
+
+    CONSTRAINT "BlockchainApp_pkey" PRIMARY KEY ("chainID")
+);
+
+-- CreateTable
+CREATE TABLE "Escrow" (
+    "id" SERIAL NOT NULL,
+    "tokenID" TEXT NOT NULL,
+    "amount" TEXT NOT NULL,
+    "blockchainAppId" TEXT NOT NULL,
+
+    CONSTRAINT "Escrow_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "cachedSchemas" (
     "id" INTEGER NOT NULL,
     "schema" TEXT NOT NULL,
@@ -253,6 +276,12 @@ CREATE UNIQUE INDEX "Block_height_key" ON "Block"("height");
 CREATE UNIQUE INDEX "Block_id_key" ON "Block"("id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "BlockchainApp_chainID_key" ON "BlockchainApp"("chainID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlockchainApp_chainName_key" ON "BlockchainApp"("chainName");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
 
 -- CreateIndex
@@ -278,6 +307,9 @@ ALTER TABLE "Asset" ADD CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") RE
 
 -- AddForeignKey
 ALTER TABLE "Block" ADD CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Escrow" ADD CONSTRAINT "Escrow_blockchainAppId_fkey" FOREIGN KEY ("blockchainAppId") REFERENCES "BlockchainApp"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ChainEvents" ADD CONSTRAINT "ChainEvents_height_fkey" FOREIGN KEY ("height") REFERENCES "Block"("height") ON DELETE RESTRICT ON UPDATE CASCADE;

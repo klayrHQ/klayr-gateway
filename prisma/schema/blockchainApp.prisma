@@ -1,0 +1,18 @@
+model BlockchainApp {
+  chainID               String   @id @unique
+  chainName             String   @unique
+  address               String
+  status                String?
+  lastCertificateHeight Int?
+  lastUpdated           Int?
+  escrowedKLY           String?
+  escrow                Escrow[]
+}
+
+model Escrow {
+  id              Int           @id @default(autoincrement())
+  tokenID         String
+  amount          String
+  blockchainApp   BlockchainApp @relation(fields: [blockchainAppId], references: [chainID])
+  blockchainAppId String
+}
