@@ -284,3 +284,20 @@ export type FeeTokenID = {
 export type MinFeePerByte = {
   minFeePerByte: number;
 };
+
+export type LastCertificate = {
+  height: number;
+  timestamp: number;
+  stateRoot: string;
+  validatorHash: string;
+};
+
+export type ChainAccount = {
+  lastCertificate: LastCertificate;
+  name: string;
+  status: number;
+};
+
+export type ChainAccounts = {
+  chains: ChainAccount[];
+};

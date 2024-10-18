@@ -17,6 +17,7 @@ import { ProcessValidatorHandler } from './event/commands/process-validator.comm
 import { AddStakesHandler } from './event/commands/add-stakes.command';
 import { UpdateValidatorRanksHandler } from './event/commands/update-validator-ranks.command';
 import { UpdateAccountHandler } from './event/commands/update-account.command';
+import { UpdateSidechainHandler } from './event/commands/update-sidechain.command';
 
 @Module({
   imports: [CqrsModule, StateModule, NodeApiModule],
@@ -45,6 +46,7 @@ import { UpdateAccountHandler } from './event/commands/update-account.command';
     AddStakesHandler,
     UpdateValidatorRanksHandler,
     UpdateAccountHandler,
+    UpdateSidechainHandler,
   ],
   exports: [IndexerService],
 })
