@@ -4,6 +4,7 @@ CREATE TABLE "Account" (
     "nonce" TEXT NOT NULL DEFAULT '0',
     "publicKey" TEXT,
     "name" TEXT,
+    "description" TEXT,
     "totalBalance" BIGINT NOT NULL DEFAULT 0,
     "availableBalance" BIGINT NOT NULL DEFAULT 0,
     "lockedBalance" BIGINT NOT NULL DEFAULT 0,
