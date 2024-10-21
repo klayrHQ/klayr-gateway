@@ -10,6 +10,11 @@ import {
   GetTokensMetaResDto,
   getTokensMetaResponse,
 } from './dto/get-blockchain-apps-tokens-res.dto';
+import { GetBlockchainAppsListDto } from './dto/get-blockchain-apps-meta-list.dto';
+import {
+  GetAppsListResDto,
+  getAppsListResponse,
+} from './dto/get-blockchain-apps-meta-list-res.dto';
 
 @ApiTags('Application Off-Chain Metadata')
 @Controller('blockchain')
@@ -151,5 +156,41 @@ export class BlockchainController {
     }));
 
     return new GatewayResponse(flattenedTokens, { count: tokens.length, offset, total });
+  }
+
+  @Get('apps/meta/list')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getAppsListResponse)
+  public async getAppsList(
+    @Query() query: GetBlockchainAppsListDto,
+  ): Promise<GatewayResponse<GetAppsListResDto[]>> {
+    const { chainName, network, search, limit, offset, sort } = query;
+
+    const [sortField, sortOrder] = sort.split(':');
+
+    const where: Prisma.AppWhereInput = {
+      ...(chainName && { chainName: { contains: chainName, mode: 'insensitive' } }),
+      ...(network && { networkType: { in: network.split(',') } }),
+      ...(search && { chainName: { contains: search, mode: 'insensitive' } }),
+    };
+
+    const [apps, total] = await Promise.all([
+      this.prisma.app.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        orderBy: {
+          [sortField]: sortOrder,
+        },
+        select: {
+          chainID: true,
+          chainName: true,
+          networkType: true,
+        },
+      }),
+      this.prisma.app.count({ where }),
+    ]);
+
+    return new GatewayResponse(apps, { count: apps.length, offset, total });
   }
 }
