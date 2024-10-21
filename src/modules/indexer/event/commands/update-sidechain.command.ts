@@ -36,8 +36,14 @@ export class UpdateSidechainHandler implements ICommandHandler<UpdateSidechainCo
       return;
     }
 
-    const { escrowedAmounts } = this.nodeApi.tokenSummaryInfo.escrowedAmounts;
-    const escrowForApp = escrowedAmounts.find((escrow) => escrow.escrowChainID === app.chainID);
+    const amounts = this.nodeApi.tokenSummaryInfo.escrowedAmounts;
+    if (!amounts) {
+      this.logger.error('Failed to fetch escrowed amounts.');
+      return;
+    }
+    const escrowForApp = amounts.escrowedAmounts.find(
+      (escrow) => escrow.escrowChainID === app.chainID,
+    );
 
     await this.prisma.blockchainApp.update({
       where: { chainName: name },
