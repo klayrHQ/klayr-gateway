@@ -36,12 +36,12 @@ export class UpdateSidechainHandler implements ICommandHandler<UpdateSidechainCo
       return;
     }
 
-    const amounts = this.nodeApi.tokenSummaryInfo.escrowedAmounts;
+    const amounts = this.nodeApi.tokenSummaryInfo;
     if (!amounts) {
-      this.logger.error('Failed to fetch escrowed amounts.');
+      this.logger.error('no tokenSummaryInfo escrowed amounts.');
       return;
     }
-    const escrowForApp = amounts.escrowedAmounts.find(
+    const escrowForApp = amounts.escrowedAmounts.escrowedAmounts.find(
       (escrow) => escrow.escrowChainID === app.chainID,
     );
 
