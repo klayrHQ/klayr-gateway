@@ -8,11 +8,15 @@ import { GetBlocksDto } from './dto/get-blocks.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { GetAssetResDto, getAssetsResponse } from './dto/get-assets-res.dto';
 import { GetAssetsDto } from './dto/get-assets.dto';
+import { NodeApiService } from '../node-api/node-api.service';
 
 @ApiTags('Blocks')
 @Controller('blocks')
 export class BlockController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly nodeApi: NodeApiService,
+  ) {}
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
@@ -28,7 +32,7 @@ export class BlockController {
       ...(height && {
         AND: [
           { height: ControllerHelpers.buildRangeCondition(height) },
-          { height: { not: 0 } }, // Exclude genesis block by default
+          { height: { not: this.nodeApi.nodeInfo.genesisHeight } }, // Exclude genesis block by default
         ],
       }),
       ...(timestamp && { timestamp: ControllerHelpers.buildRangeCondition(timestamp) }),
