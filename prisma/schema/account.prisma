@@ -3,6 +3,7 @@ model Account {
   nonce                String        @default("0")
   publicKey            String?       @unique
   name                 String?
+  description          String?
   totalBalance         BigInt        @default(0)
   availableBalance     BigInt        @default(0)
   lockedBalance        BigInt        @default(0)

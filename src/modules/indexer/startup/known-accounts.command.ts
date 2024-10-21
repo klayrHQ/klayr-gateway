@@ -26,11 +26,13 @@ export class IndexKnownAccountsHandler implements ICommandHandler<IndexKnownAcco
       await this.prisma.account.upsert({
         where: { address },
         update: {
-          name: `${accountInfo.owner} (${accountInfo.description})`,
+          name: `${accountInfo.owner}`,
+          description: `${accountInfo.description}`,
         },
         create: {
           address,
-          name: `${accountInfo.owner} (${accountInfo.description})`,
+          name: `${accountInfo.owner}`,
+          description: `${accountInfo.description}`,
         },
       });
     }
