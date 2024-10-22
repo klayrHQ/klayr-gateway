@@ -19,10 +19,11 @@ export class BlockchainService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    if (process.env.NODE_ENV === 'prod') {
-      this.logger.log('Fetching app registry contents');
-      await this.fetchRepoContents();
-    }
+    if (process.env.NODE_ENV !== 'prod') return;
+    this.logger.log('Fetching app registry contents');
+    const existingApp = await this.prisma.app.findFirst();
+    if (existingApp) return;
+    await this.fetchRepoContents();
   }
 
   async fetchRepoContents() {
