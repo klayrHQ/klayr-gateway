@@ -1,6 +1,6 @@
 import { ChainEvent } from '../interfaces/chain-event.interface';
 import { TokenLockEvent, TokenTransferEvent } from '../interfaces/token-events.interface';
-import { PosValidatorStaked } from './types';
+import { ChainAccountUpdateEvent, PosValidatorStaked } from './types';
 
 export interface FilterParams {
   event: ChainEvent;
@@ -10,6 +10,7 @@ export interface FilterParams {
 
 enum FilterTypes {
   UPDATE_ACCOUNT = 'updateAccount',
+  UPDATE_SIDECHAIN = 'updateSidechain',
 }
 
 export function filterValidatorStaked({ event, type, seenAddresses }: FilterParams): boolean {
@@ -32,6 +33,13 @@ export function filterTokenTransfer({ event, seenAddresses }: FilterParams): boo
 export function filterTokenLockUnLockBurnMint({ event, seenAddresses }: FilterParams): boolean {
   const { address } = JSON.parse(event.data as string) as TokenLockEvent;
   const eventPair = `${FilterTypes.UPDATE_ACCOUNT}:${address}`;
+
+  return filterHelper(seenAddresses, [eventPair]);
+}
+
+export function filterUpdateSidechain({ event, seenAddresses }: FilterParams): boolean {
+  const { name } = JSON.parse(event.data as string) as ChainAccountUpdateEvent;
+  const eventPair = `${FilterTypes.UPDATE_SIDECHAIN}:${name}`;
 
   return filterHelper(seenAddresses, [eventPair]);
 }
