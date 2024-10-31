@@ -2,6 +2,7 @@ import {
   alwaysTrue,
   filterTokenLockUnLockBurnMint,
   filterTokenTransfer,
+  filterUpdateSidechain,
   filterValidatorStaked,
 } from './event.filters';
 import {
@@ -65,5 +66,5 @@ export const eventFilterMap = {
   [TokenEventTypes.TOKEN_MINT]: filterTokenLockUnLockBurnMint,
 
   [InteroperabilityEventTypes.INTEROPERABILITY_COMMAND_EXECUTION_RESULT]: alwaysTrue,
-  [InteroperabilityEventTypes.INTEROPERABILITY_CHAIN_ACCOUNT_UPDATED]: alwaysTrue,
+  [InteroperabilityEventTypes.INTEROPERABILITY_CHAIN_ACCOUNT_UPDATED]: filterUpdateSidechain,
 };

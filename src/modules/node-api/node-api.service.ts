@@ -86,6 +86,7 @@ export class NodeApiService {
   async onApplicationBootstrap() {
     await this.getAndSetSchemas();
     await this.cacheSchemas();
+    await this.cacheNodeApiOnNewBlock(BLOCKS_TO_CACHE_TOKEN_SUMMARY);
 
     const subscribed = this.subscribeToNewBlock();
     if (!subscribed) setTimeout(() => this.subscribeToNewBlock, CONNECTION_TIMEOUT);
