@@ -49,6 +49,7 @@ export class EventIndexService {
   }
 
   public async processChainEvents(chainEvents: ChainEvent[]) {
+    this.logger.debug(`Processing ${chainEvents.length} chain events`);
     const seenAddresses = new Set<string>();
 
     const filteredEvents = chainEvents.filter((event) => {
@@ -56,6 +57,8 @@ export class EventIndexService {
       const filterFunction = eventFilterMap[type];
       return filterFunction ? filterFunction({ event, type, seenAddresses }) : false;
     });
+
+    this.logger.debug(`Processing ${filteredEvents.length} filtered chain events`);
 
     filteredEvents.forEach((e) => {
       const gateway = this.eventGateways[`${e.module}:${e.name}`];

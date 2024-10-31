@@ -87,6 +87,7 @@ export class IndexerService {
     chainEvents: any[],
     totalBurntPerBlockMap: Map<number, any>,
   ) {
+    this.logger.debug('Executing post block commands');
     await this.commandBus.execute(new CheckForBlockFinalityCommand());
     await this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents));
     await this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap));
