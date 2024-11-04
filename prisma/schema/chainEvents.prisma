@@ -4,7 +4,7 @@ model ChainEvents {
   module        String
   name          String
   data          String?
-  topics        String?
+  topics        String[]
   index         Int?
   transactionID String?
   block         Block        @relation(fields: [height], references: [height])

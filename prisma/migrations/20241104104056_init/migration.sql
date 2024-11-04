@@ -152,7 +152,7 @@ CREATE TABLE "ChainEvents" (
     "module" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "data" TEXT,
-    "topics" TEXT,
+    "topics" TEXT[],
     "index" INTEGER,
     "transactionID" TEXT,
 

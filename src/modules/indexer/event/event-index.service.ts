@@ -105,7 +105,7 @@ export class EventIndexService {
 
       return chainEvents.map((e) => {
         e.data = this.decodeData(e);
-        e.topics = JSON.stringify(e.topics);
+        e.topics = e.topics;
         e.transactionID = this.getTransactionId(e.topics);
         return e;
       });
@@ -126,9 +126,8 @@ export class EventIndexService {
     return accounts;
   }
 
-  private getTransactionId(topics: string): string | null {
-    const parsedTopics = JSON.parse(topics);
-    const firstTopic = parsedTopics[0];
+  private getTransactionId(topics: string[]): string | null {
+    const firstTopic = topics[0];
     if (firstTopic && firstTopic.startsWith('04')) {
       return firstTopic.substring(2);
     }
