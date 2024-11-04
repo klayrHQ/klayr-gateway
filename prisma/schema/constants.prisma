@@ -1,0 +1,5 @@
+model TokenConstants {
+  id                             Int    @id @unique
+  userAccountInitializationFee   String
+  escrowAccountInitializationFee String
+}

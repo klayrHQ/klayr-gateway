@@ -160,6 +160,15 @@ CREATE TABLE "ChainEvents" (
 );
 
 -- CreateTable
+CREATE TABLE "TokenConstants" (
+    "id" INTEGER NOT NULL,
+    "userAccountInitializationFee" TEXT NOT NULL,
+    "escrowAccountInitializationFee" TEXT NOT NULL,
+
+    CONSTRAINT "TokenConstants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "NextBlockToSync" (
     "id" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,
@@ -281,6 +290,9 @@ CREATE UNIQUE INDEX "BlockchainApp_chainID_key" ON "BlockchainApp"("chainID");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "BlockchainApp_chainName_key" ON "BlockchainApp"("chainName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokenConstants_id_key" ON "TokenConstants"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");
