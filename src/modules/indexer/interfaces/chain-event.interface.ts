@@ -3,7 +3,7 @@ export interface ChainEvent {
   index: number;
   module: string;
   name: string;
-  topics: string[] | string;
+  topics: string[];
   height: number;
   transactionID?: string;
 }

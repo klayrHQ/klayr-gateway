@@ -1,4 +1,11 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { GetEventsDto } from './dto/get-events.dto';
 import { Prisma } from '@prisma/client';
@@ -7,6 +14,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionEvents } from 'src/modules/transaction/types';
 import { GetEventsResDto, getEventsResponse } from './dto/get-events-res.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { DefaultTopics } from './types';
 
 @ApiTags('Events')
 @Controller('events')
@@ -23,6 +31,7 @@ export class EventController {
       module,
       name,
       blockID,
+      topic,
       height,
       timestamp,
       sort,
@@ -30,6 +39,9 @@ export class EventController {
       offset,
     } = query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
+    if (topic && this.checkTopics(topic)) {
+      throw new BadRequestException('Default topics are not allowed');
+    }
     const take = Math.min(limit, MAX_EVENTS_TO_FETCH);
 
     const where: Prisma.ChainEventsWhereInput = {
@@ -44,6 +56,7 @@ export class EventController {
           senderAddress: senderAddress,
         },
       }),
+      ...(topic && { topics: { hasSome: topic.split(',') } }),
     };
 
     const [events, total] = await Promise.all([
@@ -83,8 +96,13 @@ export class EventController {
         event.name === TransactionEvents.COMMAND_EXECUTION_RESULT
           ? event.data
           : JSON.parse(event.data),
-      topics: JSON.parse(event.topics),
+      topics: event.topics,
     };
     return eventRes;
+  }
+
+  private checkTopics(topic: string): boolean {
+    const topics = topic.split(',');
+    return topics.every((t) => Object.values(DefaultTopics).includes(t as DefaultTopics));
   }
 }
