@@ -1,4 +1,6 @@
-import { IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { DEFAULT_STAKES_TO_FETCH } from 'src/utils/constants';
 
 export class StakesQueryDto {
   /**
@@ -21,4 +23,25 @@ export class StakesQueryDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  /**
+   * Case-insensitive search by name, address or publicKey. Supports both partial and full text search.
+   */
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  /**
+   * Limit the number of validators fetched.
+   */
+  @IsNumber()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
+  limit?: number = DEFAULT_STAKES_TO_FETCH;
+
+  /**
+   * Offset for the validators fetched.
+   */
+  @IsNumber()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
+  offset?: number = 0;
 }
