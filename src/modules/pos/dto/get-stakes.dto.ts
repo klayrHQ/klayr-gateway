@@ -32,14 +32,14 @@ export class StakesQueryDto {
   search?: string;
 
   /**
-   * Limit the number of validators fetched.
+   * Limit the number of stakes fetched.
    */
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = DEFAULT_STAKES_TO_FETCH;
 
   /**
-   * Offset for the validators fetched.
+   * Offset for the stakes fetched.
    */
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
