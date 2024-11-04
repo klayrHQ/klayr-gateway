@@ -48,6 +48,7 @@ import { getUnlocksResponse, GetUnlocksResponseDto } from './dto/get-unlocks-res
 import { GetUnlocksDto } from './dto/get-unlocks.dto';
 import { GetLockedRewardsDto } from './dto/get-locked-rewards.dto';
 import { GetLockedRewardsResDto } from './dto/get-locked-rewards-res.dto';
+import { getPosConstantsResponse } from './dto/get-pos-constants-res.dto';
 
 @ApiTags('Pos')
 @Controller('pos')
@@ -341,5 +342,14 @@ export class PosController {
         })
         .slice(offset, offset + take);
     }
+  }
+
+  @Get('constants')
+  @ApiResponse(getPosConstantsResponse)
+  async getPosConstants(): Promise<GatewayResponse<any>> {
+    const posConstants = await this.prisma.posConstants.findFirst({});
+    delete posConstants.id;
+
+    return new GatewayResponse(posConstants, {});
   }
 }
