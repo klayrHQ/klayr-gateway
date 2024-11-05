@@ -20,7 +20,7 @@ import {
   ValidatorSortTypes,
 } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
-import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
+import { MAX_STAKES_TO_FETCH, MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
 import { Prisma } from '@prisma/client';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import {
@@ -216,7 +216,8 @@ export class PosController {
     query: StakesQueryDto,
     stakeKey: 'staker' | 'validatorAddress',
   ) {
-    const { address, publicKey, name } = query;
+    const { address, publicKey, name, search, limit, offset } = query;
+    const take = Math.min(limit, MAX_STAKES_TO_FETCH);
 
     if (!address && !publicKey && !name) {
       throw new BadRequestException('At least one of address, publicKey, or name must be provided');
@@ -225,8 +226,21 @@ export class PosController {
     const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
+    const where: Prisma.StakeWhereInput = {
+      [stakeKey]: account.address,
+      ...(search && {
+        OR: [
+          { account: { address: { contains: search, mode: 'insensitive' } } },
+          { account: { publicKey: { contains: search, mode: 'insensitive' } } },
+          { account: { name: { contains: search, mode: 'insensitive' } } },
+        ],
+      }),
+    };
+
     const stakes = await this.prisma.stake.findMany({
-      where: { [stakeKey]: account.address },
+      where,
+      take,
+      skip: offset,
       include: { account: true },
     });
 

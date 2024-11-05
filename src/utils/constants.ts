@@ -63,6 +63,13 @@ export const MINIMUM_VALIDATOR_WEIGHT = BigInt(1_000e8);
 export const ACTIVE_VALIDATORS = 51;
 
 ////////////////////////////
+///       Stakes         ///
+////////////////////////////
+
+export const DEFAULT_STAKES_TO_FETCH = 20;
+export const MAX_STAKES_TO_FETCH = 100;
+
+////////////////////////////
 ///       Accounts      ///
 ////////////////////////////
 
