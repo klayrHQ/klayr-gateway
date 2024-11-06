@@ -30,7 +30,7 @@ export class ValidatorController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getValidatorInfoResponse)
-  async getValidatorInfo(
+  public async getValidatorInfo(
     @Query() query: GetValidatorInfoDto,
   ): Promise<GatewayResponse<GetValidatorInfoResDto>> {
     const { address } = query;
@@ -64,7 +64,7 @@ export class ValidatorController {
   @Post('validate-bls-key')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(postValidateBlsKeyRes)
-  async validateBlsKey(
+  public async validateBlsKey(
     @Body() body: PostValidateBlsKeyDto,
   ): Promise<GatewayResponse<PostValidateBlsKeyResDto>> {
     const { blsKey, proofOfPossession } = body;

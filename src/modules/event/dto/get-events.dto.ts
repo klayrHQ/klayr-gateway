@@ -40,6 +40,13 @@ export class GetEventsDto {
   blockID?: string;
 
   /**
+   * Event topic to query (can be expressed as CSV). For performance reasons, we do not allow users to query default topics such as 03.
+   */
+  @IsString()
+  @IsOptional()
+  topic?: string;
+
+  /**
    * Filter events by height. Format: "height", "start:end", "start:" or ":end".
    */
   @IsString()
