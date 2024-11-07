@@ -10,6 +10,7 @@ import {
   NodeInfo,
   SchemaModule,
   SupportedTokens,
+  TokenInitializationFees,
   TotalSupply,
 } from './types';
 import { codec } from '@klayr/codec';
@@ -49,6 +50,7 @@ export enum NodeApi {
   TOKEN_GET_BALANCE = 'token_getBalance',
   TOKEN_GET_BALANCES = 'token_getBalances',
   TOKEN_HAS_USER_ACCOUNT = 'token_hasUserAccount',
+  TOKEN_GET_INITIALIZATION_FEES = 'token_getInitializationFees',
 
   AUTH_GET_AUTH_ACCOUNT = 'auth_getAuthAccount',
 
@@ -86,6 +88,7 @@ export class NodeApiService {
   async onApplicationBootstrap() {
     await this.getAndSetSchemas();
     await this.cacheSchemas();
+    await this.cacheConstantsOnStartup();
     await this.cacheNodeApiOnNewBlock(BLOCKS_TO_CACHE_TOKEN_SUMMARY);
 
     const subscribed = this.subscribeToNewBlock();
@@ -146,6 +149,30 @@ export class NodeApiService {
   private async getAndSetSchemas() {
     const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
+  }
+
+  private async cacheConstantsOnStartup() {
+    await this.cacheTokenConstants();
+  }
+
+  private async cacheTokenConstants() {
+    const tokenInitializationFees = await this.invokeApi<TokenInitializationFees>(
+      NodeApi.TOKEN_GET_INITIALIZATION_FEES,
+      {},
+    );
+
+    await this.prisma.tokenConstants.upsert({
+      where: { id: CACHED_SCHEMAS_ID },
+      update: {
+        userAccountInitializationFee: tokenInitializationFees.userAccount,
+        escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
+      },
+      create: {
+        id: CACHED_SCHEMAS_ID,
+        userAccountInitializationFee: tokenInitializationFees.userAccount,
+        escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
+      },
+    });
   }
 
   private async cacheSchemas() {

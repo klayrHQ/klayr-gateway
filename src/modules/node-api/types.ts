@@ -301,3 +301,8 @@ export type ChainAccount = {
 export type ChainAccounts = {
   chains: ChainAccount[];
 };
+
+export type TokenInitializationFees = {
+  userAccount: string;
+  escrowAccount: string;
+};
