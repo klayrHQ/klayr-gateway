@@ -169,6 +169,39 @@ CREATE TABLE "TokenConstants" (
 );
 
 -- CreateTable
+CREATE TABLE "PosConstants" (
+    "id" INTEGER NOT NULL,
+    "factorSelfStakes" INTEGER NOT NULL,
+    "maxLengthName" INTEGER NOT NULL,
+    "maxNumberSentStakes" INTEGER NOT NULL,
+    "maxNumberPendingUnlocks" INTEGER NOT NULL,
+    "failSafeMissedBlocks" INTEGER NOT NULL,
+    "failSafeInactiveWindow" INTEGER NOT NULL,
+    "punishmentWindowStaking" INTEGER NOT NULL,
+    "punishmentWindowSelfStaking" INTEGER NOT NULL,
+    "roundLength" INTEGER NOT NULL,
+    "minWeightStandby" TEXT NOT NULL,
+    "numberActiveValidators" INTEGER NOT NULL,
+    "numberStandbyValidators" INTEGER NOT NULL,
+    "posTokenID" TEXT NOT NULL,
+    "validatorRegistrationFee" TEXT NOT NULL,
+    "maxBFTWeightCap" INTEGER NOT NULL,
+    "commissionIncreasePeriod" INTEGER NOT NULL,
+    "maxCommissionIncreaseRate" INTEGER NOT NULL,
+    "useInvalidBLSKey" BOOLEAN NOT NULL,
+    "baseStakeAmount" TEXT NOT NULL,
+    "lockingPeriodStaking" INTEGER NOT NULL,
+    "lockingPeriodSelfStaking" INTEGER NOT NULL,
+    "reportMisbehaviorReward" TEXT NOT NULL,
+    "reportMisbehaviorLimitBanned" INTEGER NOT NULL,
+    "weightScaleFactor" TEXT NOT NULL,
+    "defaultCommission" INTEGER NOT NULL,
+    "extraCommandFees" JSONB NOT NULL,
+
+    CONSTRAINT "PosConstants_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "NextBlockToSync" (
     "id" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,
@@ -293,6 +326,9 @@ CREATE UNIQUE INDEX "BlockchainApp_chainName_key" ON "BlockchainApp"("chainName"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TokenConstants_id_key" ON "TokenConstants"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PosConstants_id_key" ON "PosConstants"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "NextBlockToSync_id_key" ON "NextBlockToSync"("id");

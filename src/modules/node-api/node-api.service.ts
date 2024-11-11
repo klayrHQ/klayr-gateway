@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   BLOCKS_TO_CACHE_TOKEN_SUMMARY,
-  CACHED_SCHEMAS_ID,
+  CACHED_MODELS_ID,
   CONNECTION_TIMEOUT,
 } from 'src/utils/constants';
 import {
   EscrowedAmounts,
   GeneratorList,
   NodeInfo,
+  PosConstants,
+  PosInitializationFees,
   SchemaModule,
   SupportedTokens,
   TokenInitializationFees,
@@ -43,6 +45,8 @@ export enum NodeApi {
   POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
   POS_GET_PENDING_UNLOCKS = 'pos_getPendingUnlocks',
   POS_GET_LOCKED_REWARD = 'pos_getLockedReward',
+  POS_GET_REGISTRATION_FEE = 'pos_getRegistrationFee',
+  POS_GET_CONSTANTS = 'pos_getConstants',
 
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
@@ -153,6 +157,7 @@ export class NodeApiService {
 
   private async cacheConstantsOnStartup() {
     await this.cacheTokenConstants();
+    await this.cachePosConstants();
   }
 
   private async cacheTokenConstants() {
@@ -162,16 +167,33 @@ export class NodeApiService {
     );
 
     await this.prisma.tokenConstants.upsert({
-      where: { id: CACHED_SCHEMAS_ID },
+      where: { id: CACHED_MODELS_ID },
       update: {
         userAccountInitializationFee: tokenInitializationFees.userAccount,
         escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
       },
       create: {
-        id: CACHED_SCHEMAS_ID,
+        id: CACHED_MODELS_ID,
         userAccountInitializationFee: tokenInitializationFees.userAccount,
         escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
       },
+    });
+  }
+
+  private async cachePosConstants() {
+    const [posConstants, posFee] = await Promise.all([
+      this.invokeApi<PosConstants>(NodeApi.POS_GET_CONSTANTS, {}),
+      this.invokeApi<PosInitializationFees>(NodeApi.POS_GET_REGISTRATION_FEE, {}),
+    ]);
+
+    const extraCommandFees = {
+      validatorRegistrationFee: posFee.fee,
+    };
+
+    await this.prisma.posConstants.upsert({
+      where: { id: CACHED_MODELS_ID },
+      update: { ...posConstants, extraCommandFees },
+      create: { id: CACHED_MODELS_ID, ...posConstants, extraCommandFees },
     });
   }
 
@@ -193,10 +215,10 @@ export class NodeApiService {
 
     // Upsert to make sure it only exists once
     await this.prisma.cachedSchemas.upsert({
-      where: { id: CACHED_SCHEMAS_ID },
+      where: { id: CACHED_MODELS_ID },
       update: upsertData,
       create: {
-        id: CACHED_SCHEMAS_ID,
+        id: CACHED_MODELS_ID,
         ...upsertData,
       },
     });
