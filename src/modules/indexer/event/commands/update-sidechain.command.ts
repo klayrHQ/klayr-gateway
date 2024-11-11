@@ -44,6 +44,10 @@ export class UpdateSidechainHandler implements ICommandHandler<UpdateSidechainCo
     const escrowForApp = amounts.escrowedAmounts.escrowedAmounts.find(
       (escrow) => escrow.escrowChainID === app.chainID,
     );
+    if (!escrowForApp) {
+      this.logger.error('no escrowForApp found.');
+      return;
+    }
 
     await this.prisma.blockchainApp.update({
       where: { chainName: name },
@@ -55,8 +59,8 @@ export class UpdateSidechainHandler implements ICommandHandler<UpdateSidechainCo
         escrow: {
           deleteMany: {},
           create: {
-            tokenID: escrowForApp.tokenID,
-            amount: escrowForApp.amount,
+            tokenID: escrowForApp.tokenID ?? '0',
+            amount: escrowForApp.amount ?? '0',
           },
         },
       },
