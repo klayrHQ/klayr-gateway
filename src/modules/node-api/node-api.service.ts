@@ -1,15 +1,18 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   BLOCKS_TO_CACHE_TOKEN_SUMMARY,
-  CACHED_SCHEMAS_ID,
+  CACHED_MODELS_ID,
   CONNECTION_TIMEOUT,
 } from 'src/utils/constants';
 import {
   EscrowedAmounts,
   GeneratorList,
   NodeInfo,
+  PosConstants,
+  PosInitializationFees,
   SchemaModule,
   SupportedTokens,
+  TokenInitializationFees,
   TotalSupply,
 } from './types';
 import { codec } from '@klayr/codec';
@@ -42,6 +45,8 @@ export enum NodeApi {
   POS_GET_CLAIMABLE_REWARDS = 'pos_getClaimableRewards',
   POS_GET_PENDING_UNLOCKS = 'pos_getPendingUnlocks',
   POS_GET_LOCKED_REWARD = 'pos_getLockedReward',
+  POS_GET_REGISTRATION_FEE = 'pos_getRegistrationFee',
+  POS_GET_CONSTANTS = 'pos_getConstants',
 
   TOKEN_GET_TOTAL_SUPPLY = 'token_getTotalSupply',
   TOKEN_GET_ESCROWED_AMOUNTS = 'token_getEscrowedAmounts',
@@ -49,6 +54,7 @@ export enum NodeApi {
   TOKEN_GET_BALANCE = 'token_getBalance',
   TOKEN_GET_BALANCES = 'token_getBalances',
   TOKEN_HAS_USER_ACCOUNT = 'token_hasUserAccount',
+  TOKEN_GET_INITIALIZATION_FEES = 'token_getInitializationFees',
 
   AUTH_GET_AUTH_ACCOUNT = 'auth_getAuthAccount',
 
@@ -86,6 +92,7 @@ export class NodeApiService {
   async onApplicationBootstrap() {
     await this.getAndSetSchemas();
     await this.cacheSchemas();
+    await this.cacheConstantsOnStartup();
     await this.cacheNodeApiOnNewBlock(BLOCKS_TO_CACHE_TOKEN_SUMMARY);
 
     const subscribed = this.subscribeToNewBlock();
@@ -148,6 +155,48 @@ export class NodeApiService {
     this.schemaMap = new Map(schema.modules.map((schema: SchemaModule) => [schema.name, schema]));
   }
 
+  private async cacheConstantsOnStartup() {
+    await this.cacheTokenConstants();
+    await this.cachePosConstants();
+  }
+
+  private async cacheTokenConstants() {
+    const tokenInitializationFees = await this.invokeApi<TokenInitializationFees>(
+      NodeApi.TOKEN_GET_INITIALIZATION_FEES,
+      {},
+    );
+
+    await this.prisma.tokenConstants.upsert({
+      where: { id: CACHED_MODELS_ID },
+      update: {
+        userAccountInitializationFee: tokenInitializationFees.userAccount,
+        escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
+      },
+      create: {
+        id: CACHED_MODELS_ID,
+        userAccountInitializationFee: tokenInitializationFees.userAccount,
+        escrowAccountInitializationFee: tokenInitializationFees.escrowAccount,
+      },
+    });
+  }
+
+  private async cachePosConstants() {
+    const [posConstants, posFee] = await Promise.all([
+      this.invokeApi<PosConstants>(NodeApi.POS_GET_CONSTANTS, {}),
+      this.invokeApi<PosInitializationFees>(NodeApi.POS_GET_REGISTRATION_FEE, {}),
+    ]);
+
+    const extraCommandFees = {
+      validatorRegistrationFee: posFee.fee,
+    };
+
+    await this.prisma.posConstants.upsert({
+      where: { id: CACHED_MODELS_ID },
+      update: { ...posConstants, extraCommandFees },
+      create: { id: CACHED_MODELS_ID, ...posConstants, extraCommandFees },
+    });
+  }
+
   private async cacheSchemas() {
     const schema = await this.invokeApi<any>(NodeApi.SYSTEM_GET_SCHEMA, {});
     const metadata = await this.invokeApi<any>(NodeApi.SYSTEM_GET_METADATA, {});
@@ -166,10 +215,10 @@ export class NodeApiService {
 
     // Upsert to make sure it only exists once
     await this.prisma.cachedSchemas.upsert({
-      where: { id: CACHED_SCHEMAS_ID },
+      where: { id: CACHED_MODELS_ID },
       update: upsertData,
       create: {
-        id: CACHED_SCHEMAS_ID,
+        id: CACHED_MODELS_ID,
         ...upsertData,
       },
     });

@@ -48,13 +48,10 @@ export class GetTransactionDto {
   receivingChainID?: string;
 
   /**
-   * Filter transactions by module and command. Format: "module:command".
+   * Filter transactions by module and command. Format: "module:command". Multiple module:command pairs can be passed as a CSV
    */
   @IsString()
   @IsOptional()
-  @Matches(/^[a-zA-Z]+:[a-zA-Z]+$/, {
-    message: 'moduleCommand must have a format "token:transfer"',
-  })
   moduleCommand?: string;
 
   /**

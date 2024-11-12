@@ -25,6 +25,7 @@ import {
 import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
 import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
 import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
+import { getTokenConstantsResponse } from './dto/get-token-constants-res.dto';
 
 @ApiTags('Token')
 @Controller('token')
@@ -121,5 +122,18 @@ export class TokenController {
       throw new HttpException(availableIds.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse({ tokenIDs: availableIds }, { total: availableIds.length });
+  }
+
+  @Get('constants')
+  @ApiResponse(getTokenConstantsResponse)
+  async getTokenConstants(): Promise<GatewayResponse<any>> {
+    const tokenConstants = await this.prisma.tokenConstants.findFirst({
+      select: {
+        userAccountInitializationFee: true,
+        escrowAccountInitializationFee: true,
+      },
+    });
+
+    return new GatewayResponse({ extraCommandFees: tokenConstants }, {});
   }
 }

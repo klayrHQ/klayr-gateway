@@ -57,7 +57,12 @@ export class TransactionController {
 
     const take = Math.min(limit, MAX_TXS_TO_FETCH);
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
-    const [module, command] = moduleCommand ? moduleCommand.split(':') : [];
+
+    const moduleCommandArray = moduleCommand ? moduleCommand.split(',') : [];
+    const moduleCommandConditions = moduleCommandArray.map((mc) => {
+      const [module, command] = mc.split(':');
+      return { module, command };
+    });
 
     const where: Prisma.TransactionWhereInput & {
       sender?: { address?: string };
@@ -69,8 +74,9 @@ export class TransactionController {
       ...(senderAddress && { senderAddress }),
       ...(recipientAddress && { recipientAddress }),
       ...(receivingChainID && { receivingChainID }),
-      ...(module && { module }),
-      ...(command && { command }),
+      ...(moduleCommandArray.length > 0 && {
+        OR: moduleCommandConditions,
+      }),
       ...(nonce && { nonce }),
       ...(height && { height: ControllerHelpers.buildRangeCondition(height) }),
       ...(timestamp && { block: { timestamp: ControllerHelpers.buildRangeCondition(timestamp) } }),
