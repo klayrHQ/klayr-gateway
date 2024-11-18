@@ -8,7 +8,7 @@ export interface PeerOptions {
   legacy: any[];
 }
 
-export class GetNetworkPeersResDto {
+export class GetNetworkPeersData {
   chainID: string;
   networkVersion: string;
   nonce: string;
@@ -19,9 +19,15 @@ export class GetNetworkPeersResDto {
   peerId: string;
 }
 
+export class GetNetworkPeersMeta {}
+
+export class GetNetworkPeersResDto {
+  data: GetNetworkPeersData[];
+  meta: GetNetworkPeersMeta;
+}
+
 export const getNetworkPeersRes: ApiResponseOptions = {
   status: 200,
   description: 'The network peers has been successfully fetched.',
   type: GetNetworkPeersResDto,
-  isArray: true,
 };

@@ -1,7 +1,11 @@
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
-import { getNetworkPeersRes, GetNetworkPeersResDto } from './dto/get-network-peers-res.dto';
+import {
+  GetNetworkPeersData,
+  getNetworkPeersRes,
+  GetNetworkPeersResDto,
+} from './dto/get-network-peers-res.dto';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { getNodeInfoResponse, NodeInfoDto } from '../node-api/dto/get-node-info-res.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,8 +21,8 @@ export class NetworkController {
   // TODO: query params; sort, limit, offset, height, state, networkVersion, ip
   @Get('peers')
   @ApiResponse(getNetworkPeersRes)
-  async getPeers(): Promise<GatewayResponse<GetNetworkPeersResDto[]>> {
-    const peers = await this.nodeApi.invokeApi<GetNetworkPeersResDto[]>(
+  async getPeers(): Promise<GetNetworkPeersResDto> {
+    const peers = await this.nodeApi.invokeApi<GetNetworkPeersData[]>(
       NodeApi.NETWORK_GET_CONNECTED_PEERS,
       {},
     );
@@ -26,12 +30,12 @@ export class NetworkController {
     if (ControllerHelpers.isNodeApiError(peers))
       throw new HttpException(peers.error, HttpStatus.NOT_FOUND);
 
-    return new GatewayResponse(peers, []);
+    return new GatewayResponse(peers, {});
   }
 
   @Get('status')
   @ApiResponse(getNodeInfoResponse)
-  async getNodeInfo(): Promise<GatewayResponse<NodeInfoDto>> {
+  async getNodeInfo(): Promise<NodeInfoDto> {
     const nodeInfo = this.nodeApi.nodeInfo;
     const schemasFromDB = await this.prisma.cachedSchemas.findFirst();
 
