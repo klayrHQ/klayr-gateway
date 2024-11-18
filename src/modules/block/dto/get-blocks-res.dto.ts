@@ -18,7 +18,7 @@ export class Generator {
   name: string;
 }
 
-export class GetBlockResDto {
+export class GetBlockData {
   height: number;
   id: string;
   generator: Generator;
@@ -47,9 +47,19 @@ export class GetBlockResDto {
   assets?: Asset[];
 }
 
+export class GetBlockMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetBlockResDto {
+  data: GetBlockData[];
+  meta: GetBlockMeta;
+}
+
 export const getBlocksResponse: ApiResponseOptions = {
   status: 200,
   description: 'The blocks have been successfully fetched.',
   type: GetBlockResDto,
-  isArray: true,
 };

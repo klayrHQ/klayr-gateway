@@ -1,12 +1,12 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { MAX_ASSETS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetBlockResDto, getBlocksResponse } from './dto/get-blocks-res.dto';
+import { GetBlockData, GetBlockResDto, getBlocksResponse } from './dto/get-blocks-res.dto';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { Prisma } from '@prisma/client';
 import { GetBlocksDto } from './dto/get-blocks.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { GetAssetResDto, getAssetsResponse } from './dto/get-assets-res.dto';
+import { GetAssetData, GetAssetResDto, getAssetsResponse } from './dto/get-assets-res.dto';
 import { GetAssetsDto } from './dto/get-assets.dto';
 import { NodeApiService } from '../node-api/node-api.service';
 
@@ -21,7 +21,7 @@ export class BlockController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getBlocksResponse)
-  async getBlocks(@Query() query: GetBlocksDto): Promise<GatewayResponse<GetBlockResDto[]>> {
+  async getBlocks(@Query() query: GetBlocksDto): Promise<GetBlockResDto> {
     const { blockID, height, timestamp, sort, limit, offset, includeAssets, generatorAddress } =
       query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
@@ -71,7 +71,7 @@ export class BlockController {
       this.prisma.block.count({ where }),
     ]);
 
-    const blockResponse: GetBlockResDto[] = blocks.map((block) => this.toGetBlockResponse(block));
+    const blockResponse: GetBlockData[] = blocks.map((block) => this.toGetBlockResponse(block));
 
     return new GatewayResponse(blockResponse, { count: blocks.length, offset, total });
   }
@@ -79,7 +79,7 @@ export class BlockController {
   @Get('assets')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAssetsResponse)
-  async getAssets(@Query() query: GetAssetsDto): Promise<GatewayResponse<GetAssetResDto[]>> {
+  async getAssets(@Query() query: GetAssetsDto): Promise<GetAssetResDto> {
     const { blockID, height, timestamp, module, sort, limit, offset } = query;
     const { field, direction } = ControllerHelpers.validateSortParameter(sort);
     const take = Math.min(limit, MAX_ASSETS_TO_FETCH);
@@ -125,7 +125,7 @@ export class BlockController {
     assets: Prisma.AssetGetPayload<{
       include: { block: { select: { id: true; height: true; timestamp: true } } };
     }>[],
-  ): GetAssetResDto[] {
+  ): GetAssetData[] {
     const grouped = assets.reduce((acc, asset) => {
       const blockId = asset.block.id;
       if (!acc[blockId]) {
@@ -154,9 +154,9 @@ export class BlockController {
         generator: { select: { address: true; publicKey: true; nonce: true; name: true } };
       };
     }>,
-  ): GetBlockResDto {
+  ): GetBlockData {
     const { generator, ...rest } = block;
-    const newBlock: GetBlockResDto = {
+    const newBlock: GetBlockData = {
       ...rest,
       generator: generator,
       totalBurnt: block.totalBurnt.toString(),
