@@ -29,7 +29,7 @@ export class RewardController {
   @ApiResponse(getAnnualInflationRes)
   async getAnnualInflation(
     @Query() query: GetAnnualInflationDto,
-  ): Promise<GatewayResponse<GetAnnualInflationResDto>> {
+  ): Promise<GetAnnualInflationResDto> {
     const { height } = query;
 
     const annualInflation = await this.nodeApi.invokeApi<AnnualInflation>(
@@ -48,9 +48,7 @@ export class RewardController {
   @Get('default')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getDefaultRewardRes)
-  async getDefaultReward(
-    @Query() query: GetDefaultRewardDto,
-  ): Promise<GatewayResponse<GetDefaultRewardResDto>> {
+  async getDefaultReward(@Query() query: GetDefaultRewardDto): Promise<GetDefaultRewardResDto> {
     const { height } = query;
 
     const defaultReward = await this.nodeApi.invokeApi<DefaultReward>(
