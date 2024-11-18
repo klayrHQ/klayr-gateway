@@ -47,10 +47,10 @@ export class ControllerHelpers {
   }
 }
 
-export class GatewayResponse<T> {
+export class GatewayResponse<T, U = object> {
   constructor(
     public data: T,
-    public meta: object,
+    public meta: U,
   ) {}
 }
 

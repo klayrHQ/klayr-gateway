@@ -11,14 +11,24 @@ class Block {
   timestamp: number;
 }
 
-export class GetAssetResDto {
+export class GetAssetData {
   block: Block;
   assets: Asset[];
+}
+
+export class GetAssetMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetAssetResDto {
+  data: GetAssetData[];
+  meta: GetAssetMeta;
 }
 
 export const getAssetsResponse: ApiResponseOptions = {
   status: 200,
   description: 'The assets have been successfully fetched.',
   type: GetAssetResDto,
-  isArray: true,
 };
