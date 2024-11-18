@@ -19,7 +19,7 @@ class Network {
   seedPeers: string[];
 }
 
-export class NodeInfoDto {
+export class NodeInfoData {
   version: string;
   networkVersion: string;
   chainID: string;
@@ -33,6 +33,13 @@ export class NodeInfoDto {
   network: Network;
   registeredModules: string[];
   moduleCommands: string[];
+}
+
+export class NodeInfoMeta {}
+
+export class NodeInfoDto {
+  data: NodeInfoData;
+  meta: NodeInfoMeta;
 }
 
 export const getNodeInfoResponse: ApiResponseOptions = {
