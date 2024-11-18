@@ -12,7 +12,7 @@ import { Prisma } from '@prisma/client';
 import { MAX_EVENTS_TO_FETCH } from 'src/utils/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionEvents } from 'src/modules/transaction/types';
-import { GetEventsResDto, getEventsResponse } from './dto/get-events-res.dto';
+import { GetEventsData, GetEventsResDto, getEventsRes } from './dto/get-events-res.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { DefaultTopics } from './types';
 
@@ -23,8 +23,8 @@ export class EventController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getEventsResponse)
-  async getEvents(@Query() query: GetEventsDto): Promise<GatewayResponse<GetEventsResDto[]>> {
+  @ApiResponse(getEventsRes)
+  async getEvents(@Query() query: GetEventsDto): Promise<GetEventsResDto> {
     const {
       transactionID,
       senderAddress,
@@ -80,7 +80,7 @@ export class EventController {
       this.prisma.chainEvents.count({ where }),
     ]);
 
-    const eventResponse: GetEventsResDto[] = events.map((event) => this.toGetEventsResponse(event));
+    const eventResponse: GetEventsData[] = events.map((event) => this.toGetEventsResponse(event));
 
     return new GatewayResponse(eventResponse, { count: events.length, offset, total });
   }
@@ -89,7 +89,7 @@ export class EventController {
     event: Prisma.ChainEventsGetPayload<{
       include: { block: { select: { id: true; height: true; timestamp: true } } };
     }>,
-  ): GetEventsResDto {
+  ): GetEventsData {
     const eventRes = {
       ...event,
       data:
