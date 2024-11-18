@@ -12,7 +12,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
-import { getAuthResponse, GetAuthResponseDto } from './dto/get-auth-res.dto';
+import { GetAuthData, getAuthRes, GetAuthResDto } from './dto/get-auth-res.dto';
 import { GetAuthDto } from './dto/get-auth.dto';
 
 @ApiTags('Auth')
@@ -25,8 +25,8 @@ export class AuthController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getAuthResponse)
-  async getAuth(@Query() query: GetAuthDto): Promise<GatewayResponse<GetAuthResponseDto>> {
+  @ApiResponse(getAuthRes)
+  async getAuth(@Query() query: GetAuthDto): Promise<GetAuthResDto> {
     const { address } = query;
     const account = await this.prisma.account.findFirst({
       where: {
@@ -38,7 +38,7 @@ export class AuthController {
       throw new BadRequestException('Account not found');
     }
 
-    const auth = await this.nodeApi.invokeApi<GetAuthResponseDto>(NodeApi.AUTH_GET_AUTH_ACCOUNT, {
+    const auth = await this.nodeApi.invokeApi<GetAuthData>(NodeApi.AUTH_GET_AUTH_ACCOUNT, {
       address,
     });
 
