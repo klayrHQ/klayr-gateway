@@ -10,12 +10,12 @@ import {
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { GetAppsDto } from './dto/get-apps.dto';
-import { getAppsResponse } from './dto/get-apps-res.dto';
+import { getAppsRes, GetAppsResDto } from './dto/get-apps-res.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
 import { AnnualInflation } from '../node-api/types';
-import { GetAppsStatsResDto, getAppsStatsResponse } from './dto/get-app-stats-res.dto';
+import { GetAppsStatsResDto, getAppsStatsRes } from './dto/get-app-stats-res.dto';
 import { APP_STATUS } from './types';
 
 @ApiTags('Interoperability')
@@ -28,8 +28,8 @@ export class InteroperabilityController {
 
   @Get('apps')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getAppsResponse)
-  async getAuth(@Query() query: GetAppsDto): Promise<GatewayResponse<any>> {
+  @ApiResponse(getAppsRes)
+  async getAuth(@Query() query: GetAppsDto): Promise<GetAppsResDto> {
     const { chainID, chainName, status, search, limit, offset } = query;
 
     const where: Prisma.BlockchainAppWhereInput = {
@@ -55,8 +55,8 @@ export class InteroperabilityController {
   }
 
   @Get('apps/statistics')
-  @ApiResponse(getAppsStatsResponse)
-  async getSummary(): Promise<GatewayResponse<GetAppsStatsResDto>> {
+  @ApiResponse(getAppsStatsRes)
+  async getSummary(): Promise<GetAppsStatsResDto> {
     const [registered, activated, terminated, totalSupply, escrowedKLY] = await Promise.all([
       this.prisma.blockchainApp.count({ where: { status: APP_STATUS.REGISTERED } }),
       this.prisma.blockchainApp.count({ where: { status: APP_STATUS.ACTIVATED } }),

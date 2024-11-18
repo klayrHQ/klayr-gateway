@@ -4,20 +4,30 @@ class Escrow {
   tokenID: string;
   amount: string;
 }
-export class GetAppsResDto {
+export class GetAppsData {
   chainID: string;
   chainName: string;
   status: string;
   address: string;
-  lastCerticateHeight: number;
+  lastCertificateHeight: number;
   lastUpdated: number;
   escrowedKLY: string;
   escrow: Escrow[];
 }
 
-export const getAppsResponse: ApiResponseOptions = {
+export class GetAppsMeta {
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export class GetAppsResDto {
+  data: GetAppsData[];
+  meta: GetAppsMeta;
+}
+
+export const getAppsRes: ApiResponseOptions = {
   status: 200,
   description: 'Tokens meta data have been successfully retrieved.',
   type: GetAppsResDto,
-  isArray: true,
 };
