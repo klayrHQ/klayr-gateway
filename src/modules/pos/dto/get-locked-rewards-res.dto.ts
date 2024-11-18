@@ -1,13 +1,21 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetLockedRewardsResDto {
+export class GetLockedRewardsData {
   tokenID: string;
   reward: string;
 }
 
-export const getLockedRewardsResponse: ApiResponseOptions = {
+export class GetLockedRewardsMeta {
+  account: object;
+}
+
+export class GetLockedRewardsResDto {
+  data: GetLockedRewardsData[];
+  meta: GetLockedRewardsMeta;
+}
+
+export const getLockedRewardsRes: ApiResponseOptions = {
   status: 200,
   description: 'The locked rewards have been successfully fetched.',
   type: GetLockedRewardsResDto,
-  isArray: true,
 };

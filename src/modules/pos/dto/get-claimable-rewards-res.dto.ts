@@ -1,17 +1,20 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-class ClaimableRewards {
+class ClaimableRewardsData {
   tokenID: string;
   reward: string;
 }
 
-export class GetClaimableRewardsResponseDto {
-  rewards: ClaimableRewards[];
+export class GetClaimableRewardsMeta {
+  account: object;
+}
+export class GetClaimableRewardsResDto {
+  data: ClaimableRewardsData[];
+  meta: GetClaimableRewardsMeta;
 }
 
-export const getClaimableRewardsResponse: ApiResponseOptions = {
+export const getClaimableRewardsRes: ApiResponseOptions = {
   status: 200,
   description: 'The claimable rewards have been successfully fetched.',
-  type: GetClaimableRewardsResponseDto,
-  isArray: true,
+  type: GetClaimableRewardsResDto,
 };
