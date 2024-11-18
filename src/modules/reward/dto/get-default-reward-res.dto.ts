@@ -1,8 +1,15 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetDefaultRewardResDto {
+export class GetDefaultRewardData {
   tokenID: string;
   defaultReward: string;
+}
+
+export class GetDefaultRewardMeta {}
+
+export class GetDefaultRewardResDto {
+  data: GetDefaultRewardData;
+  meta: GetDefaultRewardMeta;
 }
 
 export const getDefaultRewardRes: ApiResponseOptions = {

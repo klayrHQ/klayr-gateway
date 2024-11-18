@@ -11,10 +11,7 @@ import {
   getTokensMetaResponse,
 } from './dto/get-blockchain-apps-tokens-res.dto';
 import { GetBlockchainAppsListDto } from './dto/get-blockchain-apps-meta-list.dto';
-import {
-  GetAppsListResDto,
-  getAppsListResponse,
-} from './dto/get-blockchain-apps-meta-list-res.dto';
+import { GetAppsListResDto, getAppsListRes } from './dto/get-blockchain-apps-meta-list-res.dto';
 
 @ApiTags('Application Off-Chain Metadata')
 @Controller('blockchain')
@@ -24,9 +21,7 @@ export class BlockchainController {
   @Get('apps/meta')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getAppsMetaResponse)
-  public async getAppsMeta(
-    @Query() query: GetBlockchainMetaDto,
-  ): Promise<GatewayResponse<GetAppsMetaResDto[]>> {
+  public async getAppsMeta(@Query() query: GetBlockchainMetaDto): Promise<GetAppsMetaResDto> {
     const { chainName, displayName, chainID, isDefault, network, search, limit, offset, sort } =
       query;
 
@@ -98,7 +93,7 @@ export class BlockchainController {
   @ApiResponse(getTokensMetaResponse)
   public async getTokensMeta(
     @Query() query: GetBlockchainTokensMetaDto,
-  ): Promise<GatewayResponse<GetTokensMetaResDto[]>> {
+  ): Promise<GetTokensMetaResDto> {
     const { chainName, chainID, tokenName, tokenID, network, search, limit, offset, sort } = query;
 
     const [sortField, sortOrder] = sort.split(':');
@@ -160,10 +155,8 @@ export class BlockchainController {
 
   @Get('apps/meta/list')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getAppsListResponse)
-  public async getAppsList(
-    @Query() query: GetBlockchainAppsListDto,
-  ): Promise<GatewayResponse<GetAppsListResDto[]>> {
+  @ApiResponse(getAppsListRes)
+  public async getAppsList(@Query() query: GetBlockchainAppsListDto): Promise<GetAppsListResDto> {
     const { chainName, network, search, limit, offset, sort } = query;
 
     const [sortField, sortOrder] = sort.split(':');

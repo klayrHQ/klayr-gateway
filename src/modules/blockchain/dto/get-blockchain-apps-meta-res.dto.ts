@@ -26,7 +26,7 @@ class AppNode {
   appChainID: string;
 }
 
-export class GetAppsMetaResDto {
+export class GetAppsMetaData {
   chainID: string;
   chainName: string;
   displayName?: string;
@@ -44,9 +44,19 @@ export class GetAppsMetaResDto {
   appNodes: AppNode[];
 }
 
+export class GetAppsMetaMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetAppsMetaResDto {
+  data: GetAppsMetaData[];
+  meta: GetAppsMetaMeta;
+}
+
 export const getAppsMetaResponse: ApiResponseOptions = {
   status: 200,
   description: 'Apps meta data have been successfully retrieved.',
   type: GetAppsMetaResDto,
-  isArray: true,
 };

@@ -1,7 +1,11 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GeneratorQueryDto } from './dto/get-generators.dto';
-import { getGeneratorResponse, GetGeneratorResponseDto } from './dto/get-generators-res.dto';
+import {
+  GetGeneratorData,
+  getGeneratorRes,
+  GetGeneratorResDto,
+} from './dto/get-generators-res.dto';
 import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import { Prisma } from '@prisma/client';
@@ -19,10 +23,8 @@ export class GeneratorController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getGeneratorResponse)
-  async getValidator(
-    @Query() query: GeneratorQueryDto,
-  ): Promise<GatewayResponse<GetGeneratorResponseDto[]>> {
+  @ApiResponse(getGeneratorRes)
+  async getValidator(@Query() query: GeneratorQueryDto): Promise<GetGeneratorResDto> {
     const { search, limit, offset } = query;
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
 
@@ -65,7 +67,7 @@ export class GeneratorController {
   private getGeneratorResponse(
     validator: Prisma.ValidatorGetPayload<{ include: { account: true } }>,
     list: Generator[],
-  ): GetGeneratorResponseDto {
+  ): GetGeneratorData {
     const {
       account: { address, publicKey, name },
       status,
@@ -80,7 +82,7 @@ export class GeneratorController {
     };
   }
 
-  private sortResponse(response: GetGeneratorResponseDto[], take: number, offset: number) {
+  private sortResponse(response: GetGeneratorData[], take: number, offset: number) {
     return response
       .sort((a, b) => {
         const timeA = a.nextAllocatedTime ? Number(a.nextAllocatedTime) : 0;

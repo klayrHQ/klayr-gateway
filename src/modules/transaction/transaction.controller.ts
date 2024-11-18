@@ -16,7 +16,11 @@ import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers
 import { Prisma } from '@prisma/client';
 import { GetTransactionDto } from './dto/get-transactions.dto';
 import { PostTransactionDto } from './dto/post-transaction.dto';
-import { GetTransactionsResDto, getTransactionsResponse } from './dto/get-transactions-res.dto';
+import {
+  GetTransactionsData,
+  GetTransactionsResDto,
+  getTransactionsResponse,
+} from './dto/get-transactions-res.dto';
 import {
   PostTransactionResponseDto,
   postTransactionResponse,
@@ -34,9 +38,7 @@ export class TransactionController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getTransactionsResponse)
-  public async getTransaction(
-    @Query() query: GetTransactionDto,
-  ): Promise<GatewayResponse<GetTransactionsResDto[]>> {
+  public async getTransaction(@Query() query: GetTransactionDto): Promise<GetTransactionsResDto> {
     const {
       transactionID,
       blockID,
@@ -141,7 +143,7 @@ export class TransactionController {
         block: { select: { id: true; height: true; timestamp: true; isFinal: true } };
       };
     }>,
-  ): GetTransactionsResDto {
+  ): GetTransactionsData {
     const {
       sender,
       recipient,
@@ -153,7 +155,7 @@ export class TransactionController {
       height,
       ...rest
     } = transaction;
-    const newTransaction: GetTransactionsResDto = {
+    const newTransaction: GetTransactionsData = {
       ...rest,
       sender,
       recipient,

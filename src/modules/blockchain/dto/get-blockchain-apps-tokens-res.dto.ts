@@ -13,7 +13,7 @@ class DenomUnit {
   tokenID: string;
 }
 
-export class GetTokensMetaResDto {
+export class GetTokensMetaData {
   chainName: string;
   networkType: string;
   tokenID: string;
@@ -27,9 +27,19 @@ export class GetTokensMetaResDto {
   denomUnits: DenomUnit[];
 }
 
+export class GetTokensMetaMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetTokensMetaResDto {
+  data: GetTokensMetaData[];
+  meta: GetTokensMetaMeta;
+}
+
 export const getTokensMetaResponse: ApiResponseOptions = {
   status: 200,
   description: 'Tokens meta data have been successfully retrieved.',
   type: GetTokensMetaResDto,
-  isArray: true,
 };

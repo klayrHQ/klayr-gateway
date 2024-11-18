@@ -6,7 +6,7 @@ class Block {
   timestamp: number;
 }
 
-export class GetEventsResDto {
+export class GetEventsData {
   id: number;
   height: number;
   module: string;
@@ -18,7 +18,18 @@ export class GetEventsResDto {
   block: Block;
 }
 
-export const getEventsResponse: ApiResponseOptions = {
+export class GetEventsMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetEventsResDto {
+  data: GetEventsData[];
+  meta: GetEventsMeta;
+}
+
+export const getEventsRes: ApiResponseOptions = {
   status: 200,
   description: 'Events has been successfully retrieved.',
   type: GetEventsResDto,

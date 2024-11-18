@@ -16,7 +16,7 @@ class ModuleSchema {
   name: string;
 }
 
-export class GetSchemaResponseDto {
+export class GetSchemaData {
   block: Schema;
   header: Schema;
   asset: Schema;
@@ -26,8 +26,15 @@ export class GetSchemaResponseDto {
   modules: ModuleSchema[];
 }
 
-export const getSchemaResponse: ApiResponseOptions = {
+export class GetSchemaMeta {}
+
+export class GetSchemaResDto {
+  data: GetSchemaData;
+  meta: GetSchemaMeta;
+}
+
+export const getSchemaRes: ApiResponseOptions = {
   status: 200,
   description: 'The schemas have been successfully fetched.',
-  type: GetSchemaResponseDto,
+  type: GetSchemaResDto,
 };

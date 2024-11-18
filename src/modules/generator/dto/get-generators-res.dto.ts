@@ -1,6 +1,6 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetGeneratorResponseDto {
+export class GetGeneratorData {
   name: string;
   address: string;
   publicKey: string;
@@ -8,9 +8,19 @@ export class GetGeneratorResponseDto {
   status: string;
 }
 
-export const getGeneratorResponse: ApiResponseOptions = {
+export class GetGeneratorMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetGeneratorResDto {
+  data: GetGeneratorData[];
+  meta: GetGeneratorMeta;
+}
+
+export const getGeneratorRes: ApiResponseOptions = {
   status: 200,
   description: 'The Generator have been successfully fetched.',
-  type: GetGeneratorResponseDto,
-  isArray: false,
+  type: GetGeneratorResDto,
 };

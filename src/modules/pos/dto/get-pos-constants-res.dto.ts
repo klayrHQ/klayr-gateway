@@ -4,7 +4,7 @@ class ExtraCommandFees {
   validatorRegistrationFee: string;
 }
 
-export class GetPosConstantsResponseDto {
+export class GetPosConstantsData {
   factorSelfStakes: number;
   maxLengthName: number;
   maxNumberSentStakes: number;
@@ -33,8 +33,15 @@ export class GetPosConstantsResponseDto {
   extraCommandFees: ExtraCommandFees;
 }
 
-export const getPosConstantsResponse: ApiResponseOptions = {
+export class GetPosConstantsMeta {}
+
+export class GetPosConstantsResDto {
+  data: GetPosConstantsData;
+  meta: GetPosConstantsMeta;
+}
+
+export const getPosConstantsRes: ApiResponseOptions = {
   status: 200,
   description: 'The Pos constants have been successfully fetched.',
-  type: GetPosConstantsResponseDto,
+  type: GetPosConstantsResDto,
 };

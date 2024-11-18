@@ -1,7 +1,7 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
-import { getAccountsResponse } from './dto/get-accounts-res.dto';
+import { getAccountsRes } from './dto/get-accounts-res.dto';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import { GetAccountsDto } from './dto/get-accounts.dto';
 import { Prisma } from '@prisma/client';
@@ -14,7 +14,7 @@ export class AccountController {
 
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getAccountsResponse)
+  @ApiResponse(getAccountsRes)
   async getAccounts(@Query() query: GetAccountsDto): Promise<GatewayResponse<any[]>> {
     const { address, name, publicKey, offset, sort, limit } = query;
     const [field, direction] = sort.split(':');
