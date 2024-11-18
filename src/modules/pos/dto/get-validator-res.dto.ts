@@ -1,7 +1,8 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
+import { off } from 'node:process';
 import { Account } from 'src/modules/account/types';
 
-export class GetValidatorResponseDto {
+export class GetValidatorData {
   account: Account;
   totalStake: string;
   selfStake: string;
@@ -25,14 +26,24 @@ export class GetValidatorResponseDto {
   status?: string;
 }
 
+export class GetValidatorMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetValidatorResDto {
+  data: GetValidatorData[];
+  meta: GetValidatorMeta;
+}
+
 export const getValidatorResponse: ApiResponseOptions = {
   status: 200,
   description: 'The validator have been successfully fetched.',
-  type: GetValidatorResponseDto,
-  isArray: true,
+  type: GetValidatorResDto,
 };
 
-export class GetValidatorCountsResponseDto {
+export class GetValidatorCountsData {
   active: number;
   ineligible: number;
   standby: number;
@@ -40,8 +51,15 @@ export class GetValidatorCountsResponseDto {
   banned: number;
 }
 
-export const getValidatorCountsResponse: ApiResponseOptions = {
+export class GetValidatorCountsMeta {}
+
+export class GetValidatorCountsResDto {
+  data: GetValidatorCountsData;
+  meta: GetValidatorCountsMeta;
+}
+
+export const getValidatorCountsRes: ApiResponseOptions = {
   status: 200,
   description: 'The validator counts have been successfully fetched.',
-  type: GetValidatorCountsResponseDto,
+  type: GetValidatorCountsResDto,
 };

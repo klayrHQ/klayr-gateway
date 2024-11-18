@@ -10,8 +10,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import {
-  GetValidatorResponseDto,
-  getValidatorCountsResponse,
+  GetValidatorData,
+  GetValidatorResDto,
+  getValidatorCountsRes,
   getValidatorResponse,
 } from './dto/get-validator-res.dto';
 import {
@@ -32,23 +33,23 @@ import {
 } from 'src/modules/node-api/types';
 import { ValidatorStatus } from './types';
 import {
-  getStakersResponse,
-  GetStakersResponseDto,
-  getStakesResponse,
-  GetStakesResponseDto,
+  getStakersRes,
+  GetStakersResDto,
+  getStakesRes,
+  GetStakesResDto,
 } from './dto/get-stakes-res.dto';
 import { StakesQueryDto } from './dto/get-stakes.dto';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { GetClaimableRewardsDto } from './dto/get-claimable-rewards.dto';
 import {
-  getClaimableRewardsResponse,
-  GetClaimableRewardsResponseDto,
+  getClaimableRewardsRes,
+  GetClaimableRewardsResDto,
 } from './dto/get-claimable-rewards-res.dto';
-import { getUnlocksResponse, GetUnlocksResponseDto } from './dto/get-unlocks-res.dto';
+import { getUnlocksRes, GetUnlocksResDto } from './dto/get-unlocks-res.dto';
 import { GetUnlocksDto } from './dto/get-unlocks.dto';
 import { GetLockedRewardsDto } from './dto/get-locked-rewards.dto';
-import { GetLockedRewardsResDto } from './dto/get-locked-rewards-res.dto';
-import { getPosConstantsResponse } from './dto/get-pos-constants-res.dto';
+import { getLockedRewardsRes, GetLockedRewardsResDto } from './dto/get-locked-rewards-res.dto';
+import { getPosConstantsRes } from './dto/get-pos-constants-res.dto';
 
 @ApiTags('Pos')
 @Controller('pos')
@@ -61,9 +62,7 @@ export class PosController {
   @Get('validators')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getValidatorResponse)
-  async getValidator(
-    @Query() query: ValidatorQueryDto,
-  ): Promise<GatewayResponse<GetValidatorResponseDto[]>> {
+  async getValidator(@Query() query: ValidatorQueryDto): Promise<GetValidatorResDto> {
     const { address, publicKey, name, status, limit, offset, sort } = query;
     const [field, direction] = sort.split(':');
     const take = Math.min(limit, MAX_VALIDATORS_TO_FETCH);
@@ -107,7 +106,7 @@ export class PosController {
   }
 
   @Get('validators/status-count')
-  @ApiResponse(getValidatorCountsResponse)
+  @ApiResponse(getValidatorCountsRes)
   async countValidatorsByStatus(): Promise<GatewayResponse<{ [key: string]: number }>> {
     const statuses = Object.values(ValidatorStatus);
     const counts = await Promise.all(
@@ -125,10 +124,10 @@ export class PosController {
 
   @Get('rewards/claimable')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getClaimableRewardsResponse)
+  @ApiResponse(getClaimableRewardsRes)
   async getClaimableRewards(
     @Query() query: GetClaimableRewardsDto,
-  ): Promise<GatewayResponse<GetClaimableRewardsResponseDto>> {
+  ): Promise<GetClaimableRewardsResDto> {
     const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
@@ -142,15 +141,13 @@ export class PosController {
     if (ControllerHelpers.isNodeApiError(claimableRewards))
       throw new HttpException(claimableRewards.error, HttpStatus.NOT_FOUND);
 
-    return new GatewayResponse(claimableRewards, { account });
+    return new GatewayResponse(claimableRewards.rewards, { account });
   }
 
   @Get('rewards/locked')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getClaimableRewardsResponse)
-  async getLockedRewards(
-    @Query() query: GetLockedRewardsDto,
-  ): Promise<GatewayResponse<GetLockedRewardsResDto[]>> {
+  @ApiResponse(getLockedRewardsRes)
+  async getLockedRewards(@Query() query: GetLockedRewardsDto): Promise<GetLockedRewardsResDto> {
     const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
@@ -172,8 +169,8 @@ export class PosController {
 
   @Get('unlocks')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getUnlocksResponse)
-  async getUnlocks(@Query() query: GetUnlocksDto): Promise<GatewayResponse<GetUnlocksResponseDto>> {
+  @ApiResponse(getUnlocksRes)
+  async getUnlocks(@Query() query: GetUnlocksDto): Promise<GetUnlocksResDto> {
     const account = await this.findAccount(this.prisma, query);
     if (!account) throw new BadRequestException('Account not found');
 
@@ -197,18 +194,16 @@ export class PosController {
 
   @Get('stakes')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getStakesResponse)
-  async getStakes(@Query() query: StakesQueryDto): Promise<GatewayResponse<GetStakesResponseDto>> {
+  @ApiResponse(getStakesRes)
+  async getStakes(@Query() query: StakesQueryDto): Promise<GetStakesResDto> {
     const { account, response } = await this.getAccountAndStakes(query, 'staker');
     return new GatewayResponse({ stakes: response }, { staker: account });
   }
 
   @Get('stakers')
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
-  @ApiResponse(getStakersResponse)
-  async getStakers(
-    @Query() query: StakesQueryDto,
-  ): Promise<GatewayResponse<GetStakersResponseDto>> {
+  @ApiResponse(getStakersRes)
+  async getStakers(@Query() query: StakesQueryDto): Promise<GetStakersResDto> {
     const { account, response } = await this.getAccountAndStakes(query, 'validatorAddress');
     return new GatewayResponse({ stakers: response }, { validator: account });
   }
@@ -274,9 +269,9 @@ export class PosController {
   private getValidatorResponse(
     validator: Prisma.ValidatorGetPayload<{ include: { account: true } }>,
     list: Generator[],
-  ): GetValidatorResponseDto {
+  ): GetValidatorData {
     const { account, ...rest } = validator;
-    const newValidator: GetValidatorResponseDto = {
+    const newValidator: GetValidatorData = {
       ...rest,
       account: {
         address: account.address,
@@ -320,7 +315,7 @@ export class PosController {
   }
 
   private applyNextAllocatedTimeSort(
-    response: GetValidatorResponseDto[],
+    response: GetValidatorData[],
     sort: string,
     take: number,
     offset: number,
@@ -345,7 +340,7 @@ export class PosController {
   }
 
   @Get('constants')
-  @ApiResponse(getPosConstantsResponse)
+  @ApiResponse(getPosConstantsRes)
   async getPosConstants(): Promise<GatewayResponse<any>> {
     const posConstants = await this.prisma.posConstants.findFirst({});
     delete posConstants.id;
