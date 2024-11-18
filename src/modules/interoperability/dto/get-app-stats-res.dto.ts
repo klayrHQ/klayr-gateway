@@ -1,6 +1,6 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetAppsStatsResDto {
+export class GetAppsStatsData {
   registered: number;
   activated: number;
   terminated: number;
@@ -9,7 +9,14 @@ export class GetAppsStatsResDto {
   currentAnnualInflationRate: string;
 }
 
-export const getAppsStatsResponse: ApiResponseOptions = {
+export class GetAppsStatsMeta {}
+
+export class GetAppsStatsResDto {
+  data: GetAppsStatsData;
+  meta: GetAppsStatsMeta;
+}
+
+export const getAppsStatsRes: ApiResponseOptions = {
   status: 200,
   description: 'Blockchain applications statistics have been successfully retrieved.',
   type: GetAppsStatsResDto,
