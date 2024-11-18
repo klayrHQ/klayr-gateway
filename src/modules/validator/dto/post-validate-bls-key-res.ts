@@ -1,7 +1,14 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class PostValidateBlsKeyResDto {
+export class PostValidateBlsKeyData {
   isValid: boolean;
+}
+
+export class PostValidateBlsKeyMeta {}
+
+export class PostValidateBlsKeyResDto {
+  data: PostValidateBlsKeyData;
+  meta: PostValidateBlsKeyMeta;
 }
 
 export const postValidateBlsKeyRes: ApiResponseOptions = {
