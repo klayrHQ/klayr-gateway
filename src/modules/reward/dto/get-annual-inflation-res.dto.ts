@@ -1,8 +1,15 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetAnnualInflationResDto {
+export class GetAnnualInflationData {
   tokenID: string;
   rate: string;
+}
+
+export class GetAnnualInflationMeta {}
+
+export class GetAnnualInflationResDto {
+  data: GetAnnualInflationData;
+  meta: GetAnnualInflationMeta;
 }
 
 export const getAnnualInflationRes: ApiResponseOptions = {
