@@ -1,6 +1,6 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export class GetAccountsResDto {
+export class GetAccountsData {
   address: string;
   publicKey: string;
   name: string;
@@ -10,9 +10,19 @@ export class GetAccountsResDto {
   lockedBalance: string;
 }
 
-export const getAccountsResponse: ApiResponseOptions = {
+export class GetAccountMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetAccountsResDto {
+  data: GetAccountsData[];
+  meta: GetAccountMeta;
+}
+
+export const getAccountsRes: ApiResponseOptions = {
   status: 200,
   description: 'The accounts have been successfully fetched.',
   type: GetAccountsResDto,
-  isArray: true,
 };
