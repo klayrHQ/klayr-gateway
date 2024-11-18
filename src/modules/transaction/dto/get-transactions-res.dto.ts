@@ -15,7 +15,7 @@ class Block {
   isFinal: boolean;
 }
 
-export class GetTransactionsResDto {
+export class GetTransactionsData {
   id: string;
   module: string;
   command: string;
@@ -30,6 +30,17 @@ export class GetTransactionsResDto {
   recipient?: Account;
   receivingChainID?: string;
   block: Block;
+}
+
+export class GetTransactionsMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
+
+export class GetTransactionsResDto {
+  data: GetTransactionsData[];
+  meta: GetTransactionsMeta;
 }
 
 export const getTransactionsResponse: ApiResponseOptions = {
