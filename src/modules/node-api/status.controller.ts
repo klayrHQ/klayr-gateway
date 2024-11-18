@@ -3,7 +3,11 @@ import { NodeApiService } from './node-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GatewayResponse } from 'src/utils/controller-helpers';
-import { GetIndexStatusResDto, getIndexStatusResponse } from './dto/get-index-status-res.dto';
+import {
+  GetIndexStatusData,
+  GetIndexStatusResDto,
+  getIndexStatusResponse,
+} from './dto/get-index-status-res.dto';
 
 @ApiTags('Index Status')
 @Controller()
@@ -15,7 +19,7 @@ export class StatusController {
 
   @Get('index/status')
   @ApiResponse(getIndexStatusResponse)
-  async getIndexStatus(): Promise<GatewayResponse<GetIndexStatusResDto>> {
+  async getIndexStatus(): Promise<GetIndexStatusResDto> {
     const nextBlockToSync = await this.prisma.nextBlockToSync.findFirst();
     const nodeInfo = this.nodeApi.nodeInfo;
 
@@ -29,7 +33,7 @@ export class StatusController {
     const percentageIndexed = (numBlocksIndexed / chainLength) * 100;
     const isIndexingInProgress = nodeInfo.height - nextBlockToSync.height > 10;
 
-    const indexStatus: GetIndexStatusResDto = {
+    const indexStatus: GetIndexStatusData = {
       genesisHeight: nodeInfo.genesisHeight,
       lastBlockHeight: nodeInfo.height,
       lastIndexedBlockHeight,
