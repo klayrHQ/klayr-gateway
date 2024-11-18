@@ -12,7 +12,7 @@ export class FeesController {
 
   @Get()
   @ApiResponse(getFeesResponse)
-  async getFees(): Promise<GatewayResponse<GetFeesResDto>> {
+  async getFees(): Promise<GetFeesResDto> {
     const [feeTokenID, fees] = await Promise.all([
       this.nodeApi.invokeApi<FeeTokenID>(NodeApi.FEE_GET_FEE_TOKEN_ID, {}),
       this.nodeApi.invokeApi<MinFeePerByte>(NodeApi.FEE_GET_MIN_FEE_PER_BYTE, {}),

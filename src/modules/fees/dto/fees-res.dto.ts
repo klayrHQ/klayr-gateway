@@ -6,10 +6,17 @@ class FeeEstimatePerByte {
   high: number;
 }
 
-export class GetFeesResDto {
+export class GetFeesData {
   feeEstimatePerByte: FeeEstimatePerByte;
   feeTokenID: string;
   minFeePerByte: number;
+}
+
+export class GetFeesMeta {}
+
+export class GetFeesResDto {
+  data: GetFeesData;
+  meta: GetFeesMeta;
 }
 
 export const getFeesResponse: ApiResponseOptions = {
