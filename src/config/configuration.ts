@@ -17,6 +17,7 @@ enum KlayrEnv {
 enum NodeEnv {
   Development = 'dev',
   Production = 'prod',
+  Test = 'test',
 }
 
 class EnvironmentVariables {
