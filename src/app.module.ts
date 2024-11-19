@@ -34,7 +34,7 @@ import { validate } from './config/configuration';
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    ConfigModule.forRoot({ validate }),
+    ConfigModule.forRoot({ validate: process.env.NODE_ENV === 'test' ? undefined : validate }),
     LokiLoggerModule.forRootAsync({
       useFactory: () => ({
         lokiUrl: process.env.LOKI_URL,

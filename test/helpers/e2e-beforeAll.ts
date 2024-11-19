@@ -19,10 +19,11 @@ export async function setupE2ETests() {
 
   const connectionUri = postgresContainer.getConnectionUri();
   process.env.DATABASE_URL = connectionUri;
+  process.env.NODE_ENV = 'dev';
   process.env.INDEX_KNOWN_ACCOUNTS = 'false';
   process.env.NODE_URL = 'http://localhost:8545';
   process.env.APP_REGISTRY_BRANCH = 'main';
-  process.env.KLAYR_ENV = 'testnet';
+  process.env.KLAYR_ENV = 'mainnet';
 
   const postgresClient = new Client({ connectionString: connectionUri });
   await postgresClient.connect();
