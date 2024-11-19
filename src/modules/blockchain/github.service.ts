@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import fetch from 'node-fetch';
-import { GITHUB_BASE_URL } from 'src/utils/constants';
+import { GITHUB_BASE_URL } from 'src/config/constants';
 
 @Injectable()
 export class GithubService {

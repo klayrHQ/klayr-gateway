@@ -4,7 +4,7 @@ import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { LokiLogger } from 'nestjs-loki-logger';
 import { Validator as PrismaValidator } from '@prisma/client';
 import { ValidatorStatus } from '../types';
-import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/utils/constants';
+import { ACTIVE_VALIDATORS, MINIMUM_VALIDATOR_WEIGHT } from 'src/config/constants';
 import { getAddressFromKlayr32Address } from 'src/utils/helpers';
 import { PunishmentPeriod } from 'src/modules/node-api/types';
 

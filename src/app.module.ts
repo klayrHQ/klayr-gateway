@@ -28,12 +28,13 @@ import { LokiExceptionFilter } from './filters/all-exceptions.filter';
 import { BlockchainModule } from './modules/blockchain/blockchain.module';
 import { FeesModule } from './modules/fees/fees.module';
 import { InteroperabilityModule } from './modules/interoperability/interoperability.module';
+import { validate } from './config/configuration';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ validate }),
     LokiLoggerModule.forRootAsync({
       useFactory: () => ({
         lokiUrl: process.env.LOKI_URL,

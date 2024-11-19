@@ -3,7 +3,7 @@ import {
   BLOCKS_TO_CACHE_TOKEN_SUMMARY,
   CACHED_MODELS_ID,
   CONNECTION_TIMEOUT,
-} from 'src/utils/constants';
+} from 'src/config/constants';
 import {
   EscrowedAmounts,
   GeneratorList,

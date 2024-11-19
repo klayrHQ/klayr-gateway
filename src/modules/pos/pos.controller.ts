@@ -21,7 +21,7 @@ import {
   ValidatorSortTypes,
 } from 'src/utils/controller-helpers';
 import { ValidatorQueryDto } from './dto/get-validator.dto';
-import { MAX_STAKES_TO_FETCH, MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
+import { MAX_STAKES_TO_FETCH, MAX_VALIDATORS_TO_FETCH } from 'src/config/constants';
 import { Prisma } from '@prisma/client';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import {

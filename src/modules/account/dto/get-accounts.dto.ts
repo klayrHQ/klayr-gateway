@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { DEFAULT_ACCOUNTS_TO_FETCH } from 'src/utils/constants';
+import { DEFAULT_ACCOUNTS_TO_FETCH } from 'src/config/constants';
 import { AccountSortTypes } from 'src/utils/controller-helpers';
 
 export class GetAccountsDto {

@@ -1,5 +1,5 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { MAX_ASSETS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/utils/constants';
+import { MAX_ASSETS_TO_FETCH, MAX_BLOCKS_TO_FETCH } from 'src/config/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetBlockData, GetBlockResDto, getBlocksResponse } from './dto/get-blocks-res.dto';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
