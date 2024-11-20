@@ -30,6 +30,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.nextBlockToSync.deleteMany({});
     await this.stake.deleteMany({});
     await this.validator.deleteMany({});
+    await this.tokenBalance.deleteMany({});
     await this.account.deleteMany({});
     await this.cachedSchemas.deleteMany({});
     await this.serviceURL.deleteMany({});

@@ -1,13 +1,17 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
+class TokenBalance {
+  availableBalance: string;
+  lockedBalance: string;
+  totalBalance: string;
+}
 export class GetAccountsData {
   address: string;
   publicKey: string;
   name: string;
   nonce: string;
-  totalBalance: string;
-  availableBalance: string;
-  lockedBalance: string;
+  description?: string;
+  tokenBalances: Record<string, TokenBalance[]>;
 }
 
 export class GetAccountMeta {
