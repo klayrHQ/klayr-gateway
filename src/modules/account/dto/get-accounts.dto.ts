@@ -26,16 +26,6 @@ export class GetAccountsDto {
   publicKey?: string;
 
   /**
-   * Sort accounts.
-   */
-  @IsString()
-  @IsEnum(AccountSortTypes, {
-    message:
-      'sort must be one of the following values: ' + Object.values(AccountSortTypes).join(', '),
-  })
-  sort?: AccountSortTypes = AccountSortTypes.TOTAL_BALANCE_DESC;
-
-  /**
    * Limit the number of accounts fetched.
    */
   @IsNumber()
