@@ -83,6 +83,11 @@ export enum AccountSortTypes {
   TOTAL_BALANCE_DESC = 'totalBalance:desc',
 }
 
+export enum TopBalanceSortTypes {
+  TOTAL_BALANCE_ASC = 'totalBalance:asc',
+  TOTAL_BALANCE_DESC = 'totalBalance:desc',
+}
+
 export enum AvailableIdsSortTypes {
   TOKEN_ID_ASC = 'tokenID:asc',
   TOKEN_ID_DESC = 'tokenID:desc',
