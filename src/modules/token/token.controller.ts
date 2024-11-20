@@ -32,6 +32,7 @@ import {
   getTokenTopBalanceRes,
   GetTokenTopBalanceResDto,
 } from './dto/get-token-top-balances-res.dto';
+import { MAX_TOP_BALANCES_TO_FETCH } from 'src/config/constants';
 
 @ApiTags('Token')
 @Controller('token')
@@ -117,7 +118,7 @@ export class TokenController {
   async getTopBalances(@Query() query: GetTokenTopBalanceDto): Promise<GetTokenTopBalanceResDto> {
     const { tokenID, sort, limit, offset } = query;
     const [field, direction] = sort.split(':');
-    const take = Math.min(limit, 101); // TODO: constant
+    const take = Math.min(limit, MAX_TOP_BALANCES_TO_FETCH);
 
     const where: Prisma.TokenBalanceWhereInput = {
       ...(tokenID && { tokenID }),

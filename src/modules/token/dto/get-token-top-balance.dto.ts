@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { DEFAULT_TOP_BALANCES_TO_FETCH } from 'src/config/constants';
 import { TopBalanceSortTypes } from 'src/utils/controller-helpers';
 
 export class GetTokenTopBalanceDto {
@@ -15,7 +16,7 @@ export class GetTokenTopBalanceDto {
    */
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
-  limit?: number = 10; // TODO constant
+  limit?: number = DEFAULT_TOP_BALANCES_TO_FETCH;
 
   /**
    * Offset to apply to the query results.
