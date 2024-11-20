@@ -14,10 +14,14 @@ import {
   getAnnualInflationRes,
   GetAnnualInflationResDto,
 } from './dto/get-annual-inflation-res.dto';
-import { AnnualInflation, DefaultReward } from '../node-api/types';
+import { AnnualInflation, DefaultReward, FeeTokenID } from '../node-api/types';
 import { GetAnnualInflationDto } from './dto/get-annual-inflation.dto';
 import { getDefaultRewardRes, GetDefaultRewardResDto } from './dto/get-default-reward-res.dto';
 import { GetDefaultRewardDto } from './dto/get-default-reward.dto';
+import {
+  getRewardConstantsRes,
+  GetRewardConstantsResDto,
+} from './dto/get-reward-constants-res.dto';
 
 @ApiTags('Reward')
 @Controller('reward')
@@ -62,5 +66,16 @@ export class RewardController {
       throw new HttpException(defaultReward.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse(defaultReward, {});
+  }
+
+  @Get('constants')
+  @ApiResponse(getRewardConstantsRes)
+  async getRewardConstants(): Promise<GetRewardConstantsResDto> {
+    const result = await this.nodeApi.invokeApi<FeeTokenID>(NodeApi.REWARD_GET_REWARD_TOKEN_ID, {});
+
+    if (ControllerHelpers.isNodeApiError(result))
+      throw new HttpException(result.error, HttpStatus.NOT_FOUND);
+
+    return new GatewayResponse({ rewardTokenID: result.tokenID }, {});
   }
 }

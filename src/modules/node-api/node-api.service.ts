@@ -34,6 +34,7 @@ export enum NodeApi {
   CHAIN_GET_GENERATOR_LIST = 'chain_getGeneratorList',
   REWARD_GET_DEFAULT_REWARD_AT_HEIGHT = 'dynamicReward_getDefaultRewardAtHeight',
   REWARD_GET_EXPECTED_VALIDATOR_REWARDS = 'dynamicReward_getExpectedValidatorRewards',
+  REWARD_GET_REWARD_TOKEN_ID = 'dynamicReward_getRewardTokenID',
   REWARD_GET_ANNUAL_INFLATION = 'dynamicReward_getAnnualInflation',
   TXPOOL_DRY_RUN_TX = 'txpool_dryRunTransaction',
   TXPOOL_POST_TX = 'txpool_postTransaction',
