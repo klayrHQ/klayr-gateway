@@ -3,7 +3,7 @@ import {
   KEY_NEXT_BLOCK_TO_SYNC,
   NUMBER_OF_BLOCKS_TO_SYNC_AT_ONCE,
   RETRY_TIMEOUT,
-} from 'src/utils/constants';
+} from 'src/config/constants';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
 import { Block, NewBlockEvent } from 'src/modules/node-api/types';
 import { waitTimeout } from 'src/utils/helpers';

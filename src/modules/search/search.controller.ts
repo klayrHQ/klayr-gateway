@@ -8,7 +8,7 @@ import {
   KLAYR_ADDRESS_LENGTH,
   KLAYR_TRANSACTION_ID_LENGTH,
   SEARCH_LIMIT,
-} from 'src/utils/constants';
+} from 'src/config/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 

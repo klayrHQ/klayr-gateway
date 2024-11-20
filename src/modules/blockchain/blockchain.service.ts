@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { GithubService } from './github.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppJsonContents } from './blockchain.interface';
-import { BLOCKCHAIN_NETWORKS } from 'src/utils/constants';
+import { BLOCKCHAIN_NETWORKS } from 'src/config/constants';
 import { LokiLogger } from 'nestjs-loki-logger';
 
 const APP_JSON_FILE = 'app.json';

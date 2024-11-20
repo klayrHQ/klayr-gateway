@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { DEFAULT_VALIDATORS_TO_FETCH } from 'src/utils/constants';
+import { DEFAULT_VALIDATORS_TO_FETCH } from 'src/config/constants';
 import { ValidatorSortTypes } from 'src/utils/controller-helpers';
 
 export class ValidatorQueryDto {

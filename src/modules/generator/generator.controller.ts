@@ -10,7 +10,7 @@ import { NodeApiService } from 'src/modules/node-api/node-api.service';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import { Prisma } from '@prisma/client';
 import { Generator } from 'src/modules/node-api/types';
-import { MAX_VALIDATORS_TO_FETCH } from 'src/utils/constants';
+import { MAX_VALIDATORS_TO_FETCH } from 'src/config/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @ApiTags('Generators')

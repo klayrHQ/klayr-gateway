@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { DEFAULT_STAKES_TO_FETCH } from 'src/utils/constants';
+import { DEFAULT_STAKES_TO_FETCH } from 'src/config/constants';
 
 export class StakesQueryDto {
   /**

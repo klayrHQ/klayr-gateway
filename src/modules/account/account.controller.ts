@@ -5,7 +5,7 @@ import { getAccountsRes, GetAccountsResDto } from './dto/get-accounts-res.dto';
 import { GatewayResponse } from 'src/utils/controller-helpers';
 import { GetAccountsDto } from './dto/get-accounts.dto';
 import { Prisma } from '@prisma/client';
-import { MAX_ACCOUNTS_TO_FETCH } from 'src/utils/constants';
+import { MAX_ACCOUNTS_TO_FETCH } from 'src/config/constants';
 
 @ApiTags('Account')
 @Controller('account')

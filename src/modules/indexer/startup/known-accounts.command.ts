@@ -1,5 +1,5 @@
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
-import { KNOWN_ACCOUNTS_MAINNET_URL, KNOWN_ACCOUNTS_TESTNET_URL } from 'src/utils/constants';
+import { KNOWN_ACCOUNTS_MAINNET_URL, KNOWN_ACCOUNTS_TESTNET_URL } from 'src/config/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { KnownAccounts } from 'src/modules/indexer/interfaces/known-accounts.interface';
 import { LokiLogger } from 'nestjs-loki-logger';

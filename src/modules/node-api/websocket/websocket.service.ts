@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { CONNECTION_TIMEOUT, RESPONSE_TIMEOUT } from 'src/utils/constants';
+import { CONNECTION_TIMEOUT, RESPONSE_TIMEOUT } from 'src/config/constants';
 import { WebSocket } from 'ws';
 import { Defer, JSONRPCMessage } from './websocket.interface';
 import {
