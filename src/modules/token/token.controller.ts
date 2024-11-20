@@ -26,6 +26,12 @@ import { GetTokenBalanceDto } from './dto/get-token-balance.dto';
 import { GetTokenAvailableIdsDto } from './dto/get-token-available-ids.dto';
 import { GetTokenAvailableIdsResDto } from './dto/get-token-available-ids-res.dto';
 import { getTokenConstantsResponse } from './dto/get-token-constants-res.dto';
+import { GetTokenTopBalanceDto } from './dto/get-token-top-balance.dto';
+import { Prisma } from '@prisma/client';
+import {
+  getTokenTopBalanceRes,
+  GetTokenTopBalanceResDto,
+} from './dto/get-token-top-balances-res.dto';
 
 @ApiTags('Token')
 @Controller('token')
@@ -103,6 +109,57 @@ export class TokenController {
       throw new HttpException(tokenBalances.error, HttpStatus.NOT_FOUND);
 
     return new GatewayResponse(tokenBalances.balances, {});
+  }
+
+  @Get('balances/top')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+  @ApiResponse(getTokenTopBalanceRes)
+  async getTopBalances(@Query() query: GetTokenTopBalanceDto): Promise<GetTokenTopBalanceResDto> {
+    const { tokenID, sort, limit, offset } = query;
+    const [field, direction] = sort.split(':');
+    const take = Math.min(limit, 101); // TODO: constant
+
+    const where: Prisma.TokenBalanceWhereInput = {
+      ...(tokenID && { tokenID }),
+    };
+
+    const tokenBalances = await this.prisma.tokenBalance.findMany({
+      where,
+      take,
+      orderBy: {
+        [field]: direction,
+      },
+      include: {
+        account: {
+          select: {
+            address: true,
+            publicKey: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+      skip: offset,
+    });
+
+    const total = await this.prisma.tokenBalance.count({ where });
+
+    const response = {
+      [tokenID]: tokenBalances.map((balance) => {
+        const { address, publicKey, name, description } = balance.account;
+        return {
+          address,
+          publicKey,
+          ...(name && { name }),
+          ...(description && { description }),
+          totalBalance: balance.totalBalance.toString(),
+          availableBalance: balance.availableBalance.toString(),
+          lockedBalance: balance.lockedBalance.toString(),
+        };
+      }),
+    };
+
+    return new GatewayResponse(response, { count: tokenBalances.length, offset, total });
   }
 
   @Get('available-ids')
