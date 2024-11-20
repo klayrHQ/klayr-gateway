@@ -59,6 +59,7 @@ export enum NodeApi {
   AUTH_GET_AUTH_ACCOUNT = 'auth_getAuthAccount',
 
   NETWORK_GET_CONNECTED_PEERS = 'network_getConnectedPeers',
+  NETWORK_GET_STATS = 'network_getStats',
 
   NFT_GET_NFTS = 'nft_getNFTs',
 
