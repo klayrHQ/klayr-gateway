@@ -39,6 +39,7 @@ export class BlockchainService implements OnModuleInit {
   }
 
   private async processNetwork(network: string, branch: string) {
+    if (network !== process.env.KLAYR_ENV) return;
     const response = await this.githubService.getRepoContents(network, branch);
 
     for (const item of response) {
@@ -115,15 +116,15 @@ export class BlockchainService implements OnModuleInit {
     };
 
     await this.prisma.$transaction(async (prisma) => {
-      await prisma.app.create({
-        data: appData,
-      });
       await prisma.blockchainApp.create({
         data: {
           chainID,
           chainName,
           address: '',
         },
+      });
+      await prisma.app.create({
+        data: appData,
       });
     });
   }
