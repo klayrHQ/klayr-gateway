@@ -373,6 +373,9 @@ ALTER TABLE "Asset" ADD CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") RE
 ALTER TABLE "Block" ADD CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "BlockchainApp" ADD CONSTRAINT "BlockchainApp_chainID_fkey" FOREIGN KEY ("chainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Escrow" ADD CONSTRAINT "Escrow_blockchainAppId_fkey" FOREIGN KEY ("blockchainAppId") REFERENCES "BlockchainApp"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey

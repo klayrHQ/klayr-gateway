@@ -23,7 +23,6 @@ export class UpdateAccountHandler implements ICommandHandler<UpdateAccountComman
 
   async execute(command: UpdateAccountCommand): Promise<void> {
     const { address, tokenID } = command;
-    console.log({ address });
 
     const accountInfo = await this.nodeApi.invokeApi<TokenBalance>(NodeApi.TOKEN_GET_BALANCE, {
       address,

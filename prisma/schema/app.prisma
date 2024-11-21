@@ -1,12 +1,12 @@
 model App {
-  chainID         String       @id @unique
+  chainID         String         @id @unique
   chainName       String
   displayName     String?
   title           String
-  status          String       @default("activated") // TODO: dont know the flow of this field
+  status          String         @default("activated") // TODO: dont know the flow of this field
   description     String
   networkType     String
-  isDefault       Boolean      @default(false) // TODO: dont know the flow of this field
+  isDefault       Boolean        @default(false) // TODO: dont know the flow of this field
   genesisURL      String
   projectPage     String
   serviceURLs     ServiceURL[]
@@ -15,6 +15,7 @@ model App {
   explorers       Explorer[]
   appNodes        AppNode[]
   tokens          Token[]
+  blockchainApp   BlockchainApp?
 }
 
 model ServiceURL {
