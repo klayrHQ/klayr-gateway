@@ -114,8 +114,17 @@ export class BlockchainService implements OnModuleInit {
       },
     };
 
-    await this.prisma.app.create({
-      data: appData,
+    await this.prisma.$transaction(async (prisma) => {
+      await prisma.app.create({
+        data: appData,
+      });
+      await prisma.blockchainApp.create({
+        data: {
+          chainID,
+          chainName,
+          address: '',
+        },
+      });
     });
   }
 
