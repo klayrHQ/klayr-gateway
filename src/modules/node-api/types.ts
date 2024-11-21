@@ -338,3 +338,28 @@ export type PosConstants = {
   weightScaleFactor: string;
   defaultCommission: number;
 };
+
+export type NetworkStats = {
+  startTime: number;
+  incoming: {
+    count: number;
+    connects: number;
+    disconnects: number;
+  };
+  outgoing: {
+    count: number;
+    connects: number;
+    disconnects: number;
+  };
+  banning: {
+    bannedPeers: Record<string, unknown>;
+    count: number;
+  };
+  totalConnectedPeers: number;
+  totalDisconnectedPeers: number;
+  totalErrors: number;
+  totalPeersDiscovered: number;
+  totalRemovedPeers: number;
+  totalMessagesReceived: Record<string, number>;
+  totalRequestsReceived: Record<string, number>;
+};

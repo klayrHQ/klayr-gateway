@@ -26,10 +26,17 @@ class AppNode {
   appChainID: string;
 }
 
+class App {
+  escrowedKLY: string;
+  address: string;
+  lastUpdated: number;
+}
+
 export class GetAppsMetaData {
   chainID: string;
   chainName: string;
   displayName?: string;
+  blockchainApp: App;
   title: string;
   status: string;
   description: string;

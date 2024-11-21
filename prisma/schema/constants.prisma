@@ -5,31 +5,31 @@ model TokenConstants {
 }
 
 model PosConstants {
-  id                             Int    @id @unique
-  factorSelfStakes               Int
-  maxLengthName                  Int
-  maxNumberSentStakes            Int
-  maxNumberPendingUnlocks        Int
-  failSafeMissedBlocks           Int
-  failSafeInactiveWindow         Int
-  punishmentWindowStaking        Int
-  punishmentWindowSelfStaking    Int
-  roundLength                    Int
-  minWeightStandby               String
-  numberActiveValidators         Int
-  numberStandbyValidators        Int
-  posTokenID                     String
-  validatorRegistrationFee       String
-  maxBFTWeightCap                Int
-  commissionIncreasePeriod       Int
-  maxCommissionIncreaseRate      Int
-  useInvalidBLSKey               Boolean
-  baseStakeAmount                String
-  lockingPeriodStaking           Int
-  lockingPeriodSelfStaking       Int
-  reportMisbehaviorReward        String
-  reportMisbehaviorLimitBanned   Int
-  weightScaleFactor              String
-  defaultCommission              Int
-  extraCommandFees               Json
+  id                           Int     @id @unique
+  factorSelfStakes             Int
+  maxLengthName                Int
+  maxNumberSentStakes          Int
+  maxNumberPendingUnlocks      Int
+  failSafeMissedBlocks         Int
+  failSafeInactiveWindow       Int
+  punishmentWindowStaking      Int
+  punishmentWindowSelfStaking  Int
+  roundLength                  Int
+  minWeightStandby             String
+  numberActiveValidators       Int
+  numberStandbyValidators      Int
+  posTokenID                   String
+  validatorRegistrationFee     String
+  maxBFTWeightCap              Int
+  commissionIncreasePeriod     Int
+  maxCommissionIncreaseRate    Int
+  useInvalidBLSKey             Boolean
+  baseStakeAmount              String
+  lockingPeriodStaking         Int
+  lockingPeriodSelfStaking     Int
+  reportMisbehaviorReward      String
+  reportMisbehaviorLimitBanned Int
+  weightScaleFactor            String
+  defaultCommission            Int
+  extraCommandFees             Json
 }

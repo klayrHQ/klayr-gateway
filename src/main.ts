@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { GLOBAL_PREFIX, SWAGGERCONFIG } from './utils/constants';
+import { GLOBAL_PREFIX, SWAGGERCONFIG } from './config/constants';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 
 async function setupSwagger(app: INestApplication) {

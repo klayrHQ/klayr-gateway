@@ -5,11 +5,20 @@ CREATE TABLE "Account" (
     "publicKey" TEXT,
     "name" TEXT,
     "description" TEXT,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
+);
+
+-- CreateTable
+CREATE TABLE "TokenBalance" (
+    "id" SERIAL NOT NULL,
+    "tokenID" TEXT NOT NULL,
     "totalBalance" BIGINT NOT NULL DEFAULT 0,
     "availableBalance" BIGINT NOT NULL DEFAULT 0,
     "lockedBalance" BIGINT NOT NULL DEFAULT 0,
+    "accountAddress" TEXT NOT NULL,
 
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("address")
+    CONSTRAINT "TokenBalance_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -307,6 +316,9 @@ CREATE UNIQUE INDEX "Account_address_key" ON "Account"("address");
 CREATE UNIQUE INDEX "Account_publicKey_key" ON "Account"("publicKey");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "TokenBalance_accountAddress_tokenID_key" ON "TokenBalance"("accountAddress", "tokenID");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "App_chainID_key" ON "App"("chainID");
 
 -- CreateIndex
@@ -340,6 +352,9 @@ CREATE UNIQUE INDEX "Token_tokenID_key" ON "Token"("tokenID");
 CREATE UNIQUE INDEX "TokenLogo_tokenID_key" ON "TokenLogo"("tokenID");
 
 -- AddForeignKey
+ALTER TABLE "TokenBalance" ADD CONSTRAINT "TokenBalance_accountAddress_fkey" FOREIGN KEY ("accountAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ServiceURL" ADD CONSTRAINT "ServiceURL_appChainID_fkey" FOREIGN KEY ("appChainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -356,6 +371,9 @@ ALTER TABLE "Asset" ADD CONSTRAINT "Asset_height_fkey" FOREIGN KEY ("height") RE
 
 -- AddForeignKey
 ALTER TABLE "Block" ADD CONSTRAINT "Block_generatorAddress_fkey" FOREIGN KEY ("generatorAddress") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BlockchainApp" ADD CONSTRAINT "BlockchainApp_chainID_fkey" FOREIGN KEY ("chainID") REFERENCES "App"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Escrow" ADD CONSTRAINT "Escrow_blockchainAppId_fkey" FOREIGN KEY ("blockchainAppId") REFERENCES "BlockchainApp"("chainID") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,15 +1,25 @@
 model Account {
-  address              String        @id @unique
-  nonce                String        @default("0")
-  publicKey            String?       @unique
+  address              String         @id @unique
+  nonce                String         @default("0")
+  publicKey            String?        @unique
   name                 String?
   description          String?
-  totalBalance         BigInt        @default(0)
-  availableBalance     BigInt        @default(0)
-  lockedBalance        BigInt        @default(0)
   validator            Validator?
+  tokenBalances        TokenBalance[]
   block                Block[]
   stakes               Stake[]
-  transactionSender    Transaction[] @relation("sender")
-  transactionRecipient Transaction[] @relation("recipient")
+  transactionSender    Transaction[]  @relation("sender")
+  transactionRecipient Transaction[]  @relation("recipient")
+}
+
+model TokenBalance {
+  id               Int     @id @default(autoincrement())
+  tokenID          String
+  totalBalance     BigInt  @default(0)
+  availableBalance BigInt  @default(0)
+  lockedBalance    BigInt  @default(0)
+  accountAddress   String
+  account          Account @relation(fields: [accountAddress], references: [address])
+
+  @@unique([accountAddress, tokenID])
 }

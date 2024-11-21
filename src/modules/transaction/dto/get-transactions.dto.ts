@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { DEFAULT_TX_TO_FETCH } from 'src/utils/constants';
+import { DEFAULT_TX_TO_FETCH } from 'src/config/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
 import { ExecutionStatus } from '../types';
 

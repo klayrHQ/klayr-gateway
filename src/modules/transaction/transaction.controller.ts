@@ -10,7 +10,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { NodeApi, NodeApiService } from 'src/modules/node-api/node-api.service';
-import { MAX_TXS_TO_FETCH } from 'src/utils/constants';
+import { MAX_TXS_TO_FETCH } from 'src/config/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { Prisma } from '@prisma/client';

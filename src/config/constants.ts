@@ -77,6 +77,13 @@ export const DEFAULT_ACCOUNTS_TO_FETCH = 10;
 export const MAX_ACCOUNTS_TO_FETCH = 100;
 
 ////////////////////////////
+///       Tokens         ///
+////////////////////////////
+
+export const DEFAULT_TOP_BALANCES_TO_FETCH = 10;
+export const MAX_TOP_BALANCES_TO_FETCH = 100;
+
+////////////////////////////
 ///       Search         ///
 ////////////////////////////
 

@@ -4,7 +4,7 @@ import { Block, NewBlockEvent, SchemaModule } from 'src/modules/node-api/types';
 import * as fs from 'fs';
 import * as path from 'path';
 import { codec } from '@klayr/codec';
-import { CACHED_MODELS_ID } from 'src/utils/constants';
+import { CACHED_MODELS_ID } from 'src/config/constants';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 @Injectable()

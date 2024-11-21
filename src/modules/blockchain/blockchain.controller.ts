@@ -80,12 +80,24 @@ export class BlockchainController {
               appChainID: true,
             },
           },
+          blockchainApp: {
+            select: {
+              address: true,
+              escrowedKLY: true,
+              lastUpdated: true,
+            },
+          },
         },
       }),
       this.prisma.app.count({ where }),
     ]);
 
-    return new GatewayResponse(apps, { count: apps.length, offset, total });
+    const appsWithBlockchainDetails = apps.map(({ blockchainApp, ...app }) => ({
+      ...app,
+      ...(blockchainApp && { blockchainApp }),
+    }));
+
+    return new GatewayResponse(appsWithBlockchainDetails, { count: apps.length, offset, total });
   }
 
   @Get('apps/meta/tokens')

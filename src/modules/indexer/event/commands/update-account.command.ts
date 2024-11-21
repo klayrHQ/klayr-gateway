@@ -40,9 +40,21 @@ export class UpdateAccountHandler implements ICommandHandler<UpdateAccountComman
     const availableBalance = BigInt(accountInfo.availableBalance);
     const totalBalance = lockedBalance + availableBalance;
 
-    await this.prisma.account.update({
-      where: { address },
-      data: {
+    await this.prisma.tokenBalance.upsert({
+      where: {
+        accountAddress_tokenID: {
+          accountAddress: address,
+          tokenID: tokenID,
+        },
+      },
+      update: {
+        availableBalance: availableBalance,
+        lockedBalance: lockedBalance,
+        totalBalance: totalBalance,
+      },
+      create: {
+        accountAddress: address,
+        tokenID: tokenID,
         availableBalance: availableBalance,
         lockedBalance: lockedBalance,
         totalBalance: totalBalance,

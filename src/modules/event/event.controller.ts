@@ -9,7 +9,7 @@ import {
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { GetEventsDto } from './dto/get-events.dto';
 import { Prisma } from '@prisma/client';
-import { MAX_EVENTS_TO_FETCH } from 'src/utils/constants';
+import { MAX_EVENTS_TO_FETCH } from 'src/config/constants';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransactionEvents } from 'src/modules/transaction/types';
 import { GetEventsData, GetEventsResDto, getEventsRes } from './dto/get-events-res.dto';
