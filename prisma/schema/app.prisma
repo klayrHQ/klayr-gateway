@@ -15,7 +15,7 @@ model App {
   explorers       Explorer[]
   appNodes        AppNode[]
   tokens          Token[]
-  blockchainApp   BlockchainApp?
+  blockchainApp   BlockchainApp? @relation(fields: [chainID], references: [chainID])
 }
 
 model ServiceURL {
