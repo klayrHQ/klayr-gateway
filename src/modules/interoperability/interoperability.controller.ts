@@ -35,7 +35,7 @@ export class InteroperabilityController {
     const where: Prisma.BlockchainAppWhereInput = {
       ...(chainName && { chainName: chainName }),
       ...(chainID && { chainID: { in: chainID.split(',') } }),
-      ...(status && { status: status }),
+      ...(status && { status: { in: status.split(',') } }),
       ...(search && {
         chainName: { contains: search, mode: 'insensitive' },
       }),
