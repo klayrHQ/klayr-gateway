@@ -182,8 +182,13 @@ export class IndexTransactionHandler implements ICommandHandler<IndexTransaction
   }
 
   private async handleRegisterSidechain(txParams: any, sender: string): Promise<void> {
-    await this.prisma.blockchainApp.create({
-      data: {
+    await this.prisma.blockchainApp.upsert({
+      where: { chainID: txParams.chainID },
+      update: {
+        chainName: txParams.name,
+        address: sender,
+      },
+      create: {
         chainID: txParams.chainID,
         chainName: txParams.name,
         address: sender,
