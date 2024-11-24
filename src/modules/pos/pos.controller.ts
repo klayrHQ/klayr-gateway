@@ -196,7 +196,15 @@ export class PosController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getStakesRes)
   async getStakes(@Query() query: StakesQueryDto): Promise<GetStakesResDto> {
-    const { account, response } = await this.getAccountAndStakes(query, 'staker');
+    const { account, stakes } = await this.getAccountAndStakes(query, 'staker');
+
+    const response = stakes.map((stake) => {
+      return {
+        address: stake.validatorAddress,
+        amount: stake.amount.toString(),
+        ...(stake.account.name ? { name: stake.account.name } : {}),
+      };
+    });
     return new GatewayResponse({ stakes: response }, { staker: account });
   }
 
@@ -204,7 +212,15 @@ export class PosController {
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getStakersRes)
   async getStakers(@Query() query: StakesQueryDto): Promise<GetStakersResDto> {
-    const { account, response } = await this.getAccountAndStakes(query, 'validatorAddress');
+    const { account, stakes } = await this.getAccountAndStakes(query, 'validatorAddress');
+
+    const response = stakes.map((stake) => {
+      return {
+        address: stake.staker,
+        amount: stake.amount.toString(),
+        ...(stake.account.name ? { name: stake.account.name } : {}),
+      };
+    });
     return new GatewayResponse({ stakers: response }, { validator: account });
   }
 
@@ -240,15 +256,7 @@ export class PosController {
       include: { account: true },
     });
 
-    const response = stakes.map((stake) => {
-      return {
-        address: stake.staker,
-        amount: stake.amount.toString(),
-        ...(stake.account.name ? { name: stake.account.name } : {}),
-      };
-    });
-
-    return { account, response };
+    return { account, stakes };
   }
 
   private async findAccount(
