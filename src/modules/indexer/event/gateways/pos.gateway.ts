@@ -72,6 +72,7 @@ export class ValidatorStaked extends EventGateway {
       address: senderAddress,
     });
 
+    // TODO: find solution so this is not needed
     for await (const stake of stakes.stakes) {
       await this.commandBus.execute(new ProcessValidatorCommand(stake.validatorAddress));
     }

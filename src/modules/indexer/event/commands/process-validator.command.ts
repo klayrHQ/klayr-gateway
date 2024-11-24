@@ -45,82 +45,57 @@ export class ProcessValidatorHandler implements ICommandHandler<ProcessValidator
   }
 
   private async processValidatorEvent(validatorAddress: string) {
-    const [validatorInfo, expectedRewards, validatorExists] = await Promise.all([
+    const [validatorInfo, expectedRewards] = await Promise.all([
       this.getValidatorPosInfo(validatorAddress),
       this.getExpectedValidatorRewards(validatorAddress),
-      this.prisma.validator.findUnique({
-        where: {
-          address: validatorAddress,
-        },
-      }),
     ]);
 
-    if (!validatorExists) {
-      await this.createValidator(validatorInfo);
-    }
-
-    if (validatorExists) {
-      await this.prisma.validator.update({
-        where: { address: validatorAddress },
-        data: {
-          totalStake: BigInt(validatorInfo.totalStake),
-          selfStake: BigInt(validatorInfo.selfStake),
-          validatorWeight: this.calcValidatorWeight(
-            validatorInfo.totalStake,
-            validatorInfo.selfStake,
-          ),
-          isBanned: validatorInfo.isBanned,
-          lastCommissionIncreaseHeight: validatorInfo.lastCommissionIncreaseHeight,
-          commission: validatorInfo.commission,
-          consecutiveMissedBlocks: validatorInfo.consecutiveMissedBlocks,
-          reportMisbehaviorHeights: JSON.stringify(validatorInfo.reportMisbehaviorHeights),
-          punishmentPeriods: JSON.stringify(validatorInfo.punishmentPeriods),
-          blockReward: BigInt(expectedRewards.blockReward),
-        },
-      });
-    }
+    await this.upsertValidator(validatorInfo, expectedRewards);
   }
 
-  private async createValidator(val: ValidatorInfo) {
-    await this.upsertAccount(val.address, val.name);
+  private async upsertValidator(
+    validatorInfo: ValidatorInfo,
+    expectedRewards: ExpectedValidatorRewards,
+  ) {
+    await this.upsertAccount(validatorInfo.address, validatorInfo.name);
 
-    const keys = await this.getValidatorKeys(val.address);
+    const updateData = {
+      totalStake: BigInt(validatorInfo.totalStake),
+      selfStake: BigInt(validatorInfo.selfStake),
+      validatorWeight: this.calcValidatorWeight(validatorInfo.totalStake, validatorInfo.selfStake),
+      isBanned: validatorInfo.isBanned,
+      lastCommissionIncreaseHeight: validatorInfo.lastCommissionIncreaseHeight,
+      commission: validatorInfo.commission,
+      consecutiveMissedBlocks: validatorInfo.consecutiveMissedBlocks,
+      reportMisbehaviorHeights: JSON.stringify(validatorInfo.reportMisbehaviorHeights),
+      punishmentPeriods: JSON.stringify(validatorInfo.punishmentPeriods),
+      sharingCoefficients: JSON.stringify(validatorInfo.sharingCoefficients),
+      blockReward: BigInt(expectedRewards.blockReward),
+    };
 
-    await this.prisma.validator.create({
-      data: {
-        address: val.address,
-        totalStake: BigInt(val.totalStake),
-        selfStake: BigInt(val.selfStake),
-        validatorWeight: this.calcValidatorWeight(val.totalStake, val.selfStake),
-        lastCommissionIncreaseHeight: val.lastCommissionIncreaseHeight,
-        commission: val.commission,
-        consecutiveMissedBlocks: val.consecutiveMissedBlocks,
-        isBanned: val.isBanned,
-        lastGeneratedHeight: val.lastGeneratedHeight,
-        reportMisbehaviorHeights: JSON.stringify(val.reportMisbehaviorHeights),
-        punishmentPeriods: JSON.stringify(val.punishmentPeriods),
-        sharingCoefficients: JSON.stringify(val.sharingCoefficients),
-        generatorKey: keys.generatorKey,
-        blsKey: keys.blsKey,
-      },
+    const keys = await this.getValidatorKeys(validatorInfo.address);
+
+    const createData = {
+      ...updateData,
+      address: validatorInfo.address,
+      lastGeneratedHeight: validatorInfo.lastGeneratedHeight,
+      generatorKey: keys.generatorKey,
+      blsKey: keys.blsKey,
+    };
+
+    await this.prisma.validator.upsert({
+      where: { address: validatorInfo.address },
+      update: updateData,
+      create: createData,
     });
   }
 
   private async upsertAccount(address: string, name: string) {
-    const account = await this.prisma.account.findUnique({
+    await this.prisma.account.upsert({
       where: { address },
+      update: { name },
+      create: { address, name },
     });
-
-    if (!account) {
-      await this.prisma.account.create({
-        data: { address, name },
-      });
-    } else {
-      await this.prisma.account.update({
-        where: { address },
-        data: { name },
-      });
-    }
   }
 
   private async getValidatorKeys(address: string): Promise<ValidatorKeys> {
