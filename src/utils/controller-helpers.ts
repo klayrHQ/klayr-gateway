@@ -109,3 +109,10 @@ export enum BlockchainAppsMetaListTypes {
   CHAIN_NAME_ASC = 'chainName:asc',
   CHAIN_NAME_DESC = 'chainName:desc',
 }
+
+export enum NetworkPeersSortTypes {
+  HEIGHT_ASC = 'height:asc',
+  HEIGHT_DESC = 'height:desc',
+  NETWORK_VERSION_ASC = 'networkVersion:asc',
+  NETWORK_VERSION_DESC = 'networkVersion:desc',
+}

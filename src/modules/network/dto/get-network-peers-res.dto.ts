@@ -1,25 +1,29 @@
 import { ApiResponseOptions } from '@nestjs/swagger';
 
-export interface PeerOptions {
-  height: number;
-  maxHeightPrevoted: number;
-  blockVersion: number;
-  lastBlockID: string;
-  legacy: any[];
+class Location {
+  countryCode: string;
+  countryName: string;
+  hostName: string;
+  ip: string;
+  latitude: string;
+  longitude: string;
 }
 
 export class GetNetworkPeersData {
-  chainID: string;
-  networkVersion: string;
-  nonce: string;
-  advertiseAddress: boolean;
-  options: PeerOptions;
-  ipAddress: string;
+  ip: string;
   port: number;
-  peerId: string;
+  networkVersion: string;
+  chainID: string;
+  state: string;
+  height: number;
+  location: Location;
 }
 
-export class GetNetworkPeersMeta {}
+export class GetNetworkPeersMeta {
+  count: number;
+  offset: number;
+  total: number;
+}
 
 export class GetNetworkPeersResDto {
   data: GetNetworkPeersData[];

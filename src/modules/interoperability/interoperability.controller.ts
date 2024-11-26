@@ -17,6 +17,7 @@ import { NodeApi, NodeApiService } from '../node-api/node-api.service';
 import { AnnualInflation } from '../node-api/types';
 import { GetAppsStatsResDto, getAppsStatsRes } from './dto/get-app-stats-res.dto';
 import { APP_STATUS } from './types';
+import { MAX_APPS_TO_FETCH } from 'src/config/constants';
 
 @ApiTags('Interoperability')
 @Controller('blockchain')
@@ -31,6 +32,7 @@ export class InteroperabilityController {
   @ApiResponse(getAppsRes)
   async getAuth(@Query() query: GetAppsDto): Promise<GetAppsResDto> {
     const { chainID, chainName, status, search, limit, offset } = query;
+    const take = Math.min(limit, MAX_APPS_TO_FETCH);
 
     const where: Prisma.BlockchainAppWhereInput = {
       ...(chainName && { chainName: chainName }),
@@ -44,7 +46,7 @@ export class InteroperabilityController {
     const [apps, total] = await Promise.all([
       this.prisma.blockchainApp.findMany({
         where,
-        take: limit,
+        take,
         skip: offset,
         include: { escrow: true },
       }),

@@ -18,6 +18,7 @@ import { AddStakesHandler } from './event/commands/add-stakes.command';
 import { UpdateValidatorRanksHandler } from './event/commands/update-validator-ranks.command';
 import { UpdateAccountHandler } from './event/commands/update-account.command';
 import { UpdateSidechainHandler } from './event/commands/update-sidechain.command';
+import { SaveNetworkPeersHandler } from './block/post-block-commands/save-network-peers.command';
 
 @Module({
   imports: [CqrsModule, StateModule, NodeApiModule],
@@ -39,6 +40,7 @@ import { UpdateSidechainHandler } from './event/commands/update-sidechain.comman
     CheckForBlockFinalityHandler,
     UpdateBlockGeneratorHandler,
     UpdateBlocksFeeHandler,
+    SaveNetworkPeersHandler,
 
     // chain events commands
     ExecutionResultHandler,

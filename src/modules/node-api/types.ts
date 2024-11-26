@@ -363,3 +363,22 @@ export type NetworkStats = {
   totalMessagesReceived: Record<string, number>;
   totalRequestsReceived: Record<string, number>;
 };
+
+export type PeerOptions = {
+  height: number;
+  maxHeightPrevoted: number;
+  blockVersion: number;
+  lastBlockID: string;
+  legacy: any[];
+};
+
+export type NetworkPeers = {
+  chainID: string;
+  networkVersion: string;
+  nonce: string;
+  advertiseAddress: boolean;
+  options: PeerOptions;
+  ipAddress: string;
+  port: number;
+  peerId: string;
+};

@@ -1,4 +1,12 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
 import {
@@ -9,7 +17,7 @@ import {
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { getNodeInfoResponse, NodeInfoDto } from '../node-api/dto/get-node-info-res.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { NetworkStats } from '../node-api/types';
+import { NetworkPeers, NetworkStats } from '../node-api/types';
 import {
   GetNetworkPeersStats,
   getNetworkStatisticsRes,
@@ -17,6 +25,9 @@ import {
   HeightStats,
   NetworkVersionStats,
 } from './dto/get-network-statistics-res.dto';
+import { GetNetworkPeersDto } from './dto/get-network-peers.dto';
+import { MAX_NETWORK_PEERS_TO_FETCH } from 'src/config/constants';
+import { Prisma } from '@prisma/client';
 
 @ApiTags('Network')
 @Controller('network')
@@ -26,19 +37,41 @@ export class NetworkController {
     private readonly prisma: PrismaService,
   ) {}
 
-  // TODO: query params; sort, limit, offset, height, state, networkVersion, ip
   @Get('peers')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getNetworkPeersRes)
-  async getPeers(): Promise<GetNetworkPeersResDto> {
-    const peers = await this.nodeApi.invokeApi<GetNetworkPeersData[]>(
-      NodeApi.NETWORK_GET_CONNECTED_PEERS,
-      {},
+  async getPeers(@Query() query: GetNetworkPeersDto): Promise<GetNetworkPeersResDto> {
+    const { sort, limit, offset, height, state, networkVersion, ip } = query;
+    const { field, direction } = ControllerHelpers.validateSortParameter(sort);
+    const take = Math.min(limit, MAX_NETWORK_PEERS_TO_FETCH);
+
+    const where: Prisma.NetworkPeerWhereInput = {
+      ...(height && { height: Number(height) }),
+      ...(state && { state }),
+      ...(networkVersion && { networkVersion }),
+      ...(ip && { ip }),
+    };
+
+    const [peers, total] = await Promise.all([
+      this.prisma.networkPeer.findMany({
+        where,
+        take,
+        orderBy: {
+          [field]: direction,
+        },
+        skip: offset,
+        include: {
+          location: true,
+        },
+      }),
+      this.prisma.networkPeer.count({ where }),
+    ]);
+
+    const peerResponse: GetNetworkPeersData[] = peers.map((peer) =>
+      this.toGetNetworkPeersResponse(peer),
     );
 
-    if (ControllerHelpers.isNodeApiError(peers))
-      throw new HttpException(peers.error, HttpStatus.NOT_FOUND);
-
-    return new GatewayResponse(peers, {});
+    return new GatewayResponse(peerResponse, { count: peers.length, offset, total });
   }
 
   @Get('statistics')
@@ -48,7 +81,7 @@ export class NetworkController {
     if (ControllerHelpers.isNodeApiError(networkStats))
       throw new HttpException(networkStats.error, HttpStatus.NOT_FOUND);
 
-    const peers = await this.nodeApi.invokeApi<GetNetworkPeersData[]>(
+    const peers = await this.nodeApi.invokeApi<NetworkPeers[]>(
       NodeApi.NETWORK_GET_CONNECTED_PEERS,
       {},
     );
@@ -82,7 +115,7 @@ export class NetworkController {
     );
   }
 
-  private getNetworkPeersStats(peers: GetNetworkPeersData[]): GetNetworkPeersStats {
+  private getNetworkPeersStats(peers: NetworkPeers[]): GetNetworkPeersStats {
     const heightStats: HeightStats = {};
     const networkVersionStats: NetworkVersionStats = {};
 
@@ -105,6 +138,18 @@ export class NetworkController {
     return {
       height: heightStats,
       networkVersion: networkVersionStats,
+    };
+  }
+
+  private toGetNetworkPeersResponse(peer: any): GetNetworkPeersData {
+    return {
+      ip: peer.ip,
+      port: peer.port,
+      networkVersion: peer.networkVersion,
+      chainID: peer.chainID,
+      state: peer.state,
+      height: peer.height,
+      location: peer.location,
     };
   }
 }
