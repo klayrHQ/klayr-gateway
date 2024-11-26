@@ -1,0 +1,27 @@
+model NetworkPeer {
+  ip                String    @id
+  location          Location? @relation(fields: [ip], references: [ip])
+  state             String
+  chainID           String
+  networkVersion    String
+  nonce             String
+  advertiseAddress  Boolean
+  port              Int
+  peerId            String
+  height            Int
+  maxHeightPrevoted Int
+  blockVersion      Int
+  lastBlockID       String
+  legacy            Json
+}
+
+model Location {
+  ip          String @id
+  countryCode String
+  countryName String
+  hostName    String
+  latitude    String
+  longitude   String
+
+  NetworkPeer NetworkPeer[]
+}

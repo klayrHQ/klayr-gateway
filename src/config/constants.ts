@@ -116,3 +116,18 @@ export enum BLOCKCHAIN_NETWORKS {
   DEVNET = 'devnet',
 }
 export const GITHUB_BASE_URL = 'https://api.github.com/repos/KlayrHQ/app-registry/contents';
+
+////////////////////////////
+///       Apps           ///
+////////////////////////////
+
+export const MAX_APPS_TO_FETCH = 100;
+
+////////////////////////////
+///       Network peers  ///
+////////////////////////////
+
+export const LOCATION_API_URL = 'http://ip-api.com/json';
+export const BLOCKS_TO_SAVE_NETWORK_PEERS = 100;
+export const DEFAULT_NETWORK_PEERS_TO_FETCH = 10;
+export const MAX_NETWORK_PEERS_TO_FETCH = 100;
