@@ -11,13 +11,14 @@ import {
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
-import { GetValidatorInfoResDto, getValidatorInfoRes } from './dto/get-validator-info-res';
+
 import { ControllerHelpers, GatewayResponse } from 'src/utils/controller-helpers';
 import { GetValidatorInfoDto } from './dto/get-validator-info';
 import { postValidateBlsKeyRes, PostValidateBlsKeyResDto } from './dto/post-validate-bls-key-res';
 import { PostValidateBlsKeyDto } from './dto/post-validate-bls-key';
 import { NodeApi, NodeApiService } from '../node-api/node-api.service';
 import { NodeApiError, ValidateBlsKey } from '../node-api/types';
+import { getValidatorInfoRes, GetValidatorInfoResDto } from './dto/get-validator-info-res.dto';
 
 @ApiTags('Validator')
 @Controller('validator')
@@ -30,9 +31,7 @@ export class ValidatorController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   @ApiResponse(getValidatorInfoRes)
-  public async getValidatorInfo(
-    @Query() query: GetValidatorInfoDto,
-  ): Promise<GetValidatorInfoResDto> {
+  async getValidatorInfo(@Query() query: GetValidatorInfoDto): Promise<GetValidatorInfoResDto> {
     const { address } = query;
     const validator = await this.prisma.validator.findFirst({
       where: {
