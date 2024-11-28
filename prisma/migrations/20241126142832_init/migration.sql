@@ -211,6 +211,37 @@ CREATE TABLE "PosConstants" (
 );
 
 -- CreateTable
+CREATE TABLE "NetworkPeer" (
+    "ip" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "chainID" TEXT NOT NULL,
+    "networkVersion" TEXT NOT NULL,
+    "nonce" TEXT NOT NULL,
+    "advertiseAddress" BOOLEAN NOT NULL,
+    "port" INTEGER NOT NULL,
+    "peerId" TEXT NOT NULL,
+    "height" INTEGER NOT NULL,
+    "maxHeightPrevoted" INTEGER NOT NULL,
+    "blockVersion" INTEGER NOT NULL,
+    "lastBlockID" TEXT NOT NULL,
+    "legacy" JSONB NOT NULL,
+
+    CONSTRAINT "NetworkPeer_pkey" PRIMARY KEY ("ip")
+);
+
+-- CreateTable
+CREATE TABLE "Location" (
+    "ip" TEXT NOT NULL,
+    "countryCode" TEXT NOT NULL,
+    "countryName" TEXT NOT NULL,
+    "hostName" TEXT NOT NULL,
+    "latitude" TEXT NOT NULL,
+    "longitude" TEXT NOT NULL,
+
+    CONSTRAINT "Location_pkey" PRIMARY KEY ("ip")
+);
+
+-- CreateTable
 CREATE TABLE "NextBlockToSync" (
     "id" INTEGER NOT NULL,
     "height" INTEGER NOT NULL,
@@ -383,6 +414,9 @@ ALTER TABLE "ChainEvents" ADD CONSTRAINT "ChainEvents_height_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "ChainEvents" ADD CONSTRAINT "ChainEvents_transactionID_fkey" FOREIGN KEY ("transactionID") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NetworkPeer" ADD CONSTRAINT "NetworkPeer_ip_fkey" FOREIGN KEY ("ip") REFERENCES "Location"("ip") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Stake" ADD CONSTRAINT "Stake_staker_fkey" FOREIGN KEY ("staker") REFERENCES "Account"("address") ON DELETE RESTRICT ON UPDATE CASCADE;
