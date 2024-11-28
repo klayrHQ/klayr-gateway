@@ -21,9 +21,11 @@ type ValidatorRewardMap = {
 
 @CommandHandler(UpdateBlockGeneratorCommand)
 export class UpdateBlockGeneratorHandler implements ICommandHandler<UpdateBlockGeneratorCommand> {
+  private logger = new LokiLogger(UpdateBlockGeneratorHandler.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(command: UpdateBlockGeneratorCommand) {
+    this.logger.debug('Updating block generator rewards');
     const validatorData = new Map<string, ValidatorRewardMap>();
     const chainEventsMap = new Map<number, ChainEvent[]>();
 
