@@ -20,7 +20,6 @@ export const GLOBAL_PREFIX = 'api/v1';
 ////////////////////////////
 
 export const RETRY_TIMEOUT = 5000; // 5 sec
-export const BLOCKS_TO_CACHE_TOKEN_SUMMARY = 100;
 export const CACHED_MODELS_ID = 1;
 
 ////////////////////////////
@@ -128,6 +127,13 @@ export const MAX_APPS_TO_FETCH = 100;
 ////////////////////////////
 
 export const LOCATION_API_URL = 'http://ip-api.com/json';
-export const BLOCKS_TO_SAVE_NETWORK_PEERS = 100;
 export const DEFAULT_NETWORK_PEERS_TO_FETCH = 10;
 export const MAX_NETWORK_PEERS_TO_FETCH = 100;
+
+////////////////////////////
+///   Cache / Save       ///
+////////////////////////////
+
+export const BLOCKS_TO_SAVE_NETWORK_PEERS = 100;
+export const BLOCKS_TO_CACHE_TOKEN_SUMMARY = 100;
+export const BLOCKS_TO_CHECK_BANNED_VALIDATOR = 75;
