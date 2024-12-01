@@ -30,6 +30,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SaveNetworkPeersCommand } from './block/post-block-commands/save-network-peers.command';
+import { CheckValidatorStatusCommand } from './block/post-block-commands/check-validator-status.command';
 
 // Sets `genesisHeight` as `nextBlockToSync`
 // `SYNCING`: Will send new block events to queue from `nextBlockToSync` to current `nodeHeight`
@@ -92,6 +93,7 @@ export class IndexerService {
 
     await Promise.all([
       this.commandBus.execute(new SaveNetworkPeersCommand(blocks.at(0).header.height)),
+      this.commandBus.execute(new CheckValidatorStatusCommand(blocks.at(0).header.height)),
       this.commandBus.execute(new CheckForBlockFinalityCommand()),
     ]);
 

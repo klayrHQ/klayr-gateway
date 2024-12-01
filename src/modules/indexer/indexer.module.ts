@@ -19,6 +19,7 @@ import { UpdateValidatorRanksHandler } from './event/commands/update-validator-r
 import { UpdateAccountHandler } from './event/commands/update-account.command';
 import { UpdateSidechainHandler } from './event/commands/update-sidechain.command';
 import { SaveNetworkPeersHandler } from './block/post-block-commands/save-network-peers.command';
+import { CheckValidatorStatusHandler } from './block/post-block-commands/check-validator-status.command';
 
 @Module({
   imports: [CqrsModule, StateModule, NodeApiModule],
@@ -41,6 +42,7 @@ import { SaveNetworkPeersHandler } from './block/post-block-commands/save-networ
     UpdateBlockGeneratorHandler,
     UpdateBlocksFeeHandler,
     SaveNetworkPeersHandler,
+    CheckValidatorStatusHandler,
 
     // chain events commands
     ExecutionResultHandler,
