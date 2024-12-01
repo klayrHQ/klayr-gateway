@@ -1,4 +1,5 @@
 import { ICommandHandler, CommandHandler } from '@nestjs/cqrs';
+import { LokiLogger } from 'nestjs-loki-logger';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 
 export class UpdateBlocksFeeCommand {
@@ -12,9 +13,12 @@ export interface UpdateBlockFee {
 
 @CommandHandler(UpdateBlocksFeeCommand)
 export class UpdateBlocksFeeHandler implements ICommandHandler<UpdateBlocksFeeCommand> {
+  private logger = new LokiLogger(UpdateBlocksFeeHandler.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(command: UpdateBlocksFeeCommand): Promise<void> {
+    this.logger.debug('Updating blocks fee');
     if (!command.payload) return;
 
     for (const [height, { totalBurnt, totalFee }] of command.payload.entries()) {
