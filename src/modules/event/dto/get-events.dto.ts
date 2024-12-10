@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 import { DEFAULT_BLOCKS_TO_FETCH } from 'src/config/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
 
@@ -79,6 +79,7 @@ export class GetEventsDto {
    * Limit the number of events fetched.
    */
   @IsNumber()
+  @Min(1, { message: 'limit must be a positive number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = DEFAULT_BLOCKS_TO_FETCH;
 
@@ -86,6 +87,7 @@ export class GetEventsDto {
    * Offset for the events fetched.
    */
   @IsNumber()
+  @Min(0, { message: 'offset must be a non-negative number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 }

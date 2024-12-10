@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Matches, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { DEFAULT_BLOCKS_TO_FETCH } from 'src/config/constants';
 import { SortTypes } from 'src/utils/controller-helpers';
@@ -51,6 +51,7 @@ export class GetBlocksDto {
    * Limit the number of blocks fetched.
    */
   @IsNumber()
+  @Min(1, { message: 'limit must be a positive number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = DEFAULT_BLOCKS_TO_FETCH;
 
@@ -58,6 +59,7 @@ export class GetBlocksDto {
    * Offset for the blocks fetched.
    */
   @IsNumber()
+  @Min(0, { message: 'offset must be a non-negative number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 
