@@ -217,7 +217,7 @@ CREATE TABLE "NetworkPeer" (
     "chainID" TEXT NOT NULL,
     "networkVersion" TEXT NOT NULL,
     "nonce" TEXT NOT NULL,
-    "advertiseAddress" BOOLEAN NOT NULL,
+    "advertiseAddress" BOOLEAN,
     "port" INTEGER NOT NULL,
     "peerId" TEXT NOT NULL,
     "height" INTEGER NOT NULL,
