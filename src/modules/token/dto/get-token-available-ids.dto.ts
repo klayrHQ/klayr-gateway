@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { AccountSortTypes, AvailableIdsSortTypes } from 'src/utils/controller-helpers';
 
@@ -17,6 +17,7 @@ export class GetTokenAvailableIdsDto {
    * Limit the number of available ids fetched.
    */
   @IsNumber()
+  @Min(1, { message: 'limit must be a positive number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = 10;
 
@@ -24,6 +25,7 @@ export class GetTokenAvailableIdsDto {
    * Offset for the  available ids fetched.
    */
   @IsNumber()
+  @Min(0, { message: 'offset must be a non-negative number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 }
