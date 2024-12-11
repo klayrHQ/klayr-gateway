@@ -63,7 +63,11 @@ describe('CheckValidatorStatusHandler', () => {
           provide: PrismaService,
           useValue: {
             validator: {
-              update: jest.fn(),
+              upsert: jest.fn(),
+            },
+            account: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
             },
           },
         },
@@ -92,35 +96,42 @@ describe('CheckValidatorStatusHandler', () => {
     await handler.execute({ blockHeight: BLOCKS_TO_CHECK_BANNED_VALIDATOR + 1 });
 
     expect(nodeApiService.invokeApi).not.toHaveBeenCalled();
-    expect(prismaService.validator.update).not.toHaveBeenCalled();
+    expect(prismaService.validator.upsert).not.toHaveBeenCalled();
   });
 
   it('should fetch and update banned validators', async () => {
     await handler.execute({ blockHeight: BLOCKS_TO_CHECK_BANNED_VALIDATOR });
 
+    const data = {
+      isBanned: true,
+      status: ValidatorStatus.BANNED,
+      totalStake: BigInt('103150000000000'),
+      selfStake: BigInt('9899000000000'),
+      lastGeneratedHeight: 397037,
+      reportMisbehaviorHeights: JSON.stringify([]),
+      consecutiveMissedBlocks: 2209,
+      commission: 9500,
+      lastCommissionIncreaseHeight: 68231,
+      sharingCoefficients: JSON.stringify([
+        {
+          tokenID: '0200000000000000',
+          coefficient: '20c157e32fecfda501718a0f',
+        },
+      ]),
+      punishmentPeriods: JSON.stringify([]),
+    };
+
     expect(nodeApiService.invokeApi).toHaveBeenCalledWith(NodeApi.POS_GET_ALL_VALIDATORS, {});
-    expect(prismaService.validator.update).toHaveBeenCalledWith({
+    expect(prismaService.validator.upsert).toHaveBeenCalledWith({
       where: { address: 'klyhf3gtj3wecxaxy7csqb5k8kszugghpscvat5b4' },
-      data: {
-        isBanned: true,
-        status: ValidatorStatus.BANNED,
-        totalStake: BigInt('103150000000000'),
-        selfStake: BigInt('9899000000000'),
-        lastGeneratedHeight: 397037,
-        reportMisbehaviorHeights: JSON.stringify([]),
-        consecutiveMissedBlocks: 2209,
-        commission: 9500,
-        lastCommissionIncreaseHeight: 68231,
-        sharingCoefficients: JSON.stringify([
-          {
-            tokenID: '0200000000000000',
-            coefficient: '20c157e32fecfda501718a0f',
-          },
-        ]),
-        punishmentPeriods: JSON.stringify([]),
+      update: data,
+      create: {
+        ...data,
+        address: 'klyhf3gtj3wecxaxy7csqb5k8kszugghpscvat5b4',
       },
     });
-    expect(prismaService.validator.update).toHaveBeenCalledTimes(1);
+    expect(prismaService.validator.upsert).toHaveBeenCalledTimes(1);
+    expect(prismaService.account.create).toHaveBeenCalledTimes(1);
   });
 
   it('should handle errors when fetching validators', async () => {
@@ -129,6 +140,6 @@ describe('CheckValidatorStatusHandler', () => {
     await handler.execute({ blockHeight: BLOCKS_TO_CHECK_BANNED_VALIDATOR });
 
     expect(nodeApiService.invokeApi).toHaveBeenCalledWith(NodeApi.POS_GET_ALL_VALIDATORS, {});
-    expect(prismaService.validator.update).not.toHaveBeenCalled();
+    expect(prismaService.validator.upsert).not.toHaveBeenCalled();
   });
 });
