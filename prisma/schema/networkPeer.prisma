@@ -5,7 +5,7 @@ model NetworkPeer {
   chainID           String
   networkVersion    String
   nonce             String
-  advertiseAddress  Boolean
+  advertiseAddress  Boolean?
   port              Int
   peerId            String
   height            Int

@@ -45,20 +45,36 @@ export class CheckValidatorStatusHandler implements ICommandHandler<CheckValidat
   async updateBannedValidators({ validators }: AllValidators): Promise<void> {
     for (const validator of validators) {
       if (validator.isBanned) {
-        await this.prisma.validator.update({
+        const data = {
+          isBanned: true,
+          status: ValidatorStatus.BANNED,
+          totalStake: BigInt(validator.totalStake),
+          selfStake: BigInt(validator.selfStake),
+          lastGeneratedHeight: validator.lastGeneratedHeight,
+          reportMisbehaviorHeights: JSON.stringify(validator.reportMisbehaviorHeights),
+          consecutiveMissedBlocks: validator.consecutiveMissedBlocks,
+          commission: validator.commission,
+          lastCommissionIncreaseHeight: validator.lastCommissionIncreaseHeight,
+          sharingCoefficients: JSON.stringify(validator.sharingCoefficients),
+          punishmentPeriods: JSON.stringify(validator.punishmentPeriods),
+        };
+
+        const account = await this.prisma.account.findUnique({
           where: { address: validator.address },
-          data: {
-            isBanned: true,
-            status: ValidatorStatus.BANNED,
-            totalStake: BigInt(validator.totalStake),
-            selfStake: BigInt(validator.selfStake),
-            lastGeneratedHeight: validator.lastGeneratedHeight,
-            reportMisbehaviorHeights: JSON.stringify(validator.reportMisbehaviorHeights),
-            consecutiveMissedBlocks: validator.consecutiveMissedBlocks,
-            commission: validator.commission,
-            lastCommissionIncreaseHeight: validator.lastCommissionIncreaseHeight,
-            sharingCoefficients: JSON.stringify(validator.sharingCoefficients),
-            punishmentPeriods: JSON.stringify(validator.punishmentPeriods),
+        });
+
+        if (!account) {
+          await this.prisma.account.create({
+            data: { address: validator.address },
+          });
+        }
+
+        await this.prisma.validator.upsert({
+          where: { address: validator.address },
+          update: data,
+          create: {
+            address: validator.address,
+            ...data,
           },
         });
       }

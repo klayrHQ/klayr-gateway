@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { NetworkPeersSortTypes } from 'src/utils/controller-helpers';
 
@@ -47,6 +47,7 @@ export class GetNetworkPeersDto {
    */
   @IsNumber()
   @IsOptional()
+  @Min(1, { message: 'limit must be a positive number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   limit?: number = 10;
 
@@ -55,6 +56,7 @@ export class GetNetworkPeersDto {
    */
   @IsNumber()
   @IsOptional()
+  @Min(0, { message: 'offset must be a non-negative number' })
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   offset?: number = 0;
 }
