@@ -96,12 +96,12 @@ export class IndexerService {
       this.commandBus.execute(new CheckValidatorStatusCommand(blocks.at(0).header.height)),
     ]);
 
-    this.commandBus.execute(new CheckForBlockFinalityCommand());
+    await this.commandBus.execute(new CheckForBlockFinalityCommand());
     this.commandBus.execute(new UpdateBlockGeneratorCommand(blocks, chainEvents));
     this.commandBus.execute(new UpdateBlocksFeeCommand(totalBurntPerBlockMap));
 
     if (this.state.get(Modules.INDEXER) === IndexerState.SYNCING) {
-      await this.commandBus.execute(new UpdateValidatorRanks());
+      this.commandBus.execute(new UpdateValidatorRanks());
     }
   }
 
